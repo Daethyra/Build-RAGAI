@@ -1,3 +1,4 @@
 panel
 openai
 python-dotenv
+panel

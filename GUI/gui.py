@@ -22,7 +22,7 @@ _ = load_dotenv(find_dotenv()) # read local .env file
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 class OpenAI_Chat:
-    def __init__(self, model=os.getenv('model', 'gpt-3.5-turbo'), temperature=os.getenv('temperature', 0)):
+    def __init__(self, model=os.getenv('MODEL', 'gpt-3.5-turbo'), temperature=os.getenv('TEMPERATURE', 0)):
         self.model = model
         self.temperature = float(temperature)
         self.messages = []
@@ -43,8 +43,10 @@ class OpenAI_Chat:
         self.messages.extend(messages)
 
 class ChatApplication(tk.Tk):
-    def __init__(self, chat_model, *args, **kwargs):
+    def __init__(self, chat_model, messages=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        if messages is None:
+            messages = []
         self.title("Chatbot")
         self.configure(bg='white')
         self.chat_model = chat_model
