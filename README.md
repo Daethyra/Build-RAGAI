@@ -3,19 +3,16 @@
 Your one-stop destination for enhancing your interaction with OpenAI models. Originally, this repository housed a single module, but I've now expanded it to include a multitude of utilities that offer additional functionality and ease-of-use.
 
 # Contents
-BlindProgamming
-The BlindProgamming module is designed to help users solve their code's problems with the assistance of OpenAI's GPT models. 
+[BlindProgamming](https://github.com/Daethyra/OUT/tree/master/BlindProgamming)
+The BlindProgamming folder contains text files designed to inspire/augment users' solve their code's problems with the assistance of OpenAI's GPT models. 
+There's currently only one file for programmers, and there are plans to add more format-oriented prompts.
 
-For each user message, the module internally creates three separate solutions to solve the user's problem, then merges all of the best aspects of each solution into a master solution, that has its own set of enhancements and supplementary functionality. This meticulous, accuracy ensuring AI programming assistant works step-by-step to ensure the right solution is reached.
+[AutoEmbedder](https://github.com/Daethyra/OUT/tree/master/GPT%20Auto-embed%20Messages)
+The OpenAI-Pinecone module is a Python script that integrates the OpenAI models with Pinecone's vector database. 
+This utility requires integration with other modules to function, as it is a back-end processor that requests embeddings for the user's input from OpenAI and then sends them over a Pinecone index.
 
-This is called 'tree-of-thoughts' prompting.
-
-# OpenAI-Pinecone
-## The OpenAI-Pinecone module is a Python script that integrates the OpenAI models with Pinecone's vector database. 
-
-This utility initializes environment variables for Pinecone and OpenAI, validates these variables, and then sets up an argument parser. 
-
-It also includes a retry decorator for function calls that might fail, and a function to normalize embeddings. The script ultimately creates an instance of OpenAiPinecone which can get embeddings from OpenAI's models and upsert these embeddings into Pinecone.
+[GPT-Chatbot](https://github.com/Daethyra/OUT/tree/master/gpt-chatbot)
+This is a standalone module that creates a GUI interface which provides functionality to send 'system' messages, reset the conversation, and automatically store the last 10 responses from the GPT model
 
 # Future Plans
 
