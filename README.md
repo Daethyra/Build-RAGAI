@@ -6,7 +6,7 @@ Your one-stop destination for enhancing your interaction with OpenAI models. Ori
 [Blind Progamming](https://github.com/Daethyra/OpenAI-Utility-Toolkit/tree/master/Blind%20Programming)
 The BlindProgamming folder contains text files designed to inspire/augment users' solve their code's problems with the assistance of OpenAI's GPT models. 
 
-[AutoEmbedder](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Auto-Embedder/autoembeds.py)
+[Auto-Embedder](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Auto-Embedder/autoembeds.py)
 The OpenAI-Pinecone module is a Python script that integrates the OpenAI models with Pinecone's vector database. 
 This utility requires integration with other modules to function, as it is a back-end processor that requests embeddings for the user's input from OpenAI and then sends them over a Pinecone index.
 
