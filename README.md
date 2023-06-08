@@ -3,7 +3,7 @@
 Your one-stop destination for enhancing your interaction with OpenAI models. Originally, this repository housed a single module, but I've now expanded it to include a multitude of utilities that offer additional functionality and ease-of-use.
 
 # Contents
-[BlindProgamming](https://github.com/Daethyra/OpenAI-Utility-Toolkit/tree/master/Blind%20Programming)
+[Blind Progamming](https://github.com/Daethyra/OpenAI-Utility-Toolkit/tree/master/Blind%20Programming)
 The BlindProgamming folder contains text files designed to inspire/augment users' solve their code's problems with the assistance of OpenAI's GPT models. 
 
 [AutoEmbedder](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Auto-Embedder/autoembeds.py)
