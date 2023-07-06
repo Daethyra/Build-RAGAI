@@ -5,6 +5,7 @@ Your one-stop destination for enhancing your interaction with OpenAI models. Ori
 # Contents
 [Blind Progamming](https://github.com/Daethyra/OpenAI-Utility-Toolkit/tree/master/Blind%20Programming)
 The BlindProgamming folder contains text files designed to inspire/augment users' solve their code's problems with the assistance of OpenAI's GPT models. 
+Includes prompt examples at the [user](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/User-Role_Prompts.md) and [system](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/System-Role_Prompts.md) levels, and there's currently a single [multi-shot prompt example](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/multi-shot-prompt-example.md).
 
 [Auto-Embedder](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Auto-Embedder/autoembeds.py)
 The OpenAI-Pinecone module is a Python script that integrates the OpenAI models with Pinecone's vector database. 
