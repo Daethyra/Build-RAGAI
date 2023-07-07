@@ -34,6 +34,3 @@ Prompt: Based on the evaluations and scenarios, rank the solutions in order of p
 - Complete each task separately 
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
 ---
-
-
-# *4. Create Code Snippet Solutions*
