@@ -36,7 +36,7 @@ Prompt: Based on the evaluations and scenarios, rank the solutions in order of p
 ---
 
 
-~# *4. Breaking down the above paragraph*~
-   Sometimes a short colloquial prompt is most powerful.
+# *4. Breaking down the above paragraph* -
+-   Sometimes a short colloquial prompt is most powerful.
 
-Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission.
+"Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission."
