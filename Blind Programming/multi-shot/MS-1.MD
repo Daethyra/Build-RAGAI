@@ -1,7 +1,7 @@
 ## Everything below the link was sent to ChatGPT verbatim. 
 Specifications: `(Model=4, Plugins=['webpilot', 'metaphor'])`, 
 starting with `<!document-begin>` at 9:33PM on 7/5/23.
-- Please view the [raw version](https://raw.githubusercontent.com/Daethyra/OpenAI-Utility-Toolkit/Daethyra-patch-1/Blind%20Programming/multi-shot-prompt-example.md)
+- Please copy/paste the [raw version](https://raw.githubusercontent.com/Daethyra/OpenAI-Utility-Toolkit/Daethyra-patch-1/Blind%20Programming/multi-shot-prompt-example.md)
 
 ---
 ---
