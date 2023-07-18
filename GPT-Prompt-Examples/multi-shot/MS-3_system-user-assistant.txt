@@ -1,8 +1,10 @@
 # Copy/Pastable pre-conversational 'multi-role' prompt:
 
-Use plugins to read the contents of this image: 
-https://drive.proton.me/urls/B9HWEPSVBM#n7Yot3kiPgi0 // Replace with your own link, or use this test file.
+- Step 1 -
+"Use plugins to read the contents of this image":
+https://drive.proton.me/urls/B9HWEPSVBM#n7Yot3kiPgi0
 
+- Step 2 -
 [Task]
 
 'messages': [
