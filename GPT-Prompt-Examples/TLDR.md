@@ -1,3 +1,7 @@
+`If you find my work useful, please share it! 😊`
+- `The following document was written for v1.0, and will not be updated.`
+- `The prompt example sheets will continually be updated and added`
+
 # [System-role prompts](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/System-Role_Prompts.md):
 
 - 1. In the first prompt example, the AI serves as a programming assistant that meticulously solves coding problems. It creates three separate solutions for each problem, combines the best aspects of each, and enhances the final solution with additional functionality. The AI follows a step-by-step approach to ensure accuracy.
