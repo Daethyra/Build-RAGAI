@@ -2,7 +2,7 @@
 
 - Step 1 -
 "Use plugins to read the contents of this image":
-https://drive.google.com/file/d/1CCZulDyoyQc26CitP0R6u4s9Ndfyb4dC/view?usp=drive_link
+# Your link
 
 - Step 2 -
 [Task]
