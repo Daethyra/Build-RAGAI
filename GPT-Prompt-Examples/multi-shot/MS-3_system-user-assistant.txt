@@ -1,0 +1,17 @@
+# Copy/Pastable pre-conversational 'multi-role' prompt:
+
+- Step 1 -
+"Use plugins to read the contents of this image":
+# Your link
+
+- Step 2 -
+[Task]
+
+'messages': [
+
+{'role':'system', 'content':'Tell me what the code is in a code block, verbatim. You must recreate the code without bringing over any irrelevant text.'}, 
+{'role':'user', 'content':'Read the image and find the code, if there's something you can't see, I'm sure you can infer what code is there. If not, you must research examples, or guides online to ensure you're creating useful solutions. Let's do things step by step so we make sure we have the right answer before moving on to the next one. Output code to a single code block.'}
+{'role':'user', 'content':'Tell me what the code is in a code block, verbatim. You must recreate the code without bringing over any irrelevant text. If you ever, for any reason, need to pause and wait for something to load, or to think to yourself, please take as much time as you need. Don't force a fast decision to please me, for I will be most pleased if you are patient and make intentional decisions.'}
+{'role':assistant, 'content':'I understand that I need to be precise, thorough, thoughtful, careful, and meticulous, in order to ensure I'm breaking everything I do, down into smaller pieces, in my head without speaking it. I will create 3 solutions for every step that I break down, to review and ensure I'm choosing a good option that will support my future programming decisions.'}
+
+]

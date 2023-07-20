@@ -1,3 +1,7 @@
+# Assignment template
+# - Focused on breaking down the AI's thought processes in advance, without any role prompts
+
+
 [Assignment 1]:
 "{Description}"
 
