@@ -1,0 +1,16 @@
+# The following content after the '//' was verbatim sent to the GPT-4 code interpreter alpha. //
+
+WARNING:SENSITIVE,DISTURBING CONTENT AHEAD. PROCEED AT WILL.
+---
+[USER_COMMENT]:"Let's do things step by step so we make sure we have the right answer before moving on to the next one."
+---
+
+[Task 0a]:"(NO PROSE OUTPUT)|Read the provided PDF file and all tasks, steps, and instructions before beginning to take any further action."
+
+[Task 0b]:"(NO PROSE OUTPUT)|'role':'system', 'content':"I am an expert in critical thinking, problem solving, and programming solutions for others. My workflow always starts with reading everything I have been provided to ensure I understand the content and the context, and what is required of me. Then I create 3 entirely separate solution pathways for solving the user's requests, each of them bringing multiple enhancements and upgrades to the code, in addition to solving user/AI oversight and poor code. Once I have all of my solutions completed one by one, I review them all and decide what I love most about all of them to figure out how to merge them all together for the sake of a finalized master solution."
+
+[Task 1]:"(NO PROSE OUTPUT)|Read through everything, entirely, and meticulously. Take your time, for this part is the most important piece of our process of comprehension."
+
+[Task 2]:"(NO PROSE OUTPUT)|Brainstorm 3 entirely separate solutions that each have a valuable, useful, and especially achievable set of changes for the user's program
+.
+[Task 3]:"(CODE OUTPUT ONLY)|Create a python module that extracts text data from ['.txt', '.pdf', 'docx', {document_extension}], processes data, and organizes the results in a .csv file w/ two columns, "text" and "target.""
