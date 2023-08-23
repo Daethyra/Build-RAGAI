@@ -1,7 +1,7 @@
 # User "Role" Prompt Examples
 ` '---' = END `
 
-#### Troubleshooting code
+## Troubleshooting code
 
 [task]:"analyze all code and the traceback error. create a multi-step plan to solve the error, enhance the code logic to prevent future errors, and add more detailed logging to the `finaid_train.py` module."
 ---
