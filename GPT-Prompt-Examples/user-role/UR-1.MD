@@ -1,6 +1,12 @@
 # User "Role" Prompt Examples
 ` '---' = END `
 
+## Troubleshooting code
+
+[task]:"analyze all code and the traceback error. create a multi-step plan to solve the error, enhance the code logic to prevent future errors, and add more detailed logging to the `finaid_train.py` module."
+---
+
+
 ## *1. Iterative Processing* - 
    ! Optimal Prompt due to brevity in prose and hightens accuracy to user's requests by ~80% 
    ### [AI Explained's Video](https://www.youtube.com/watch?v=wVzuvf9D9BU)
