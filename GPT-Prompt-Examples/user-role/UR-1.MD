@@ -1,6 +1,11 @@
 # User "Role" Prompt Examples
 ` '---' = END `
 
+#### Troubleshooting code
+
+[task]:"analyze all code and the traceback error. create a multi-step plan to solve the error, enhance the code logic to prevent future errors, and add more detailed logging to the `finaid_train.py` module."
+---
+
 ## *1. Iterative Processing* - 
    ! Optimal Prompt due to brevity in prose and hightens accuracy to user's requests by ~80% 
    ### [AI Explained's Video](https://www.youtube.com/watch?v=wVzuvf9D9BU)
@@ -24,7 +29,6 @@
     - Prompt: Based on the evaluations and scenarios, rank the solutions in order of promise. Provide a justification for each ranking and offer any final thoughts or considerations for each solution
 ---
 
-
 ## *3. Task-oriented Processing* -
    For when you need to be super specific
 
@@ -34,7 +38,6 @@
 - Complete each task separately 
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
 ---
-
 
 ## *4. Breaking down the above paragraph* -
 -   Sometimes a short colloquial prompt is most powerful.
