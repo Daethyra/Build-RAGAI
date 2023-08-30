@@ -1,21 +1,72 @@
+
 # OpenAI Utility Toolkit (OUT)
 
 ## Welcome to the OpenAI Utility Toolkit (OUT)
 
-Your one-stop destination for enhancing your interaction with OpenAI models. Originally, this repository housed a single module, but I've now expanded it to include a multitude of utilities that offer additional functionality and ease-of-use.
+Your one-stop destination for enhancing your interaction with OpenAI models. This toolkit has grown to include a multitude of utilities that offer additional functionality and ease-of-use.
 
-# Contents
+---
 
-## [Blind Progamming](https://github.com/Daethyra/OpenAI-Utility-Toolkit/tree/master/Blind%20Programming)
+## Contents
 
-The BlindProgamming folder contains text files designed to inspire/augment users' solve their code's problems with the assistance of OpenAI's GPT models.
-Includes prompt examples at the [user](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/User-Role_Prompts.md) and [system](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/System-Role_Prompts.md) levels, and there's currently a single [multi-shot prompt example](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/Daethyra-patch-1/Blind%20Programming/multi-shot-prompt-example.md).
+1. **PinEbed.py**: A Python module to easily automate the retrieval of embeddings from OpenAI and storage in Pinecone.
+2. **main.py**: The entry point for the GUI application.
+3. **gui.py**: Contains the GUI logic and interface.
+4. **openai_chat.py**: A Python class designed for chat-based interaction with OpenAI models.
+5. **TLDR.md**: A Markdown file providing a quick overview of the project and its components.
 
-## [Auto-Embedder](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Auto-Embedder/autoembeds.py)
+---
 
-The OpenAI-Pinecone module is a Python script that integrates the OpenAI models with Pinecone's vector database.
-This utility requires integration with other modules to function, as it is a back-end processor that requests embeddings for the user's input from OpenAI and then sends them over a Pinecone index.
+## Detailed Description
 
-## [GPT-Chatbot](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/GPT-Chatbot/gui.py)
+### [PinEbed.py](Auto-Embedder/PinEbed.py)
 
-This is a standalone module that creates a GUI interface which provides functionality to send 'system' messages, reset the conversation, and automatically store the last 10 responses from the GPT model
+This module provides a class `PineconeHandler` that handles data stream embedding and storage in Pinecone. It uses OpenAI to generate embeddings for text data and stores these embeddings in a Pinecone index.
+
+#### How to Use
+
+```python
+from PinEbed import PineconeHandler
+
+pinecone_handler = PineconeHandler()
+# Your code to fetch data
+pinecone_handler.process_data(your_data)
+```
+
+### [main.py](./main.py)
+
+This is the entry point for the GUI application. It sets up the environment and initiates the GUI.
+
+#### How to Use
+
+Run this file to start the GUI application.
+
+```bash
+python main.py
+```
+
+### [gui.py](./gui.py)
+
+This file contains the GUI logic and interface. It uses Python's `Tkinter` to create the GUI.
+
+#### How to Use
+
+This file is imported and used in `main.py`.
+
+### [openai_chat.py](./openai_chat.py)
+
+A Python class designed for chat-based interaction with OpenAI models. You can set the model and temperature for the chat.
+
+#### How to Use
+
+```python
+from openai_chat import OpenAI_Chat
+
+chat = OpenAI_Chat(model='gpt-4', temperature=0)
+```
+
+### [TLDR.md](./TLDR.md)
+
+Provides a quick overview of the project and its components. Useful for getting a snapshot view of what this toolkit offers.
+
+---
