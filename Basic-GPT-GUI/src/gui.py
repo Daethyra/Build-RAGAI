@@ -1,12 +1,16 @@
-import os
-import openai
-from dotenv import load_dotenv, find_dotenv
-import tkinter as tk
-from tkinter import scrolledtext, messagebox, ttk
-from concurrent.futures import ThreadPoolExecutor
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 import logging
+import os
+
+from dotenv import find_dotenv, load_dotenv
+import openai
 import panel as pn
+import tkinter as tk
+from tkinter import messagebox, scrolledtext, ttk
+
+# Local imports
+from chat import OpenAI_Chat
 
 # Setting up logging
 logging.basicConfig(
@@ -16,33 +20,17 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+# Setting up panel
 pn.extension()
 _ = load_dotenv(find_dotenv()) # read local .env file
 
+# Initialize OpenAI API key
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
-class OpenAI_Chat:
-    def __init__(self, model=os.getenv('MODEL', 'gpt-3.5-turbo'), temperature=os.getenv('TEMPERATURE', 0)):
-        self.model = model
-        self.temperature = float(temperature)
-        self.messages = []
-
-    def get_response(self, role, message):
-        self.messages.append({"role": role, "content": message})
-        response = openai.ChatCompletion.create(
-            model=self.model,
-            messages=self.messages,
-            temperature=self.temperature,
-        )
-        return response.choices[0].message["content"] # type: ignore
-
-    def reset_conversation(self):
-        self.messages = []
-        
-    def add_initial_messages(self, messages):
-        self.messages.extend(messages)
 
 class ChatApplication(tk.Tk):
+    """ Main GUI Application
+    """
     def __init__(self, chat_model, messages=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         if messages is None:
@@ -62,6 +50,25 @@ class ChatApplication(tk.Tk):
 
         self.setup_ui()
 
+    # Get response from chatbot
+    def get_response(self, role, message):
+        self.messages.append({"role": role, "content": message})
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            messages=self.messages,
+            temperature=self.temperature,
+        )
+        return response.choices[0].message["content"] # type: ignore
+
+    # Reset conversation
+    def reset_conversation(self):
+        self.messages = []
+        
+    # Add initial messages
+    def add_initial_messages(self, messages):
+        self.messages.extend(messages)
+    
+    # Setup UI
     def setup_ui(self):
         self.geometry('800x600')  # Increase window size
 
@@ -91,6 +98,7 @@ class ChatApplication(tk.Tk):
         self.role_button = ttk.Checkbutton(self.bottom_frame, text="System", onvalue='system', offvalue='user', variable=self.role_var)
         self.role_button.pack(side=tk.LEFT, padx=5, pady=5)
 
+    # Send message to chatbot
     def send_message(self, event=None):
         message = self.message_entry.get()
         role = self.role_var.get()
@@ -116,6 +124,7 @@ class ChatApplication(tk.Tk):
                     messagebox.showerror("Error", str(e))
                     logging.error(f"Error while getting response: {str(e)}")
 
+    # Reset conversation
     def reset_conversation(self):
         self.chat_model.reset_conversation()
         self.text_area.config(state=tk.NORMAL)
@@ -124,7 +133,9 @@ class ChatApplication(tk.Tk):
         logging.info("Conversation reset")
 
 
+# Run the application
 if __name__ == "__main__":
+    # Customize the AI's name and instructions
     Instructions = f"""
 
 [Instructions]: \
@@ -135,7 +146,7 @@ if __name__ == "__main__":
     - Your main job is to assist the user with whatever they're working on.\
     - Await user input for further instructions.
 """
-
+# Aggregate data into a list for the chatbot to use
     messages = [
         {
             "role": "system",
@@ -143,6 +154,7 @@ if __name__ == "__main__":
         }
     ]
 
+    # Initialize the chatbot
     chat_model = OpenAI_Chat()
     app = ChatApplication(chat_model, messages)  # pass messages as the second argument
     app.mainloop()
