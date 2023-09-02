@@ -1,8 +1,6 @@
 # OpenAI Utility Toolkit (OUT)
 
-## Welcome to the OpenAI Utility Toolkit (OUT)
-
-Your one-stop destination for enhancing your interaction with OpenAI models. This toolkit has grown to include a multitude of utilities that offer additional functionality and ease-of-use.
+`Your short-stop for enhancing your interaction with OpenAI models.`
 
 ---
 
