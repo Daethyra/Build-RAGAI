@@ -25,7 +25,11 @@ class EnvConfig:
         self.openai_key: str = os.getenv("OPENAI_API_KEY")
         self.pinecone_key: str = os.getenv("PINECONE_API_KEY")
         self.pinecone_environment: str = os.getenv("PINECONE_ENVIRONMENT")
-        self.pinecone_environment: str = os.getenv("PINEDEX")
+        self.pinecone_index: str = os.getenv("PINEDEX")
+        self.drop_columns: List[str] = os.getenv("DROPCOLUMNS", "").split(",")
+        
+        # Remove any empty strings that may appear if "DROPCOLUMNS" is empty or has trailing commas
+        self.drop_columns = [col.strip() for col in self.drop_columns if col.strip()]
 
 class OpenAIHandler:
     """Class for handling OpenAI operations."""
@@ -47,26 +51,52 @@ class OpenAIHandler:
         """
         response = openai.Embedding.create(
             model="text-embedding-ada-002",
-            input=input_text
+            input=input_text,
+            # Might be useful to add the user parameter
         )
         return response
 
 class PineconeHandler:
     """Class for handling Pinecone operations."""
 
-    def __init__(self, config: EnvConfig) -> None:
-        """Initialize Pinecone API key."""
-        pinecone.init(api_key=config.pinecone_key)
-    
+    def __init__(self, config: "EnvConfig") -> None:
+        """
+        Initialize Pinecone API key, environment, and index name.
+
+        Args:
+            config (EnvConfig): An instance of the EnvConfig class containing environment variables and API keys.
+        """
+        pinecone.init(api_key=config.pinecone_key, environment=config.pinecone_environment)
+        self.index_name = config.pinecone_index
+        self.drop_columns = config.drop_columns
+
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     async def upload_embedding(self, embedding: Dict[str, Union[int, List[float]]]) -> None:
         """
-        Upload an embedding to Pinecone index.
+        Asynchronously uploads an embedding to the Pinecone index specified during initialization.
         
-        Parameters:
-            embedding (Dict): The embedding to be uploaded.
+        This method will retry up to 3 times in case of failure, using exponential back-off.
+
+        Args:
+            embedding (Dict): A dictionary containing the following keys:
+                - 'id': A unique identifier for the embedding (str).
+                - 'values': A list of numerical values for the embedding (List[float]).
+                - 'metadata' (Optional): Any additional metadata as a dictionary (Dict).
+                - 'sparse_values' (Optional): Sparse values of the embedding as a dictionary with 'indices' and 'values' (Dict).
         """
-        pinecone.upsert(index_name="your-index", items=embedding)
+        # Initialize Pinecone index
+        index = pinecone.Index(self.index_name)
+
+        # Prepare the item for upsert
+        item = {
+            'id': embedding['id'],
+            'values': embedding['values'],
+            'metadata': embedding.get('metadata', {}),
+            'sparse_values': embedding.get('sparse_values', {})
+        }
+
+        # Perform the upsert operation
+        index.upsert(vectors=[item])
 
 class DataStreamHandler:
     """Class for handling data streams."""
