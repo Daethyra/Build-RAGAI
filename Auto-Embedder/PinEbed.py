@@ -1,60 +1,103 @@
-""" Easily automate the retrieval from OpenAI and storage of embeddings in Pinecone. """
+"""Easily automate the retrieval from OpenAI and storage of embeddings in Pinecone."""
+
 import os
 import logging
-from configparser import ConfigParser
-from typing import Dict, Any
-import pinecone
-import openai
+import asyncio
+from dotenv import load_dotenv
+from datetime import datetime
+from typing import Dict, Union, List
+import openai  
+import pinecone  
+import backoff  
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class EnvConfig:
+    """Class for handling environment variables and API keys."""
+    
+    def __init__(self) -> None:
+        """Initialize environment variables."""
+        self.openai_key: str = os.getenv("OPENAI_API_KEY")
+        self.pinecone_key: str = os.getenv("PINECONE_API_KEY")
+        self.pinecone_environment: str = os.getenv("PINECONE_ENVIRONMENT")
+        self.pinecone_environment: str = os.getenv("PINEDEX")
+
+class OpenAIHandler:
+    """Class for handling OpenAI operations."""
+
+    def __init__(self, config: EnvConfig) -> None:
+        """Initialize OpenAI API key."""
+        openai.api_key = config.openai_key
+    
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    async def create_embedding(self, input_text: str) -> Dict[str, Union[int, List[float]]]:
+        """
+        Create an embedding using OpenAI.
+        
+        Parameters:
+            input_text (str): The text to be embedded.
+            
+        Returns:
+            Dict[str, Union[int, List[float]]]: The embedding response.
+        """
+        response = openai.Embedding.create(
+            model="text-embedding-ada-002",
+            input=input_text
+        )
+        return response
 
 class PineconeHandler:
-    """Handles data stream embedding and storage in Pinecone."""
+    """Class for handling Pinecone operations."""
+
+    def __init__(self, config: EnvConfig) -> None:
+        """Initialize Pinecone API key."""
+        pinecone.init(api_key=config.pinecone_key)
     
-    def __init__(self):
-        """Initialize Pinecone and OpenAI APIs using .env variables."""
-        # Set up logging
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-
-        # Initialize ConfigParser and read .env file
-        config = ConfigParser()
-        config.read('.env')
-
-        # Initialize OpenAI API
-        openai.api_key = config.get('OpenAI', 'OPENAI_API_KEY', fallback=os.getenv('OPENAI_API_KEY'))
-        self.model_engine = config.get('OpenAI', 'MODEL', fallback='text-embeddings-ada-002')
-
-        # Initialize Pinecone
-        pinecone.init(api_key=config.get('Pinecone', 'PINECONE_API_KEY', fallback=os.getenv('PINECONE_API_KEY')))
-        self.index = pinecone.Index(index_name=config.get('Pinecone', 'PINEDEX', fallback='default_index'))
-    
-    async def process_data(self, data: Dict[str, Any]) -> None:
-        """Process a data entry to generate embeddings and store in Pinecone.
-
-        Parameters:
-            data (Dict[str, Any]): The data in JSON format.
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    async def upload_embedding(self, embedding: Dict[str, Union[int, List[float]]]) -> None:
         """
-        try:
-            text = data['text']
-            
-            # Generate embedding
-            response = openai.Embedding.create(
-                model=self.model_engine,
-                texts=[text]
-            )
-            
-            # Check response format
-            if 'embeddings' in response:
-                embedding = response['embeddings'][0]['embedding']
-            else:
-                self.logger.error(f"Unexpected response format: {response}")
-                return
-
-            # Upsert the data ID and vector embedding to Pinecone index
-            self.index.upsert(vectors=[(data['id'], embedding, {'text': text})])
+        Upload an embedding to Pinecone index.
         
-        except Exception as e:
-            self.logger.error(f"Error processing data {data['id']}: {e}")
+        Parameters:
+            embedding (Dict): The embedding to be uploaded.
+        """
+        pinecone.upsert(index_name="your-index", items=embedding)
+
+class DataStreamHandler:
+    """Class for handling data streams."""
+
+    def __init__(self, openai_handler: OpenAIHandler, pinecone_handler: PineconeHandler) -> None:
+        """Initialize DataStreamHandler."""
+        self.openai_handler = openai_handler
+        self.pinecone_handler = pinecone_handler
+        self.last_run_time: datetime = datetime.now()
+
+    async def process_data(self, data: str) -> None:
+        """
+        Process data to create and upload embeddings.
+        
+        Parameters:
+            data (str): The data to be processed.
+        """
+        if type(data) != str:
+            raise ValueError("Invalid data type.")
+        
+        current_time = datetime.now()
+        elapsed_time = (current_time - self.last_run_time).total_seconds()
+        if elapsed_time < 0.3:
+            await asyncio.sleep(0.3 - elapsed_time)
+        
+        self.last_run_time = datetime.now()
+        embedding = await self.openai_handler.create_embedding(data)
+        await self.pinecone_handler.upload_embedding(embedding)
 
 if __name__ == "__main__":
-    pinecone_handler = PineconeHandler()
-    # Here, you can set up a loop or event stream to call pinecone_handler.process_data with new data.
+    config = EnvConfig()
+    openai_handler = OpenAIHandler(config)
+    pinecone_handler = PineconeHandler(config)
+    data_streams = [DataStreamHandler(openai_handler, pinecone_handler) for _ in range(3)]
