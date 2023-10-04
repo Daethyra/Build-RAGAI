@@ -19,7 +19,6 @@ Please output the sentence with all masked positions filled in a manner that is 
 
 Output Format: [Original Sentence]: [Filled Sentence]
 
-
 ### 3. *Quickly Brainstorm and Problem-Solve* - 
 
 - Step 1:
