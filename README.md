@@ -25,9 +25,11 @@ Please also see the [OUT-prompt-cheatsheet](GPT-Prompt-Examples/OUT-prompt-cheat
   
 ---
 
+<!--
 <div align="center">
   <img src=".github/mindmap.png" alt="Mindmap from 8-30-23" width="500"/>
 </div>
+-->
 
 ---
 
