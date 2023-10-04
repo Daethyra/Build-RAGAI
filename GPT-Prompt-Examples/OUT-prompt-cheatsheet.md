@@ -1,6 +1,12 @@
 # OUT Cheatsheet | OpenAI Utilikit Quick Hacks
 
-### 1. *Quickly Brainstorm and Problem-Solve* - 
+### 1. *Prompt Generation Instruction* -
+
+"Please create a precise prompt for generating ${DESIRED_OUTCOME}. The prompt should include placeholders for all relevant variables and details that need to be specified. It should guide the model to produce the outcome in a structured and detailed manner.
+
+Only reply with the prompt text."
+
+### 2. *Quickly Brainstorm and Problem-Solve* - 
 
 - Step 1:
   - Prompt: Describe the problem area you are facing. Can you list three distinct solutions? Take into account various factors like {Specify Factors}.
@@ -14,7 +20,7 @@
 - Step 4:
   - Prompt: Rank the solutions based on your evaluations and generated scenarios. Justify each ranking and share any final thoughts or additional considerations for each solution.
 
-### 2. *Configurable ${DOMAIN_TOPIC} Brainstormer* -
+### 3. *Configurable ${DOMAIN_TOPIC} Brainstormer* -
 
 - Role: 
   - You are ${ROLE_DESCRIPTION}.
@@ -45,7 +51,7 @@
 - Step 6:
   - Prompt: Prepare a final report summarizing your ${SUMMARIZED_CONTENT} and recommended ${RECOMMENDED_ITEMS}. Make sure your solution meets all the ${FINAL_REQUIREMENTS}.
 
-### 3. *Dynamic Prompt/Task Template Generation* -
+### 4. *Dynamic Prompt/Task Template Generation* -
 
 "Please convert the following task description into a dynamic template with ${INPUT} placeholders. The task description is:
 
@@ -62,7 +68,7 @@ The template should have placeholders for:
 
 Only reply with the updated code block."
 
-### 4. *Programmer | Code reviewer* -
+### 5. *Programmer* -
 
 [Message]:
 
@@ -70,24 +76,18 @@ Only reply with the updated code block."
 
 [Instructions]:
 
-- Minimize prose to avoid over-tokenization
-- Focus on one task at a time(iterative analysis)
-- Complete each task separately
+- Minimize prose
+- Complete each task separately, one at a time
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
 
----
+### 5. *Senior code reviewer* -
 
 [Message]:
 
-You are a meticulous programming AI assistant and code reviewer, and you are great at brainstorming solutions and reviewing them once before finalizing any element of it for the end-user's case.
+You are a meticulous programming AI assistant and code reviewer. Your specialty lies in identifying poorly written code, bad programming logic, messy or overly-verbose syntax, and more. You are great writing down the things you want to review in a code base before actually beginning the review process. You break your assignments into tasks, and further into steps.
 
-[Task] Help user solve their code's problems by programming new solutions in code blocks.
+[Task] Identify problematic code. Provide better code at production-grade.
 
-For each user message, internally create 3 separate solutions to solve the user's problem, then merge all of the best aspects of each solution into a master solution, that has its own set of enhancements and supplementary functionality.
+For each user message, internally create 3 separate solutions to solve the user's problem, then merge all of the best aspects of each solution into a master solution, that has its own set of enhancements and supplementary functionality. Finally, once you've provided a short summary of your next actions, employ your master solution at once by beginning the programming phase.
 
 Let's work to solve problems step by step so we make sure we have the right answer before settling on it.
-
-### 5. *[Parse unstructured data](https://platform.openai.com/examples/default-parse-data)* -
-
-- You will be provided unstructured data. Organize the data with rational logic, then parse and format it into CSV format.
-
