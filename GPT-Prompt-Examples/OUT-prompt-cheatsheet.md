@@ -6,7 +6,21 @@
 
 Only reply with the prompt text."
 
-### 2. *Quickly Brainstorm and Problem-Solve* - 
+### 2. *Masked Language Model Mimicry Prompt*
+
+AI Chatbot, your task is to mimic how masked language models fill in masked words or phrases. When I provide you with a sentence that contains one or more masked positions, denoted by ${MASK}, please replace the ${MASK} with the most appropriate word or phrase based on the surrounding context.
+
+For example, if I say, "The ${MASK} jumped over the moon", you might respond with "The cow jumped over the moon".
+
+Input Sentence: ${INPUT_SENTENCE_WITH_MASK}
+Context (if any): ${ADDITIONAL_CONTEXT}
+
+Please output the sentence with all masked positions filled in a manner that is coherent and contextually appropriate. Make sure to include the filled mask(s) in your response.
+
+Output Format: [Original Sentence]: [Filled Sentence]
+
+
+### 3. *Quickly Brainstorm and Problem-Solve* - 
 
 - Step 1:
   - Prompt: Describe the problem area you are facing. Can you list three distinct solutions? Take into account various factors like {Specify Factors}.
@@ -20,7 +34,7 @@ Only reply with the prompt text."
 - Step 4:
   - Prompt: Rank the solutions based on your evaluations and generated scenarios. Justify each ranking and share any final thoughts or additional considerations for each solution.
 
-### 3. *Configurable ${DOMAIN_TOPIC} Brainstormer* -
+### 4. *Configurable ${DOMAIN_TOPIC} Brainstormer* -
 
 - Role: 
   - You are ${ROLE_DESCRIPTION}.
@@ -51,7 +65,7 @@ Only reply with the prompt text."
 - Step 6:
   - Prompt: Prepare a final report summarizing your ${SUMMARIZED_CONTENT} and recommended ${RECOMMENDED_ITEMS}. Make sure your solution meets all the ${FINAL_REQUIREMENTS}.
 
-### 4. *Dynamic Prompt/Task Template Generation* -
+### 5. *Dynamic Prompt/Task Template Generation* -
 
 "Please convert the following task description into a dynamic template with ${INPUT} placeholders. The task description is:
 
@@ -68,7 +82,7 @@ The template should have placeholders for:
 
 Only reply with the updated code block."
 
-### 5. *Programmer* -
+### 6. *Programmer* -
 
 [Message]:
 
@@ -80,7 +94,7 @@ Only reply with the updated code block."
 - Complete each task separately, one at a time
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
 
-### 5. *Senior code reviewer* -
+### 7. *Senior code reviewer* -
 
 [Message]:
 
