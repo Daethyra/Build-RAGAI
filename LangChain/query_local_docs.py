@@ -80,26 +80,26 @@ class PDFProcessor:
         return input(prompt)
 
     @retry(retry_on_exception=retry_if_file_not_found_error, stop_max_attempt_number=3)
-    def load_pdfs_from_directory(self, directory_path='data/'):
+    def load_pdfs_from_directory(self, directory_path='data/') -> Generator: # <--- Configure directory path HERE <---
         """
-        Load all PDF files from a given directory.
+        Load all PDF files from a given directory lazily using a generator.
 
         Parameters:
             directory_path (str): Directory path to load PDFs from.
 
-        Returns:
-            list: List of text chunks from all loaded PDFs.
+        Yields:
+            list: List of text chunks from a loaded PDF.
         """
         try:
             if not os.path.exists(directory_path):
                 raise FileNotFoundError(f"The directory {directory_path} does not exist.")
+            
             pdf_files = glob.glob(f"{directory_path}/*.pdf")
             if not pdf_files:
                 raise FileNotFoundError(f"No PDF files found in the directory {directory_path}.")
-            all_texts = []
+            
             for pdf_file in pdf_files:
-                all_texts.extend(self._load_and_split_document(pdf_file))
-            return all_texts
+                yield self._load_and_split_document(pdf_file)
         except FileNotFoundError as fe:
             print(f"FileNotFoundError encountered: {fe}")
             raise
