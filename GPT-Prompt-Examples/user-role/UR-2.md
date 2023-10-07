@@ -4,8 +4,6 @@ This prompt was found [here](https://github.com/sammi-turner/Python-To-Mojo/tree
 
 ---
 
-This prompt template is good for generating Python functions.
-
 ```
 Write a [name] function in Python3 that takes
 [name the parameters and their types] and returns
