@@ -1,6 +1,6 @@
 ## Function Generation With LLMs
 
-This prompt was found [here](https://github.com/sammi-turner/Python-To-Mojo/tree/main#function-generation-with-llms "Direct link"), so thanks to @sammi-turner!
+This prompt was found [here](https://github.com/sammi-turner/Python-To-Mojo/tree/main#function-generation-with-llms "Direct link"), so thanks to [sammi-turner](https://github.com/sammi-turner "GitHub Profile")!
 
 """
 
