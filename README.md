@@ -25,6 +25,48 @@ Please also see the [OUT-prompt-cheatsheet](GPT-Prompt-Examples/OUT-prompt-cheat
   
 ---
 
+#### 3. **[LangChain: Pluggable Components](./LangChain/)**
+
+This section describes the pre-built Python modules in the `LangChain` directory that can be side-loaded for various functionalities.
+
+`langchain_conv_agent.py`
+
+This module offers a set of functionalities for conversational agents in LangChain. Specifically, it provides:
+
+- Argument parsing for configuring the agent
+- Document loading via `PyPDFDirectoryLoader`
+- Text splitting using `RecursiveCharacterTextSplitter`
+- Various embeddings options like `OpenAIEmbeddings`, `CacheBackedEmbeddings`, and `HuggingFaceEmbeddings`
+
+**Usage:**
+To use this module, simply import the functionalities you need and configure them accordingly.
+
+```python
+from langchain_conv_agent import YOUR_FUNCTION
+```
+
+---
+
+`query_local_docs.py`
+
+This module focuses on querying local documents and employs the following features:
+
+- Environment variable loading via `dotenv`
+- Document loading via `PyPDFLoader`
+- Text splitting through `RecursiveCharacterTextSplitter`
+- Vector storage options like `Chroma`
+- Embedding options via `OpenAIEmbeddings`
+
+**Usage:**
+Similar to `langchain_conv_agent.py`, you can import the functionalities you require.
+
+```python
+from query_local_docs import YOUR_FUNCTION
+```
+
+These modules are designed to be extensible and can be easily integrated into your LangChain projects.
+
+
 <!--
 <div align="center">
   <img src=".github/mindmap.png" alt="Mindmap from 8-30-23" width="500"/>

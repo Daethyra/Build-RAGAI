@@ -10,3 +10,21 @@
   - [Thoughts] : "By creating a codebase of repurposable Python modules, \
   we can use LangChain to query the top_k results for functions to serve \
   contextual needs."
+
+
+- langchain_conv_agent.py
+  - Lacks single execution runnability
+  - Fix by removing argparsing and implement default settings, \
+  with a configuration file
+  - Config file settings:
+    - Embedding Engine: [OpenAI, HuggingFace, etc.]
+    -
+  - Lacks .env var loading(API keys, model names[OpenAI, HuggingFace])
+  - Ambiguity regarding (EmbeddingManager and DocumentRetriever)
+    - Needs comments and to load via .env file
+      - Differentiate EmbeddingManager and DocumentRetriever by explaining how they're \
+      implemented into the pipeline stream created by the module.
+      - One generates embeddings
+      - `DocumentRetriever` queries them locally \
+      (HF model is cached after first download. Therefore, all runs after the first, \
+      are entirely local since we're using ChromaDB)
