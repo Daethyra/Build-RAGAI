@@ -41,10 +41,6 @@ This module offers a set of functionalities for conversational agents in LangCha
 **Usage:**
 To use this module, simply import the functionalities you need and configure them accordingly.
 
-```python
-from langchain_conv_agent import YOUR_FUNCTION
-```
-
 ---
 
 `query_local_docs.py`
@@ -60,14 +56,9 @@ This module focuses on querying local documents and employs the following featur
 **Usage:**
 Similar to `langchain_conv_agent.py`, you can import the functionalities you require.
 
-```python
-from query_local_docs import YOUR_FUNCTION
-```
-
 These modules are designed to be extensible and can be easily integrated into your LangChain projects.
 
-
-<!--
+<!-- PLACEHOLDER FOR FUTURE MINDMAPPING IMAGE
 <div align="center">
   <img src=".github/mindmap.png" alt="Mindmap from 8-30-23" width="500"/>
 </div>
