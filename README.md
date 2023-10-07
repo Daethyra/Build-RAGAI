@@ -1,6 +1,9 @@
 # OpenAI Utility Toolkit (OUT)
 
 ## Contents
+- [LICENSE - GNU Affero GPL](./LICENSE)
+
+---
 
 #### 1. **[Auto-Embedder](./Auto-Embedder)**
 
@@ -58,12 +61,10 @@ Similar to `langchain_conv_agent.py`, you can import the functionalities you req
 
 These modules are designed to be extensible and can be easily integrated into your LangChain projects.
 
-<!-- PLACEHOLDER FOR FUTURE MINDMAPPING IMAGE
+### Mindmap
+
 <div align="center">
-  <img src=".github/mindmap.png" alt="Mindmap from 8-30-23" width="500"/>
+  <img src=".github\mindmap_10-7-23_.png" alt="Creation Date: Oct 7th, 2023" width="500"/>
 </div>
--->
 
 ---
-
-[LICENSE](./LICENSE)
