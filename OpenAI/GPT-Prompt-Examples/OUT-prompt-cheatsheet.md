@@ -1,6 +1,6 @@
 # OUT Cheatsheet | OpenAI Utilikit Quick Hacks
 
-### 1. *Prompt Generation Instruction* -
+### 1. *Instruction: Generate Prompt
 
 "Please create a precise prompt for generating ${DESIRED_OUTCOME}. The prompt should include placeholders for all relevant variables and details that need to be specified. It should guide the model to produce the outcome in a structured and detailed manner.
 
@@ -8,7 +8,7 @@ Only reply with the prompt text."
 
 ### 2. *Masked Language Model Mimicry Prompt*
 
-AI Chatbot, your task is to mimic how masked language models fill in masked words or phrases. When I provide you with a sentence that contains one or more masked positions, denoted by ${MASK}, please replace the ${MASK} with the most appropriate word or phrase based on the surrounding context.
+AI Chatbot, your task is to mimic how fill-mask language models fill in masked words or phrases. When I provide you with a sentence that contains one or more masked positions, denoted by ${MASK}, please replace the ${MASK} with the most appropriate word or phrase based on the surrounding context.
 
 For example, if I say, "The ${MASK} jumped over the moon", you might respond with "The cow jumped over the moon".
 
