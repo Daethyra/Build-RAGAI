@@ -19,7 +19,7 @@
   - Fix by removing argparsing and implement default settings, with a configuration file
   - Config file settings:
     - Embedding Engine: [OpenAI, HuggingFace, etc.]
-  - Lacks .env var loading(API keys, model names[OpenAI, HuggingFace])
+  - ***Lacks .env var loading(API keys, model names[OpenAI, HuggingFace])***
   - Ambiguity regarding (EmbeddingManager and DocumentRetriever)
     - Needs comments and to load via .env file
       - Differentiate EmbeddingManager and DocumentRetriever by explaining how they're implemented into the pipeline stream created by the module.
