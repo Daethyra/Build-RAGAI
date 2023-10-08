@@ -10,3 +10,15 @@ Write a [name] function in Python3 that takes
 a [type] such that [describe what the function does].
 Then show me the code.
 ```
+
+---
+
+## Create Graphics for a Repository
+
+This prompt is useful specifically with GPT-4 and the extensions ["Recombinant AI", "Whimsical Diagrams", "diagr.am"].
+
+[!.github/plugin_icons.jpg]()
+
+```
+[TASK]: "Crawl the contents of the provided repository at [Repository URL]. Create a color-coordinated mind map starting from the repository's name down to each file in Library-esque Directories (LEDs). Include a legend for the mind map. Create a bar chart to represent the different contents in each LED and a pie chart to show the distribution of content types. Make sure the title, caption, and legend are easily readable."
+```
