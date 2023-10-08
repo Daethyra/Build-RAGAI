@@ -214,26 +214,22 @@ async def main() -> None:
 
     # Loop through each image file in the directory
     for image_file in image_files:
-        # Load the image into memory
         raw_image = captioner.load_image(image_file)
         
         try:
-            # Check if the image was successfully loaded
             if raw_image:
-                # Generate an unconditional caption for the image
-                unconditional_caption = await captioner.generate_caption(raw_image)
-                # Save the unconditional caption to a CSV file
-                captioner.save_to_csv(os.path.basename(image_file), unconditional_caption)
+                # If the user has opted for conditional captions, generate and save them.
+                if use_conditional_caption:
+                    caption = await captioner.generate_caption(raw_image, config['ENDING_CAPTION'])
+                else:
+                    # Fallback to unconditional caption if the conditional caption is not selected.
+                    caption = await captioner.generate_caption(raw_image)
                 
-                # Generate a conditional caption based on `config['ENDING_CAPTION']`
-                conditional_caption = await captioner.generate_caption(raw_image, config['ENDING_CAPTION'])
-                # Save the conditional caption to the same CSV file
-                captioner.save_to_csv(os.path.basename(image_file), conditional_caption)
+                # Save the chosen caption to a CSV file.
+                captioner.save_to_csv(os.path.basename(image_file), caption)
                 
         except Exception as e:
-            # Log any unexpected errors that occur during the process
             logging.error(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
-    # Run the asynchronous main function
     asyncio.run(main())
