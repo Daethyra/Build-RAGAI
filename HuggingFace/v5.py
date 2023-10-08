@@ -110,25 +110,58 @@ class ImageCaptioner:
             csvfile.close()
 
 async def main():
-    # Instantiate environment variables
     load_dotenv()
     
-    # Load settings from configuration file
+    # Initialize with default values
+    image_folder = 'images'
+    base_name = 'your_image_name_here.jpg'
+    ending_caption = "AI generated Artwork by Daethyra using DallE"
+    
+    # Try to load settings from configuration file
+    config = {}
     try:
         with open('config.json', 'r') as f:
             config = json.load(f)
-        image_folder = config.get('IMAGE_FOLDER', 'images')
-        base_name = config.get('BASE_NAME', 'your_image_name_here.jpg')
-        ending_caption = config.get('ENDING_CAPTION', "AI generated Artwork by Daethyra using DallE")
+    except FileNotFoundError:
+        logging.error("Configuration file config.json not found.")
+    except json.JSONDecodeError as e:
+        logging.error(f"Failed to parse configuration file: {e}")
     except Exception as e:
-        logging.error(f"Failed to load configuration file: {e}")
-        # Fallback to environment variables
-        image_folder = os.getenv('IMAGE_FOLDER', 'images')
-        base_name = os.getenv('BASE_NAME', 'your_image_name_here.jpg')
-        ending_caption = os.getenv('ENDING_CAPTION', "AI generated Artwork by Daethyra using DallE")
-
+        logging.error(f"An unknown error occurred while loading the configuration file: {e}")
+    
+    # Update settings based on what was successfully loaded from the config file
+    image_folder = config.get('IMAGE_FOLDER', image_folder)
+    base_name = config.get('BASE_NAME', base_name)
+    ending_caption = config.get('ENDING_CAPTION', ending_caption)
+    
+    # Fallback to environment variables and offer to update the JSON configuration
+    env_image_folder = os.getenv('IMAGE_FOLDER', None)
+    env_base_name = os.getenv('BASE_NAME', None)
+    env_ending_caption = os.getenv('ENDING_CAPTION', None)
+    
+    if env_image_folder:
+        logging.info(f"Falling back to environment variable for IMAGE_FOLDER: {env_image_folder}")
+        image_folder = env_image_folder
+        config['IMAGE_FOLDER'] = env_image_folder
+    if env_base_name:
+        logging.info(f"Falling back to environment variable for BASE_NAME: {env_base_name}")
+        base_name = env_base_name
+        config['BASE_NAME'] = env_base_name
+    if env_ending_caption:
+        logging.info(f"Falling back to environment variable for ENDING_CAPTION: {env_ending_caption}")
+        ending_caption = env_ending_caption
+        config['ENDING_CAPTION'] = env_ending_caption
+    
+    # Offering to update the JSON configuration file with new settings
+    if config:
+        try:
+            with open('config.json', 'w') as f:
+                json.dump(config, f, indent=4)
+        except Exception as e:
+            logging.error(f"Failed to update configuration file: {e}")
+    
+    # Remaining logic for running the ImageCaptioner
     image_path = os.path.join(image_folder, base_name)
-
     captioner = ImageCaptioner()
     raw_image = captioner.load_image(image_path)
 

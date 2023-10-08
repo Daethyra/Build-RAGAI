@@ -1,3 +1,5 @@
+# This version is where I first split the configuration loading to another class.
+# There are two classes, for the first time
 import os
 import logging
 import csv
@@ -8,6 +10,7 @@ import asyncio
 import torch
 from PIL import Image, UnidentifiedImageError
 from transformers import BlipProcessor, BlipForConditionalGeneration, PreTrainedModel
+
 
 class ImageCaptioner:
     """
@@ -20,6 +23,8 @@ class ImageCaptioner:
         caption_cache (dict): Cache for storing generated captions.
         device (str): The device (CPU or GPU) on which the model will run.
     """
+
+
 
     def __init__(self, model_name: str = "Salesforce/blip-image-captioning-base"):
         """
@@ -43,6 +48,8 @@ class ImageCaptioner:
         logging_level = os.getenv('LOGGING_LEVEL', 'INFO').upper()
         logging.basicConfig(level=getattr(logging, logging_level, logging.INFO))
 
+
+
     def load_image(self, image_path: str) -> Image.Image:
         """
         Loads an image from a specified path and converts it to RGB format with enhanced error handling.
@@ -58,6 +65,8 @@ class ImageCaptioner:
         except UnidentifiedImageError as e:
             logging.error(f"Failed to load image: {e}")
             return None
+
+
 
     async def generate_caption(self, raw_image: Image.Image, text: str = None) -> str:
         """
@@ -88,6 +97,8 @@ class ImageCaptioner:
             logging.error(f"Failed to generate caption: {e}")
             return None
 
+
+
     def save_to_csv(self, image_name: str, caption: str, file_name: str = None, csvfile=None):
         """
         Saves the image name and the generated caption to a CSV file, supporting both file name and file object inputs.
@@ -109,35 +120,84 @@ class ImageCaptioner:
         if csvfile is not None and file_name is not None:
             csvfile.close()
 
+
+# Remaining code for running the script can go here.
+
+class ConfigurationManager:
+    """
+    A class for managing configuration settings for the ImageCaptioner.
+    
+    Attributes:
+        config (dict): The configuration settings.
+    """
+    
+    def __init__(self):
+        """
+        Initializes the ConfigurationManager and loads settings from a JSON file and environment variables.
+        """
+        self.config = self.load_config()
+    
+    def load_config(self) -> dict:
+        """
+        Loads configuration settings from a JSON file and environment variables.
+        
+        Returns:
+            dict: The loaded configuration settings.
+        """
+        # Initialize with default values
+        config = {
+            'IMAGE_FOLDER': 'images',
+            'BASE_NAME': 'your_image_name_here.jpg',
+            'ENDING_CAPTION': "AI generated Artwork by Daethyra using DallE"
+        }
+        
+        # Try to load settings from configuration file
+        try:
+            with open('config.json', 'r') as f:
+                file_config = json.load(f)
+            config.update(file_config)
+        except FileNotFoundError:
+            logging.error("Configuration file config.json not found.")
+        except json.JSONDecodeError as e:
+            logging.error(f"Failed to parse configuration file: {e}")
+        except Exception as e:
+            logging.error(f"An unknown error occurred while loading the configuration file: {e}")
+        
+        # Fallback to environment variables and offer to update the JSON configuration
+        for key in config.keys():
+            env_value = os.getenv(key, None)
+            if env_value:
+                logging.info(f"Falling back to environment variable for {key}: {env_value}")
+                config[key] = env_value
+        
+        # Offering to update the JSON configuration file with new settings
+        if config:
+            try:
+                with open('config.json', 'w') as f:
+                    json.dump(config, f, indent=4)
+            except Exception as e:
+                logging.error(f"Failed to update configuration file: {e}")
+        
+        return config
+
 async def main():
-    # Instantiate environment variables
     load_dotenv()
     
-    # Load settings from configuration file
-    try:
-        with open('config.json', 'r') as f:
-            config = json.load(f)
-        image_folder = config.get('IMAGE_FOLDER', 'images')
-        base_name = config.get('BASE_NAME', 'your_image_name_here.jpg')
-        ending_caption = config.get('ENDING_CAPTION', "AI generated Artwork by Daethyra using DallE")
-    except Exception as e:
-        logging.error(f"Failed to load configuration file: {e}")
-        # Fallback to environment variables
-        image_folder = os.getenv('IMAGE_FOLDER', 'images')
-        base_name = os.getenv('BASE_NAME', 'your_image_name_here.jpg')
-        ending_caption = os.getenv('ENDING_CAPTION', "AI generated Artwork by Daethyra using DallE")
+    # Initialize configuration manager
+    config_manager = ConfigurationManager()
+    config = config_manager.config
 
-    image_path = os.path.join(image_folder, base_name)
-
+    # Remaining logic for running the ImageCaptioner
+    image_path = os.path.join(config['IMAGE_FOLDER'], config['BASE_NAME'])
     captioner = ImageCaptioner()
     raw_image = captioner.load_image(image_path)
 
     if raw_image:
         unconditional_caption = await captioner.generate_caption(raw_image)
-        captioner.save_to_csv(base_name, unconditional_caption)
+        captioner.save_to_csv(config['BASE_NAME'], unconditional_caption)
 
-        conditional_caption = await captioner.generate_caption(raw_image, ending_caption)
-        captioner.save_to_csv(base_name, conditional_caption)
+        conditional_caption = await captioner.generate_caption(raw_image, config['ENDING_CAPTION'])
+        captioner.save_to_csv(config['BASE_NAME'], conditional_caption)
 
 if __name__ == "__main__":
     asyncio.run(main())
