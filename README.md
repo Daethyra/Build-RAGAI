@@ -86,8 +86,8 @@ This module focuses on generating captions for images using Hugging Face's trans
     <img src=".github\mindmap_2023-10-07.jpg" alt="Creation Date: Oct 7th, 2023" width="500"/>
   </div>
   <div style="flex: 1; display: flex; flex-direction: column;">
-    <img src=".github\24d4d605.svg" alt="Creation Date: Oct 7th, 2023" width="650"/>
-    <img src=".github\76fdde08.svg" alt="Creation Date: Oct 7th, 2023" width="650"/>
+    <img src=".github\pie_chart.jpg" alt="Creation Date: Oct 7th, 2023" width="650"/>
+    <img src=".github\bar_graph.jpg" alt="Creation Date: Oct 7th, 2023" width="650"/>
   </div>
 </div>
 
