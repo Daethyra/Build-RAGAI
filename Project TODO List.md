@@ -1,5 +1,13 @@
 ### Todo list 
 
+[README]
+
+- Add intro 
+  - Clearly define: [Utilikit, Pluggable/Components, multi-shot, zero-shot, ]
+    - create summarization of prompt reusability, and component extendability 
+  - Then, clearly state the intention of the repository
+  - Finally, provide one to two brief statements to close out and resummarize 
+
 ---
 
 [GitHub]
@@ -11,6 +19,8 @@
   - [Thoughts] : "By creating a codebase of repurposable Python modules,
     we can use LangChain to query the top_k results for functions to serve
     contextual needs."
+
+---
 
 [LangChain]
 
@@ -27,6 +37,8 @@
       - `DocumentRetriever` queries them locally
         (HF model is cached after first download. Therefore, all runs after the first,
         are entirely local since we're using ChromaDB)
+
+---
 
 [OpenAI]
 
