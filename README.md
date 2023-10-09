@@ -1,5 +1,10 @@
 # LLM Utilikit
 
+${INTRO}
+${SupportedLibraries}
+${Intention : Reasoning}
+${BriefResummary}
+
 #### 1. **[OpenAI: Utilikit](./OpenAI/)**
 
 ---
@@ -19,11 +24,14 @@ There are three main prompt types, [multi-shot](./OpenAI/GPT-Prompt-Examples/mul
 
 Please also see the [OUT-prompt-cheatsheet](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md).
 
-- **[Cheatsheet for quick power-prompts](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
-  - **[multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot)**: Prompts with prompts inside them! It's kind of like a bundle of Matryoshka prompts.
-  - **[system-role](./OpenAI/GPT-Prompt-Examples/system-role)**: Steer your LLM by shifting the ground it stands on.
-  - **[user-role](./OpenAI/GPT-Prompt-Examples/user-role)**: Markdown files for user-role prompts.
-  - **[Reference Chatlogs with GPT4](./OpenAI/GPT-Prompt-Examples/ChatGPT_reference_chatlogs)**: Contains chat logs and shorthand prompts.
+- **[Cheatsheet](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
+
+- **[multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot)**: Prompts, with prompts inside them. 
+It's kind of like a bundle of Matryoshka prompts!
+
+- **[system-role](./OpenAI/GPT-Prompt-Examples/system-role)**: Steer your LLM by shifting the ground it stands on.
+
+- **[user-role](./OpenAI/GPT-Prompt-Examples/user-role)**: Markdown files for user-role prompts.
 
 ---
 
@@ -41,6 +49,7 @@ This module offers a set of functionalities for conversational agents in LangCha
 - Various embeddings options like `OpenAIEmbeddings`, `CacheBackedEmbeddings`, and `HuggingFaceEmbeddings`
 
 **Potential Use Cases:**
+
 ${MASK}
 
 ---
@@ -56,6 +65,7 @@ This module focuses on querying local documents and employs the following featur
 - Embedding options via `OpenAIEmbeddings`
 
 **Potential Use Cases:**
+
 ${MASK}
 
 ---
@@ -91,6 +101,4 @@ ${MASK}
   </div>
 </div>
 
-# - [LICENSE - GNU Affero GPL](./LICENSE)
-
-# - [Please see the contribuutting file](./CONTRIBUTING.md)
+### - [LICENSE - GNU Affero GPL](./LICENSE)
