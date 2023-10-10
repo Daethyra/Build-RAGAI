@@ -82,7 +82,6 @@ class OpenAIHandler:
                 response = openai.Embedding.create(
                     model="text-embedding-ada-002",
                     input=input_text,
-                    # Might be useful to add the user parameter
                 )
             return response
         except Exception as e:
