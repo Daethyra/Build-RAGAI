@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from transformers import pipeline
 from collections import deque
+import sys
 
 class RealTimeASR:
     """
@@ -20,6 +21,7 @@ class RealTimeASR:
             model="openai/whisper-large-v2",
             chunk_length_s=30,
             device=self.device,
+            return_timestamps=True
         )
         self.transcription_cache = deque(maxlen=100)
         self.sliding_window = np.array([])
@@ -33,17 +35,31 @@ class RealTimeASR:
                                   frames_per_buffer=1024)
 
     def capture_and_transcribe(self):
+        """
+        Continuously captures audio from the microphone, concatenates it to a sliding window, and transcribes the audio
+        using the ASR pipeline. If the sliding window is longer than 30 seconds, the pipeline is run on the first 30 seconds
+        of audio and the sliding window is shifted by 5 seconds. If there is a transcription in the cache, it is printed to
+        stdout.
+
+        Returns:
+            None
+        """
         while True:
+            # Capture audio from the microphone
             audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
+
+            # Concatenate the audio data to the sliding window
             self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
+            # If the sliding window is longer than 30 seconds, transcribe the first 30 seconds and shift the sliding window
             if len(self.sliding_window) >= 16000 * 30:
                 transcription = self.asr_pipeline(self.sliding_window[:16000 * 30])
                 self.transcription_cache.append(transcription["text"])
                 self.sliding_window = self.sliding_window[16000 * 5:]
 
+            # If there is a transcription in the cache, print it to stdout
             if len(self.transcription_cache) > 0:
-                print(self.transcription_cache.pop())
+                print(self.transcription_cache.pop(), file=sys.stdout, flush=True)
 
     def close_stream(self):
         self.stream.stop_stream()

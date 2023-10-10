@@ -1,20 +1,21 @@
 import os
 import glob
+from typing import Generator, List, Tuple
 from dotenv import load_dotenv
 from retrying import retry
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.llms import OpenAI as OpenAILLM
 from langchain.chains.question_answering import load_qa_chain
+from langchain.vectorstores import cosine_similarity
 
 # Define the retrying decorator for specific functions
-def retry_if_value_error(exception):
+def retry_if_value_error(exception: Exception) -> bool:
     """Return True if we should retry (in this case when it's a ValueError), False otherwise"""
     return isinstance(exception, ValueError)
 
-def retry_if_file_not_found_error(exception):
+def retry_if_file_not_found_error(exception: Exception) -> bool:
     """Return True if we should retry (in this case when it's a FileNotFoundError), False otherwise"""
     return isinstance(exception, FileNotFoundError)
 
@@ -33,13 +34,13 @@ class PDFProcessor:
 
     Methods
     -------
-    get_user_query(prompt="Please enter your query: "):
+    get_user_query(prompt: str = "Please enter your query: ") -> str:
         Get query from the user.
-    load_pdfs_from_directory(directory_path='data/'):
+    load_pdfs_from_directory(directory_path: str = 'data/') -> List[List[str]]:
         Load PDFs from a specified directory.
-    _load_and_split_document(file_path, chunk_size=2000, chunk_overlap=0):
+    _load_and_split_document(file_path: str, chunk_size: int = 2000, chunk_overlap: int = 0) -> List[str]:
         Load and split a single document.
-    perform_similarity_search(docsearch, query):
+    perform_similarity_search(documents: List[List[str]], query: str, num_results: int = 10) -> List[Tuple[float, str]]:
         Perform similarity search on documents.
     """
 
@@ -66,7 +67,7 @@ class PDFProcessor:
         self.llm = OpenAILLM(temperature=0, openai_api_key=self.OPENAI_API_KEY)
 
     @staticmethod
-    def get_user_query(prompt="Please enter your query: "):
+    def get_user_query(prompt: str = "Please enter your query: ") -> str:
         """
         Get user input for a query.
 
@@ -79,15 +80,15 @@ class PDFProcessor:
         return input(prompt)
 
     @retry(retry_on_exception=retry_if_file_not_found_error, stop_max_attempt_number=3)
-    def load_pdfs_from_directory(self, directory_path='data/') -> Generator: # <--- Configure directory path HERE <---
+    def load_pdfs_from_directory(self, directory_path: str = 'data/') -> List[List[str]]:
         """
-        Load all PDF files from a given directory lazily using a generator.
+        Load all PDF files from a given directory.
 
         Parameters:
             directory_path (str): Directory path to load PDFs from.
 
-        Yields:
-            list: List of text chunks from a loaded PDF.
+        Returns:
+            List[List[str]]: List of text chunks from loaded PDFs.
         """
         try:
             if not os.path.exists(directory_path):
@@ -97,13 +98,15 @@ class PDFProcessor:
             if not pdf_files:
                 raise FileNotFoundError(f"No PDF files found in the directory {directory_path}.")
             
+            texts = []
             for pdf_file in pdf_files:
-                yield self._load_and_split_document(pdf_file)
+                texts.extend(self._load_and_split_document(pdf_file))
+            return texts
         except FileNotFoundError as fe:
             print(f"FileNotFoundError encountered: {fe}")
             raise
 
-    def _load_and_split_document(self, file_path, chunk_size=2000, chunk_overlap=0):
+    def _load_and_split_document(self, file_path: str, chunk_size: int = 2000, chunk_overlap: int = 0) -> List[str]:
         """
         Load and split a PDF document into text chunks.
 
@@ -113,7 +116,7 @@ class PDFProcessor:
             chunk_overlap (int): Overlapping characters between chunks.
 
         Returns:
-            list: List of text chunks.
+            List[str]: List of text chunks.
         """
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"The file {file_path} does not exist.")
@@ -122,20 +125,30 @@ class PDFProcessor:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         return text_splitter.split_documents(data)
 
-    def perform_similarity_search(self, docsearch, query):
+    def perform_similarity_search(self, documents: List[List[str]], query: str, num_results: int = 10) -> List[Tuple[float, str]]:
         """
         Perform similarity search on documents based on a query.
 
         Parameters:
-            docsearch (Chroma): Chroma object containing document vectors.
+            documents (List[List[str]]): List of documents to search.
             query (str): User query for similarity search.
+            num_results (int): Number of results to return.
 
         Returns:
-            list: List of similar documents or chunks.
+            List[Tuple[float, str]]: List of tuples containing similarity score and document or chunk.
         """
-        if not query:
-            raise ValueError("Query should not be empty.")
-        return docsearch.similarity_search(query)
+        try:
+            if not query:
+                raise ValueError("Query should not be empty.")
+            results = []
+            for document in documents:
+                similarity_score = cosine_similarity(document, query)
+                results.append((similarity_score, document))
+            results = sorted(results, key=lambda x: x[0], reverse=True)[:num_results]
+            return results
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            raise
 
 if __name__ == "__main__":
     try:
@@ -147,19 +160,14 @@ if __name__ == "__main__":
         num_docs = len(texts)
         print(f'Loaded {num_docs} document(s).')
 
-        # Create a Chroma object for document similarity search
-        docsearch = Chroma.from_documents(texts, pdf_processor.embeddings)
-
-        # Load a QA chain
-        chain = load_qa_chain(pdf_processor.llm, chain_type="stuff")
-
         # Get user query for similarity search
         query = pdf_processor.get_user_query()
 
         # Perform similarity search based on the query
-        result = pdf_processor.perform_similarity_search(docsearch, query)
+        results = pdf_processor.perform_similarity_search(texts, query)
 
-        # Run the QA chain on the result
-        chain.run(input_documents=result, question=query)
+        # Print the results
+        for i, result in enumerate(results):
+            print(f"{i+1}. Similarity score: {result[0]}, Document: {result[1]}")
     except Exception as e:
         print(f"An error occurred: {e}")

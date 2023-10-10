@@ -1,5 +1,5 @@
-from typing import List, Any, Optional, Dict
-import argparse
+import logging
+from typing import List, Any, Dict
 from langchain.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, CacheBackedEmbeddings, HuggingFaceEmbeddings
@@ -9,6 +9,8 @@ from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.chains import RetrievalQA
 import chromadb
 from langchain.vectorstores import Chroma
+
+logging.basicConfig(level=logging.ERROR)
 
 # PDF Document Management
 class PDFDocumentManager:
@@ -21,6 +23,7 @@ class PDFDocumentManager:
         try:
             self.loader = PyPDFDirectoryLoader(directory)
         except Exception as e:
+            logging.error(f"Error initializing PyPDFDirectoryLoader: {e}")
             raise ValueError(f"Error initializing PyPDFDirectoryLoader: {e}") from e
 
     def load_documents(self) -> List[Any]:
@@ -32,6 +35,7 @@ class PDFDocumentManager:
         try:
             return self.loader.load()
         except Exception as e:
+            logging.error(f"Error loading documents: {e}")
             raise ValueError(f"Error loading documents: {e}") from e
 
 # Text Splitting
@@ -63,6 +67,7 @@ class TextSplitManager:
         try:
             return self.text_splitter.create_documents(docs)
         except Exception as e:
+            logging.error(f"Error in text splitting: {e}")
             raise ValueError(f"Error in text splitting: {e}") from e
 
 # Embeddings and Filtering
@@ -84,6 +89,7 @@ class EmbeddingManager:
         try:
             return self.embedder.embed_documents(docs)
         except Exception as e:
+            logging.error(f"Error in embedding documents: {e}")
             raise ValueError(f"Error in embedding documents: {e}") from e
 
     def filter_redundant(self, embeddings: List[Any]) -> List[Any]:
@@ -98,6 +104,7 @@ class EmbeddingManager:
             filter_instance = EmbeddingsRedundantFilter(embeddings)
             return filter_instance()
         except Exception as e:
+            logging.error(f"Error in filtering redundant embeddings: {e}")
             raise ValueError(f"Error in filtering redundant embeddings: {e}") from e
 
 # Document Retrieval and Reordering
@@ -126,19 +133,25 @@ class DocumentRetriever:
         try:
             return self.retriever.get_relevant_documents(query)
         except Exception as e:
+            logging.error(f"Error retrieving relevant documents: {e}")
             raise ValueError(f"Error retrieving relevant documents: {e}") from e
 
 # Chat and QA functionalities
 class ChatQA:
-    def __init__(self, api_key: str, model_name: str, texts: List[str], search_kwargs: Dict[str, Any]):
+    def __init__(self, api_key: str, model_name: str, directory: str, chunk_size: int, chunk_overlap: int, search_k: int):
         """
         Initialize ChatQA for chat and QA functionalities.
         Args:
             api_key (str): API key for OpenAI.
             model_name (str): Name of the model for embeddings.
-            texts (List[str]): Texts for retriever training.
-            search_kwargs (Dict[str, Any]): Additional search parameters.
+            directory (str): The path to the directory containing PDF files.
+            chunk_size (int): The maximum size for each chunk.
+            chunk_overlap (int): The overlap between adjacent chunks.
+            search_k (int): Number of documents to retrieve.
         """
+        self.pdf_manager = PDFDocumentManager(directory)
+        self.text_split_manager = TextSplitManager(chunk_size, chunk_overlap)
+        self.embedding_manager = EmbeddingManager()
         self.llm = ChatOpenAI(
             openai_api_key=api_key,
             model_name='gpt-3.5-turbo',
@@ -149,35 +162,69 @@ class ChatQA:
             k=5,
             return_messages=True
         )
-        self.retriever = DocumentRetriever(model_name, texts, search_kwargs)
+        self.retriever = DocumentRetriever(model_name, [], {"k": search_k})
         self.qa = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
             retriever=self.retriever.retriever
         )
         
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run the QA module.")
-    parser.add_argument("--api_key", type=str, required=True, help="API key for OpenAI.")
-    parser.add_argument("--model_name", type=str, required=True, help="Name of the model for embeddings.")
-    parser.add_argument("--texts", type=str, nargs='+', required=True, help="Texts for retriever training.")
-    parser.add_argument("--search_k", type=int, default=10, help="Number of documents to retrieve.")
-    
-    args = parser.parse_args()
-    
-    # Initialize the ChatQA class
-    chat_qa = ChatQA(
-        api_key=args.api_key,
-        model_name=args.model_name,
-        texts=args.texts,
-        search_kwargs={"k": args.search_k}
-    )
-    
-    while True:
-        query = input("Enter your query (or type 'quit' to exit): ")
-        if query.lower() == "quit":
-            break
-        else:
-            # Retrieve relevant documents
-            relevant_docs = chat_qa.retriever.get_relevant_documents(query)
-            print(f"Relevant Documents: {relevant_docs}")
+    def load_documents(self) -> List[Any]:
+        """
+        Load PDF documents from the specified directory, split them into chunks, and embed them.
+        Returns:
+            List[Any]: List of embedded document chunks.
+        """
+        try:
+            docs = self.pdf_manager.load_documents()
+            chunks = self.text_split_manager.create_documents(docs)
+            embeddings = self.embedding_manager.embed_documents(chunks)
+            return self.embedding_manager.filter_redundant(embeddings)
+        except Exception as e:
+            logging.error(f"Error loading and embedding documents: {e}")
+            raise ValueError(f"Error loading and embedding documents: {e}") from e
+        
+    def update_retriever(self, texts: List[str]):
+        """
+        Update the retriever with new texts.
+        Args:
+            texts (List[str]): List of texts to update the retriever.
+        """
+        try:
+            self.retriever = DocumentRetriever(self.retriever.embeddings.model_name, texts, self.retriever.search_kwargs)
+            self.qa = RetrievalQA.from_chain_type(
+                llm=self.llm,
+                chain_type="stuff",
+                retriever=self.retriever.retriever
+            )
+        except Exception as e:
+            logging.error(f"Error updating retriever: {e}")
+            raise ValueError(f"Error updating retriever: {e}") from e
+        
+    def get_relevant_documents(self, query: str) -> List[Any]:
+        """
+        Retrieve relevant documents based on the query.
+        Args:
+            query (str): The query string.
+        Returns:
+            List[Any]: List of relevant documents.
+        """
+        try:
+            return self.retriever.get_relevant_documents(query)
+        except Exception as e:
+            logging.error(f"Error retrieving relevant documents: {e}")
+            raise ValueError(f"Error retrieving relevant documents: {e}") from e
+        
+    def ask_question(self, query: str) -> str:
+        """
+        Ask a question based on the query.
+        Args:
+            query (str): The query string.
+        Returns:
+            str: The answer to the question.
+        """
+        try:
+            return self.qa.ask_question(query)
+        except Exception as e:
+            logging.error(f"Error asking question: {e}")
+            raise ValueError(f"Error asking question: {e}") from e
