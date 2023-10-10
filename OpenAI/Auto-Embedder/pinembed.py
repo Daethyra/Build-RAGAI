@@ -148,6 +148,9 @@ class TextDataStreamHandler:
         self.pinecone_handler = pinecone_handler
         self.data_dir = data_dir
         self.last_run_time: datetime = datetime.now()
+        self.lock = asyncio.Lock()
+        self.queue = asyncio.Queue()
+        self.event = asyncio.Event()
 
     async def process_data(self, filename: str) -> None:
         """
@@ -167,7 +170,7 @@ class TextDataStreamHandler:
             data += doc.page_content
         
         try:
-            async with self.openai_handler, self.pinecone_handler:
+            async with self.openai_handler, self.pinecone_handler, self.lock:
                 current_time = await asyncio.to_thread(datetime.now)
                 elapsed_time = (current_time - self.last_run_time).total_seconds()
                 if elapsed_time < 0.3:
@@ -177,7 +180,8 @@ class TextDataStreamHandler:
                 embedding = await self.openai_handler.create_embedding(data)
                 if not isinstance(embedding, dict) or not all(key in embedding for key in ["id", "values"]):
                     raise ValueError("Invalid embedding format")
-                await self.pinecone_handler.upload_embedding(embedding)
+                await self.queue.put(embedding)
+                self.event.set()
         except Exception as e:
             logger.error(f"Error processing data: {e}")
 
@@ -198,12 +202,40 @@ async def process_data_streams(data_streams: List[TextDataStreamHandler], filena
             await asyncio.sleep(0)
     await asyncio.gather(*tasks)
 
+async def upload_embeddings(pinecone_handler: PineconeHandler, queue: asyncio.Queue, event: asyncio.Event) -> None:
+    """
+    Upload embeddings to Pinecone.
+
+    Parameters:
+        pinecone_handler (PineconeHandler): An instance of the PineconeHandler class.
+        queue (asyncio.Queue): A queue containing embeddings to be uploaded.
+        event (asyncio.Event): An event to signal when embeddings are available in the queue.
+    """
+    while True:
+        await event.wait()
+        embeddings = []
+        while not queue.empty():
+            embeddings.append(await queue.get())
+        try:
+            async with pinecone_handler:
+                tasks = []
+                for embedding in embeddings:
+                    task = asyncio.create_task(pinecone_handler.upload_embedding(embedding))
+                    tasks.append(task)
+                await asyncio.gather(*tasks)
+        except Exception as e:
+            logger.error(f"Error uploading embeddings: {e}")
+        finally:
+            event.clear()
+
 async def main() -> None:
     config = EnvConfig()
-    async with OpenAIHandler(config) as openai_handler, PineconeHandler(config) as pinecone_handler:
-        data_streams = [TextDataStreamHandler(openai_handler, pinecone_handler) for _ in range(3)]
-        filenames = os.listdir("data")
-        await process_data_streams(data_streams, filenames)
+    openai_handler = OpenAIHandler(config)
+    pinecone_handler = PineconeHandler(config)
+    data_streams = [TextDataStreamHandler(openai_handler, pinecone_handler) for _ in range(3)]
+    filenames = [entry.name for entry in os.scandir("data") if entry.is_file()]
+    upload_task = asyncio.create_task(upload_embeddings(pinecone_handler, data_streams[0].queue, data_streams[0].event))
+    await asyncio.gather(process_data_streams(data_streams, filenames), upload_task)
 
 if __name__ == "__main__":
     asyncio.run(main())
