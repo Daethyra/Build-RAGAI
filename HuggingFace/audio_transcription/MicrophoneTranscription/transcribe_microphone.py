@@ -56,7 +56,7 @@ class RealTimeASR:
             # Concatenate the audio data to the sliding window
             self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
-            # If the sliding window is longer than 30 seconds, transcribe the first 30 seconds and shift the sliding window
+            # If the sliding window is longer than 30 seconds, transcribe the first 30 seconds and shift the sliding window by 5 seconds
             if len(self.sliding_window) >= 16000 * 30:
                 transcription = self.asr_pipeline(self.sliding_window[:16000 * 30])
                 self.transcription_cache.append(transcription["text"])
@@ -67,8 +67,12 @@ class RealTimeASR:
                 transcription = self.transcription_cache.pop()
                 print(transcription, file=sys.stdout, flush=True)
                 if log_file is not None:
-                    with open(log_file, "a") as f:
-                        f.write(transcription + "\n")
+                    try:
+                        with open(log_file, "a") as f:
+                            f.write(transcription + "\n")
+                    except (FileNotFoundError, PermissionError):
+                        print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+
 
     def close_stream(self, log_file=None):
         self.stream.stop_stream()
