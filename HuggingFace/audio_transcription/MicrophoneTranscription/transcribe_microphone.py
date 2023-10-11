@@ -10,6 +10,7 @@ from transformers import pipeline
 from collections import deque
 import sys
 
+
 class RealTimeASR:
     """
     This class demonstrates how to perform real-time ASR using the pipeline method of the Transformers library.
@@ -65,6 +66,7 @@ class RealTimeASR:
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
+
 
 if __name__ == "__main__":
     asr_app = RealTimeASR()
