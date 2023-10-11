@@ -1,23 +1,14 @@
 import os
 import glob
-from typing import Generator, List, Tuple
+from typing import Dict, List, Union
 from dotenv import load_dotenv
 from retrying import retry
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.llms import OpenAI as OpenAILLM
+from langchain.embeddings.tensorflow import UniversalSentenceEncoder
+from langchain.llms import TensorFlow as TensorFlowLLM
 from langchain.chains.question_answering import load_qa_chain
 from langchain.vectorstores import cosine_similarity
-
-# Define the retrying decorator for specific functions
-def retry_if_value_error(exception: Exception) -> bool:
-    """Return True if we should retry (in this case when it's a ValueError), False otherwise"""
-    return isinstance(exception, ValueError)
-
-def retry_if_file_not_found_error(exception: Exception) -> bool:
-    """Return True if we should retry (in this case when it's a FileNotFoundError), False otherwise"""
-    return isinstance(exception, FileNotFoundError)
 
 class PDFProcessor:
     """
@@ -27,9 +18,9 @@ class PDFProcessor:
     ----------
     OPENAI_API_KEY : str
         OpenAI API Key for authentication.
-    embeddings : OpenAIEmbeddings
-        Object for OpenAI embeddings.
-    llm : OpenAILLM
+    embeddings : UniversalSentenceEncoder
+        Object for Universal Sentence Encoder embeddings.
+    llm : TensorFlowLLM
         Language model for generating embeddings.
 
     Methods
@@ -40,7 +31,7 @@ class PDFProcessor:
         Load PDFs from a specified directory.
     _load_and_split_document(file_path: str, chunk_size: int = 2000, chunk_overlap: int = 0) -> List[str]:
         Load and split a single document.
-    perform_similarity_search(documents: List[List[str]], query: str, num_results: int = 10) -> List[Tuple[float, str]]:
+    perform_similarity_search(documents: List[List[str]], query: str, threshold: float = 0.5) -> List[Dict[str, Union[float, str]]]:
         Perform similarity search on documents.
     """
 
@@ -63,8 +54,8 @@ class PDFProcessor:
 
     def _initialize_reusable_objects(self):
         """Initialize reusable objects like embeddings and language models."""
-        self.embeddings = OpenAIEmbeddings(openai_api_key=self.OPENAI_API_KEY)
-        self.llm = OpenAILLM(temperature=0, openai_api_key=self.OPENAI_API_KEY)
+        self.embeddings = UniversalSentenceEncoder()
+        self.llm = TensorFlowLLM(temperature=0)
 
     @staticmethod
     def get_user_query(prompt: str = "Please enter your query: ") -> str:
@@ -79,7 +70,6 @@ class PDFProcessor:
         """
         return input(prompt)
 
-    @retry(retry_on_exception=retry_if_file_not_found_error, stop_max_attempt_number=3)
     def load_pdfs_from_directory(self, directory_path: str = 'data/') -> List[List[str]]:
         """
         Load all PDF files from a given directory.
@@ -92,11 +82,11 @@ class PDFProcessor:
         """
         try:
             if not os.path.exists(directory_path):
-                raise FileNotFoundError(f"The directory {directory_path} does not exist.")
+                return []
             
             pdf_files = glob.glob(f"{directory_path}/*.pdf")
             if not pdf_files:
-                raise FileNotFoundError(f"No PDF files found in the directory {directory_path}.")
+                return []
             
             texts = []
             for pdf_file in pdf_files:
@@ -104,9 +94,9 @@ class PDFProcessor:
             return texts
         except FileNotFoundError as fe:
             print(f"FileNotFoundError encountered: {fe}")
-            raise
+            return []
 
-    def _load_and_split_document(self, file_path: str, chunk_size: int = 2000, chunk_overlap: int = 0) -> List[str]:
+    def _load_and_split_document(self, file_path: str, chunk_size: int = 500, chunk_overlap: int = 0) -> List[str]:
         """
         Load and split a PDF document into text chunks.
 
@@ -125,30 +115,37 @@ class PDFProcessor:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         return text_splitter.split_documents(data)
 
-    def perform_similarity_search(self, documents: List[List[str]], query: str, num_results: int = 10) -> List[Tuple[float, str]]:
+    def perform_similarity_search(self, documents: List[List[str]], query: str, threshold: float = 0.7) -> List[Dict[str, Union[float, str]]]:
         """
         Perform similarity search on documents based on a query.
 
         Parameters:
             documents (List[List[str]]): List of documents to search.
             query (str): User query for similarity search.
-            num_results (int): Number of results to return.
+            threshold (float): Minimum similarity score to return.
 
         Returns:
-            List[Tuple[float, str]]: List of tuples containing similarity score and document or chunk.
+            List[Dict[str, Union[float, str]]]: List of dictionaries containing similarity score, document or chunk, and any other relevant metadata.
         """
         try:
             if not query:
-                raise ValueError("Query should not be empty.")
+                query = self.get_user_query("Please enter a valid query: ")
             results = []
+            query_embedding = self.embeddings.embed(query)
             for document in documents:
-                similarity_score = cosine_similarity(document, query)
-                results.append((similarity_score, document))
-            results = sorted(results, key=lambda x: x[0], reverse=True)[:num_results]
+                document_embedding = self.embeddings.embed(document)
+                similarity_score = cosine_similarity(document_embedding, query_embedding)
+                if similarity_score >= threshold:
+                    result = {
+                        "similarity_score": similarity_score,
+                        "document": document,
+                        "metadata": {}
+                    }
+                    results.append(result)
             return results
         except Exception as e:
             print(f"An error occurred: {e}")
-            raise
+            return []
 
 if __name__ == "__main__":
     try:
@@ -160,14 +157,12 @@ if __name__ == "__main__":
         num_docs = len(texts)
         print(f'Loaded {num_docs} document(s).')
 
-        # Get user query for similarity search
-        query = pdf_processor.get_user_query()
-
         # Perform similarity search based on the query
+        query = pdf_processor.get_user_query()
         results = pdf_processor.perform_similarity_search(texts, query)
 
         # Print the results
         for i, result in enumerate(results):
-            print(f"{i+1}. Similarity score: {result[0]}, Document: {result[1]}")
+            print(f"{i+1}. Similarity score: {result['similarity_score']}, Document: {result['document']}")
     except Exception as e:
         print(f"An error occurred: {e}")
