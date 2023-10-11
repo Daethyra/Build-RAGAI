@@ -1,12 +1,12 @@
-### Todo list 
+### Todo list
 
 [README]
 
-- Add intro 
+- Add intro
   - Clearly define: [Utilikit, Pluggable/Components, multi-shot, zero-shot,]
-    - create summarization of prompt reusability, and component extendability 
+    - create summarization of prompt reusability, and component extendability
   - Then, clearly state the intention of the repository. : Provide Reasoning, I want this to be a nexus of information to empower my LLMs moving forward. By continually updating this repository as a codebase and conglomeration of documentation, it may serve as a `git clone`able neuron for machine learning models.
-  - Finally, provide one to two brief statements to close out and resummarize 
+  - Finally, provide one to two brief statements to close out and resummarize
 
 ---
 
@@ -24,9 +24,9 @@
 
 [LangChain]
 
-- langchain_conv_agent.py
-  - Lacks single execution runnability
-  - Fix by removing argparsing and implement default settings, with a configuration file
+- ~~langchain_conv_agent.py~~
+  - ~~Lacks single execution runnability~~
+  - ~~Fix by removing argparsing and implement default settings, with a configuration file~~
   - Config file settings:
     - Embedding Engine: [OpenAI, HuggingFace, etc.]
   - ***Lacks .env var loading(API keys, model names[OpenAI, HuggingFace])***
@@ -37,14 +37,17 @@
       - `DocumentRetriever` queries them locally
         (HF model is cached after first download. Therefore, all runs after the first,
         are entirely local since we're using ChromaDB)
+- qa_local_docs.py
+  - Doesn't automatically collect and generate embeddings for the data folder
+  - To ensure automation, create a first-run / boot-up process
 
 ---
 
 [OpenAI]
 
-- Auto-Embedder
-  - Requires testing
-    - test.py requires updates
-- [Task]:Update test.py and run
+- ~~Auto-Embedder~~
+  - ~~Requires testing~~
+    - ~~test.py requires updates~~
+- ~~[Task]:Update test.py and run~~
 
 ---
