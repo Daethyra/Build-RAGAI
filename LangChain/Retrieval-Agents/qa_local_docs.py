@@ -9,6 +9,11 @@ from langchain.embeddings.tensorflow import UniversalSentenceEncoder
 from langchain.llms import TensorFlow as TensorFlowLLM
 from langchain.chains.question_answering import load_qa_chain
 from langchain.vectorstores import cosine_similarity
+from langchain.vectorstores import Chroma
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.chains import RetrievalQA
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import DirectoryLoader
 
 class PDFProcessor:
     """
@@ -22,6 +27,10 @@ class PDFProcessor:
         Object for Universal Sentence Encoder embeddings.
     llm : TensorFlowLLM
         Language model for generating embeddings.
+    vectorstore : Chroma
+        Vectorstore for storing document embeddings.
+    qa_chain : RetrievalQA
+        Question answering chain for answering questions.
 
     Methods
     -------
@@ -33,6 +42,8 @@ class PDFProcessor:
         Load and split a single document.
     perform_similarity_search(documents: List[List[str]], query: str, threshold: float = 0.5) -> List[Dict[str, Union[float, str]]]:
         Perform similarity search on documents.
+    answer_question(question: str) -> str:
+        Answer a question using the Retrieval Augmented Generation (RAG) model.
     """
 
     def __init__(self):
@@ -55,7 +66,9 @@ class PDFProcessor:
     def _initialize_reusable_objects(self):
         """Initialize reusable objects like embeddings and language models."""
         self.embeddings = UniversalSentenceEncoder()
-        self.llm = TensorFlowLLM(temperature=0)
+        self.llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+        self.vectorstore = None
+        self.qa_chain = None
 
     @staticmethod
     def get_user_query(prompt: str = "Please enter your query: ") -> str:
@@ -84,36 +97,20 @@ class PDFProcessor:
             if not os.path.exists(directory_path):
                 return []
             
-            pdf_files = glob.glob(f"{directory_path}/*.pdf")
-            if not pdf_files:
-                return []
-            
-            texts = []
-            for pdf_file in pdf_files:
-                texts.extend(self._load_and_split_document(pdf_file))
-            return texts
+            loader = DirectoryLoader(directory_path)
+            data = loader.load()
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+            all_splits = text_splitter.split_documents(data)
+            self.vectorstore = Chroma.from_documents(documents=all_splits, embedding=OpenAIEmbeddings())
+            self.qa_chain = RetrievalQA.from_chain_type(
+                self.llm,
+                retriever=self.vectorstore.as_retriever(),
+                chain_type_kwargs={"prompt": hub.pull("rlm/rag-prompt")}
+            )
+            return all_splits
         except FileNotFoundError as fe:
             print(f"FileNotFoundError encountered: {fe}")
             return []
-
-    def _load_and_split_document(self, file_path: str, chunk_size: int = 500, chunk_overlap: int = 0) -> List[str]:
-        """
-        Load and split a PDF document into text chunks.
-
-        Parameters:
-            file_path (str): Path to the PDF file.
-            chunk_size (int): Size of each text chunk.
-            chunk_overlap (int): Overlapping characters between chunks.
-
-        Returns:
-            List[str]: List of text chunks.
-        """
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"The file {file_path} does not exist.")
-        loader = PyPDFLoader(file_path)
-        data = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-        return text_splitter.split_documents(data)
 
     def perform_similarity_search(self, documents: List[List[str]], query: str, threshold: float = 0.7) -> List[Dict[str, Union[float, str]]]:
         """
@@ -147,6 +144,19 @@ class PDFProcessor:
             print(f"An error occurred: {e}")
             return []
 
+    def answer_question(self, question: str) -> str:
+        """
+        Answer a question using the Retrieval Augmented Generation (RAG) model.
+
+        Parameters:
+            question (str): The question to answer.
+
+        Returns:
+            str: The answer to the question.
+        """
+        result = self.qa_chain({"query": question})
+        return result["result"]
+
 if __name__ == "__main__":
     try:
         # Initialize PDFProcessor class
@@ -164,5 +174,10 @@ if __name__ == "__main__":
         # Print the results
         for i, result in enumerate(results):
             print(f"{i+1}. Similarity score: {result['similarity_score']}, Document: {result['document']}")
+
+        # Answer a question using the RAG model
+        question = pdf_processor.get_user_query("Please enter a question: ")
+        answer = pdf_processor.answer_question(question)
+        print(f"Answer: {answer}")
     except Exception as e:
         print(f"An error occurred: {e}")
