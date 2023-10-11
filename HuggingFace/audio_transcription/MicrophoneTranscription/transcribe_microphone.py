@@ -9,6 +9,7 @@ import torch
 from transformers import pipeline
 from collections import deque
 import sys
+import os
 
 
 class RealTimeASR:
@@ -77,6 +78,9 @@ class RealTimeASR:
                         if "text" in transcription:
                             # Check if the ASR pipeline returns timestamps before appending them to the cache
                             if "timestamps" in transcription:
+                                # Check if the transcription cache is full before attempting to append a new transcription
+                                if len(self.transcription_cache) == self.transcription_cache.maxlen:
+                                    self.transcription_cache.popleft()
                                 self.transcription_cache.append(transcription)
                                 self.sliding_window = np.array([])
                             else:
@@ -90,6 +94,9 @@ class RealTimeASR:
                         if "text" in transcription:
                             # Check if the ASR pipeline returns timestamps before appending them to the cache
                             if "timestamps" in transcription:
+                                # Check if the transcription cache is full before attempting to append a new transcription
+                                if len(self.transcription_cache) == self.transcription_cache.maxlen:
+                                    self.transcription_cache.popleft()
                                 self.transcription_cache.append(transcription)
                                 self.sliding_window = self.sliding_window[16000 * self.asr_pipeline.task.config.shift_ms / 1000:]
                             else:
@@ -119,6 +126,9 @@ class RealTimeASR:
                                         if not os.access(log_file, os.W_OK):
                                             print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
                                         else:
+                                            # Check if the log file is too large before writing to it
+                                            if os.path.isfile(log_file) and os.path.getsize(log_file) > 1000000:
+                                                log_file = create_new_log_file(log_file)
                                             try:
                                                 with open(log_file, "a") as f:
                                                     f.write(transcription["text"] + "\n")
@@ -145,6 +155,10 @@ class RealTimeASR:
                                             if transcription is not None:
                                                 # Check if the ASR pipeline returns timestamps before appending them to the cache
                                                 if "timestamps" in transcription:
+                                                    # Check if the transcription cache is full before attempting to append a new transcription
+                                                    if len(self.transcription_cache) == self.transcription_cache.maxlen:
+                                                        self.transcription_cache.popleft()
+                                                    self.transcription_cache.append(transcription)
                                                     f.write(transcription["text"] + "\n")
                                                 else:
                                                     print("Error: ASR pipeline does not return timestamps.", file=sys.stderr, flush=True)
@@ -168,14 +182,23 @@ class RealTimeASR:
                 for transcription in self.transcription_cache:
                     f.write(transcription + "\n")
 
-# Example usage                 
-if __name__ == "__main__":
-    asr_app = RealTimeASR(maxlen=300)
-    asr_app.initialize_audio()
-    log_file = "transcription_log.txt"
-    try:
-        asr_app.capture_and_transcribe(log_file=log_file)
-    except KeyboardInterrupt:
-        print("Stopping transcription.")
-    finally:
-        asr_app.close_stream(log_file=log_file)
+
+def create_new_log_file(log_file):
+    """
+    Creates a new log file with a different name if the original log file is too large.
+
+    Args:
+        log_file (str): The path to the original log file.
+
+    Returns:
+        str: The path to the new log file.
+    """
+    log_dir = os.path.dirname(log_file)
+    log_name, log_ext = os.path.splitext(os.path.basename(log_file))
+    i = 1
+    while True:
+        new_log_name = f"{log_name}_{i}{log_ext}"
+        new_log_file = os.path.join(log_dir, new_log_name)
+        if not os.path.isfile(new_log_file):
+            return new_log_file
+        i += 1
