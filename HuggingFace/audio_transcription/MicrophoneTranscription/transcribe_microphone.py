@@ -49,29 +49,112 @@ class RealTimeASR:
         Returns:
             None
         """
+        # Check if the log file path is valid before writing to it
+        if log_file is not None:
+            try:
+                with open(log_file, "a") as f:
+                    pass
+            except (FileNotFoundError, PermissionError):
+                print(f"Error opening log file: {log_file}", file=sys.stderr, flush=True)
+                log_file = None
+
         while True:
-            # Capture audio from the microphone
-            audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
+            # Check if the PyAudio stream is active before attempting to read from it
+            if self.stream.is_active():
+                # Capture audio from the microphone
+                audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
 
-            # Concatenate the audio data to the sliding window
-            self.sliding_window = np.concatenate((self.sliding_window, audio_data))
+                # Concatenate the audio data to the sliding window
+                self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
-            # If the sliding window is longer than 30 seconds, transcribe the first 30 seconds and shift the sliding window by 5 seconds
-            if len(self.sliding_window) >= 16000 * 30:
-                transcription = self.asr_pipeline(self.sliding_window[:16000 * 30])
-                self.transcription_cache.append(transcription["text"])
-                self.sliding_window = self.sliding_window[16000 * 5:]
+                # Check if the sliding window is shorter than the ASR pipeline chunk length before attempting to transcribe it
+                if len(self.sliding_window) >= 16000 * self.asr_pipeline.task.config.chunk_size_ms / 1000:
+                    # Check if the sliding window is shorter than 30 seconds before attempting to transcribe it
+                    if len(self.sliding_window) < 16000 * 30:
+                        # Transcribe the sliding window and shift it by the shift length
+                        transcription = self.asr_pipeline(self.sliding_window)
+                        # Check if the ASR pipeline returns a transcription before appending it to the cache
+                        if "text" in transcription:
+                            # Check if the ASR pipeline returns timestamps before appending them to the cache
+                            if "timestamps" in transcription:
+                                self.transcription_cache.append(transcription)
+                                self.sliding_window = np.array([])
+                            else:
+                                print("Error: ASR pipeline does not return timestamps.", file=sys.stderr, flush=True)
+                        else:
+                            print("Error transcribing audio.", file=sys.stderr, flush=True)
+                    else:
+                        # Transcribe the first 30 seconds of audio and shift the sliding window by the shift length
+                        transcription = self.asr_pipeline(self.sliding_window[:16000 * 30])
+                        # Check if the ASR pipeline returns a transcription before appending it to the cache
+                        if "text" in transcription:
+                            # Check if the ASR pipeline returns timestamps before appending them to the cache
+                            if "timestamps" in transcription:
+                                self.transcription_cache.append(transcription)
+                                self.sliding_window = self.sliding_window[16000 * self.asr_pipeline.task.config.shift_ms / 1000:]
+                            else:
+                                print("Error: ASR pipeline does not return timestamps.", file=sys.stderr, flush=True)
+                        else:
+                            print("Error transcribing audio.", file=sys.stderr, flush=True)
 
-            # If there is a transcription in the cache, print it to stdout and write it to the log file
-            if len(self.transcription_cache) > 0:
-                transcription = self.transcription_cache.pop()
-                print(transcription, file=sys.stdout, flush=True)
-                if log_file is not None:
-                    try:
-                        with open(log_file, "a") as f:
-                            f.write(transcription + "\n")
-                    except (FileNotFoundError, PermissionError):
-                        print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                # If there is a transcription in the cache, print it to stdout and write it to the log file
+                if len(self.transcription_cache) > 0:
+                    transcription = self.transcription_cache.popleft()
+                    # Check if the transcription cache is empty before attempting to pop a transcription
+                    if transcription is not None:
+                        # Check if the ASR pipeline returns timestamps before appending them to the cache
+                        if "timestamps" in transcription:
+                            print(transcription["text"], file=sys.stdout, flush=True)
+                            if log_file is not None:
+                                # Check if the log file is a file before writing to it
+                                if not os.path.isfile(log_file):
+                                    print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                                else:
+                                    # Check if the log file directory exists before writing to it
+                                    log_dir = os.path.dirname(log_file)
+                                    if not os.path.isdir(log_dir):
+                                        print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                                    else:
+                                        # Check if the user has permission to write to the log file before writing to it
+                                        if not os.access(log_file, os.W_OK):
+                                            print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                                        else:
+                                            try:
+                                                with open(log_file, "a") as f:
+                                                    f.write(transcription["text"] + "\n")
+                                            except (FileNotFoundError, PermissionError):
+                                                print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                        else:
+                            print("Error: ASR pipeline does not return timestamps.", file=sys.stderr, flush=True)
+            else:
+                # Check if the PyAudio stream is stopped before closing it
+                if self.stream.is_stopped():
+                    self.stream.close()
+                    # Check if the PyAudio library is terminated before closing the stream
+                    if self.p.is_terminated():
+                        self.p.terminate()
+                        # Write the final transcriptions to the log file
+                        if log_file is not None:
+                            # Check if the log file is writable before writing to it
+                            if not os.access(log_file, os.W_OK):
+                                print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                            else:
+                                try:
+                                    with open(log_file, "a") as f:
+                                        for transcription in self.transcription_cache:
+                                            if transcription is not None:
+                                                # Check if the ASR pipeline returns timestamps before appending them to the cache
+                                                if "timestamps" in transcription:
+                                                    f.write(transcription["text"] + "\n")
+                                                else:
+                                                    print("Error: ASR pipeline does not return timestamps.", file=sys.stderr, flush=True)
+                                except (FileNotFoundError, PermissionError):
+                                    print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
+                    else:
+                        print("Error terminating PyAudio library.", file=sys.stderr, flush=True)
+                else:
+                    print("Error stopping PyAudio stream.", file=sys.stderr, flush=True)
+                break
 
 
     def close_stream(self, log_file=None):
