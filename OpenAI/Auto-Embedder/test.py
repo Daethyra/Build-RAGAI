@@ -3,7 +3,12 @@ import asyncio
 import os
 from unittest.mock import patch, Mock
 from typing import Dict, Union, List
-from pinembed import EnvConfig, OpenAIHandler, PineconeHandler, DataStreamHandler
+import logging
+import pinecone
+import openai
+from pinembed import PinEmbed, EnvConfig, OpenAIHandler, PineconeHandler, DataStreamHandler
+
+logging.basicConfig(filename='test_pinembed.log', level=logging.DEBUG)
 
 @pytest.fixture
 def mock_env_config():
@@ -106,3 +111,77 @@ async def test_DataStreamHandler_process_data(mock_env_config):
     with patch.object(OpenAIHandler, 'create_embedding', return_value=mock_embedding):
         with patch.object(PineconeHandler, 'upload_embedding', return_value=None):
             await handler.process_data(mock_data)
+
+class TestPinEmbed(unittest.TestCase):
+    def setUp(self):
+        self.pinembed = PinEmbed()
+
+    def tearDown(self):
+        self.pinembed = None
+
+    def test_embed(self):
+        query = "What is the capital of France?"
+        result = self.pinembed.embed(query)
+        self.assertIsInstance(result, list)
+        self.assertGreater(len(result), 0)
+
+    def test_embed_batch(self):
+        queries = ["What is the capital of France?", "Who is the president of the United States?"]
+        results = self.pinembed.embed_batch(queries)
+        self.assertIsInstance(results, list)
+        self.assertEqual(len(results), len(queries))
+        for result in results:
+            self.assertIsInstance(result, list)
+            self.assertGreater(len(result), 0)
+
+    def test_embed_async(self):
+        async def test():
+            query = "What is the capital of France?"
+            result = await self.pinembed.embed_async(query)
+            self.assertIsInstance(result, list)
+            self.assertGreater(len(result), 0)
+
+        asyncio.run(test())
+
+    def test_embed_batch_async(self):
+        async def test():
+            queries = ["What is the capital of France?", "Who is the president of the United States?"]
+            results = await self.pinembed.embed_batch_async(queries)
+            self.assertIsInstance(results, list)
+            self.assertEqual(len(results), len(queries))
+            for result in results:
+                self.assertIsInstance(result, list)
+                self.assertGreater(len(result), 0)
+
+        asyncio.run(test())
+
+    def test_pinecone_index(self):
+        index_name = "test_index"
+        vectors = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        ids = ["a", "b", "c"]
+        self.pinembed.create_index(index_name)
+        self.pinembed.add_vectors_to_index(index_name, vectors, ids)
+        results = self.pinembed.query_index(index_name, [2, 3, 4], k=2)
+        self.assertIsInstance(results, list)
+        self.assertEqual(len(results), len(vectors))
+        for result in results:
+            self.assertIsInstance(result, list)
+            self.assertEqual(len(result), 2)
+
+    def test_openai_embedding(self):
+        query = "What is the capital of France?"
+        result = self.pinembed.openai_embedding(query)
+        self.assertIsInstance(result, list)
+        self.assertGreater(len(result), 0)
+
+    def test_openai_embedding_async(self):
+        async def test():
+            query = "What is the capital of France?"
+            result = await self.pinembed.openai_embedding_async(query)
+            self.assertIsInstance(result, list)
+            self.assertGreater(len(result), 0)
+
+        asyncio.run(test())
+
+if __name__ == '__main__':
+    unittest.main()
