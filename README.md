@@ -14,7 +14,6 @@ A. **[Auto-Embedder](./OpenAI/Auto-Embedder)**
 Provides an automated pipeline for retrieving embeddings from [OpenAIs `text-embedding-ada-002`](https://platform.openai.com/docs/guides/embeddings) and upserting them to a [Pinecone index](https://docs.pinecone.io/docs/indexes).
 
 - **[`pinembed.py`](./OpenAI/Auto-Embedder/pinembed.py)**: A Python module to easily automate the retrieval of embeddings from OpenAI and storage in Pinecone.
-  - **[.env.template](./OpenAI/Auto-Embedder/.env.template)**: Template for environment variables.
 
 ---
 
@@ -22,7 +21,7 @@ B. **[Prompts](./OpenAI/Prompts/)**
 
 There are three main prompt types, [multi-shot](./OpenAI/Prompts/multi-shot), [system-role](./OpenAI/Prompts/system-role), [user-role](./OpenAI/Prompts/user-role).
 
-Please also see the [OUT-prompt-cheatsheet](./OpenAI/Prompts/OUT-prompt-cheatsheet.md).
+Please also see the [prompt-cheatsheet](./OpenAI/Prompts/prompt-cheatsheet.md).
 
 - **[Cheatsheet](./OpenAI/Prompts/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
 
