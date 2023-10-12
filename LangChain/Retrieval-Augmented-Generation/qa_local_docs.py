@@ -38,10 +38,13 @@ class PDFProcessor:
         Answer a question using the Retrieval Augmented Generation (RAG) model.
     """
 
-    def __init__(self):
+    def __init__(self, embeddings: UniversalSentenceEncoder, llm: ChatOpenAI, vectorstore: Chroma, qa_chain: RetrievalQA):
         """Initialize PDFProcessor with environment variables and reusable objects."""
         self._load_env_vars()
-        self._initialize_reusable_objects()
+        self.embeddings = embeddings
+        self.llm = llm
+        self.vectorstore = vectorstore
+        self.qa_chain = qa_chain
 
     @retry(retry_on_exception=retry_if_value_error, stop_max_attempt_number=3)
     def _load_env_vars(self):
@@ -54,13 +57,6 @@ class PDFProcessor:
         except ValueError as ve:
             print(f"ValueError encountered: {ve}")
             raise
-
-    def _initialize_reusable_objects(self):
-        """Initialize reusable objects like embeddings and language models."""
-        self.embeddings = UniversalSentenceEncoder()
-        self.llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-        self.vectorstore = None
-        self.qa_chain = None
 
     @staticmethod
     def get_user_query(prompt: str = "Please enter your query: ") -> str:
@@ -158,30 +154,3 @@ class PDFProcessor:
         """
         result = self.qa_chain({"query": question})
         return result["result"]
-
-if __name__ == "__main__":
-    try:
-        # Initialize PDFProcessor class
-        pdf_processor = PDFProcessor()
-
-        # Load PDFs from directory and count the number of loaded documents
-        texts = pdf_processor.load_pdfs_from_directory()
-        num_docs = len(texts)
-        print(f'Loaded {num_docs} document(s).')
-
-        # Perform similarity search based on the query
-        query = pdf_processor.get_user_query()
-        results = pdf_processor.perform_similarity_search(texts, query)
-
-        # Print the results
-        for i, result in enumerate(results):
-            print(f"{i+1}. Similarity score: {result['similarity_score']}, \nDocument: {result['document']}")
-
-        # Answer a question using the RAG model
-        question = pdf_processor.get_user_query("""Welcome! \
-            \nYour document agent has been fully instantiated. \ 
-            Please enter a clear and concise question: """)
-        answer = pdf_processor.answer_question(question)
-        print(f"\nAnswer: {answer}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
