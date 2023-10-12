@@ -24,28 +24,29 @@
 
 [LangChain]
 
-- ~~langchain_conv_agent.py~~
+- stateful_chatbot.py
 
-  - ~~Lacks single execution runnability~~
-  - ~~Fix by removing argparsing and implement default settings, with a configuration file~~
+  - Lacks single execution runnability
+  - Fix by removing argparsing and implement default settings, with a configuration file
   - Config file settings:
     - Embedding Engine: [OpenAI, HuggingFace, etc.]
   - ***Lacks .env var loading(API keys, model names[OpenAI, HuggingFace])***
-  - Ambiguity regarding (EmbeddingManager and DocumentRetriever)
-    - Needs comments and to load via .env file
-      - Differentiate EmbeddingManager and DocumentRetriever by explaining how they're implemented into the pipeline stream created by the module.
-      - One generates embeddings
-      - `DocumentRetriever` queries them locally
+  - ~~Ambiguity regarding (EmbeddingManager and DocumentRetriever)~~
+    - (**AVOID SUGGESTIONS BELOW**)
+    - ~~Needs comments and to load via .env file~~
+      - ~~Differentiate EmbeddingManager and DocumentRetriever by explaining how they're implemented into the pipeline stream created by the module.~~
+      - ~~One generates embeddings~~
+      - ~~`DocumentRetriever` queries them locally
         (HF model is cached after first download. Therefore, all runs after the first,
-        are entirely local since we're using ChromaDB)
+        are entirely local since we're using ChromaDB)~~
 - qa_local_docs.py
 
   - ~~Doesn't automatically collect and generate embeddings for the data folder~~
   - ~~To ensure automation, create a first-run / boot-up process~~
 
-  1. Move the `PDFProcessor` class to a separate file to increase modularity and maintainability.
+  1. ~~Move the `PDFProcessor` class to a separate file to increase modularity and maintainability.~~
   2. Use dependency injection to pass in the necessary objects to the `PDFProcessor` class instead of initializing them in the constructor. This will increase modularity and make the class more testable.
-  3. Use a logger instead of `print` statements to log errors and other messages. This will make the code more maintainable and scalable.
+  3. ~~Use a logger instead of `print` statements to log errors and other messages. This will make the code more maintainable and scalable.~~
 
 ---
 

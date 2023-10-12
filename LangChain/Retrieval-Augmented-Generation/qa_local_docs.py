@@ -10,7 +10,6 @@ from langchain.chains import RetrievalQA
 from langchain.document_loaders import DirectoryLoader
 from langchain.chat_models import ChatOpenAI
 
-
 class PDFProcessor:
     """
     A class to handle PDF document processing, similarity search, and question answering.
@@ -92,8 +91,14 @@ class PDFProcessor:
             
             loader = DirectoryLoader(directory_path)
             data = loader.load()
+            """
+            Adjustable chunk size and overlap
+            - 500 characters is a safe starting point for chunk size
+            - We use 0 overlap to avoid duplicate chunks
+            """
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
             all_splits = text_splitter.split_documents(data)
+            # Store document embeddings in a vectorstore
             self.vectorstore = Chroma.from_documents(documents=all_splits, embedding=OpenAIEmbeddings())
             self.qa_chain = RetrievalQA.from_chain_type(
                 self.llm,
@@ -102,6 +107,7 @@ class PDFProcessor:
                 # https://smith.langchain.com/hub/rlm/rag-prompt
                 chain_type_kwargs={"prompt": hub.pull("rlm/rag-prompt")}
             )
+            # Return all text splits from PDFs
             return all_splits
         except FileNotFoundError as fe:
             print(f"FileNotFoundError encountered: {fe}")
@@ -134,7 +140,8 @@ class PDFProcessor:
                         "metadata": {}
                     }
                     results.append(result)
-            return results
+            # Sort results by similarity score in reverse order because we want the highest similarity score first
+            return sorted(results, key=lambda k: k['similarity_score'], reverse=True)
         except Exception as e:
             print(f"An error occurred: {e}")
             return []
