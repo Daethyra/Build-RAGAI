@@ -18,13 +18,13 @@ Provides an automated pipeline for retrieving embeddings from [OpenAIs `text-emb
 
 ---
 
-B. **[GPT-Prompt-Examples](./OpenAI/GPT-Prompt-Examples)**
+B. **[Prompts](./OpenAI/Prompts/)**
 
 There are three main prompt types, [multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot), [system-role](./OpenAI/GPT-Prompt-Examples/system-role), [user-role](./OpenAI/GPT-Prompt-Examples/user-role).
 
 Please also see the [OUT-prompt-cheatsheet](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md).
 
-- **[Cheatsheet](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
+- **[Cheatsheet](./OpenAI/GPT-Prompt-Examples/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
 
 - **[multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot)**: Prompts, with prompts inside them. 
 It's kind of like a bundle of Matryoshka prompts!
