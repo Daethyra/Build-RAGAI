@@ -38,12 +38,12 @@ It's kind of like a bundle of Matryoshka prompts!
 
 ---
 
-A. **[`stateful_chatbot.py`](./LangChain/Retrieval-Agents/stateful_chatbot.py)**
+A. **[`stateful_chatbot.py`](./LangChain/Retrieval-Augmented-Generation/qa_local_docs.py)**
 
 This module offers a set of functionalities for conversational agents in LangChain. Specifically, it provides:
 
 - Argument parsing for configuring the agent
-- Document loading via `PyPDFDirectoryLoader`
+- Document loading via `PDFProcessor`
 - Text splitting using `RecursiveCharacterTextSplitter`
 - Various embeddings options like `OpenAIEmbeddings`, `CacheBackedEmbeddings`, and `HuggingFaceEmbeddings`
 
