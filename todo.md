@@ -58,3 +58,8 @@
 - ~~[Task]:Update test.py and run~~
 
 ---
+
+[HuggingFace]
+
+- Test: `integrable_image_captioner.py`
+  - Deposit AI art images for batch tests
