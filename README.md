@@ -20,18 +20,18 @@ Provides an automated pipeline for retrieving embeddings from [OpenAIs `text-emb
 
 B. **[Prompts](./OpenAI/Prompts/)**
 
-There are three main prompt types, [multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot), [system-role](./OpenAI/GPT-Prompt-Examples/system-role), [user-role](./OpenAI/GPT-Prompt-Examples/user-role).
+There are three main prompt types, [multi-shot](./OpenAI/Prompts/multi-shot), [system-role](./OpenAI/Prompts/system-role), [user-role](./OpenAI/Prompts/user-role).
 
-Please also see the [OUT-prompt-cheatsheet](./OpenAI/GPT-Prompt-Examples/OUT-prompt-cheatsheet.md).
+Please also see the [OUT-prompt-cheatsheet](./OpenAI/Prompts/OUT-prompt-cheatsheet.md).
 
-- **[Cheatsheet](./OpenAI/GPT-Prompt-Examples/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
+- **[Cheatsheet](./OpenAI/Prompts/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
 
-- **[multi-shot](./OpenAI/GPT-Prompt-Examples/multi-shot)**: Prompts, with prompts inside them. 
+- **[multi-shot](./OpenAI/Prompts/multi-shot)**: Prompts, with prompts inside them. 
 It's kind of like a bundle of Matryoshka prompts!
 
-- **[system-role](./OpenAI/GPT-Prompt-Examples/system-role)**: Steer your LLM by shifting the ground it stands on.
+- **[system-role](./OpenAI/Prompts/system-role)**: Steer your LLM by shifting the ground it stands on.
 
-- **[user-role](./OpenAI/GPT-Prompt-Examples/user-role)**: Markdown files for user-role prompts.
+- **[user-role](./OpenAI/Prompts/user-role)**: Markdown files for user-role prompts.
 
 ---
 
@@ -48,9 +48,7 @@ This module offers a set of functionalities for conversational agents in LangCha
 - Text splitting using `RecursiveCharacterTextSplitter`
 - Various embeddings options like `OpenAIEmbeddings`, `CacheBackedEmbeddings`, and `HuggingFaceEmbeddings`
 
-**Potential Use Cases:**
-
-${MASK}
+**Potential Use Cases:** For developing conversational agents with advanced features.
 
 ---
 
@@ -64,9 +62,7 @@ This module focuses on querying local documents and employs the following featur
 - Vector storage options like `Chroma`
 - Embedding options via `OpenAIEmbeddings`
 
-**Potential Use Cases:**
-
-${MASK}
+**Potential Use Cases:** For querying large sets of documents efficiently.
 
 ---
 
@@ -86,8 +82,7 @@ This module focuses on generating captions for images using Hugging Face's trans
   - Caption caching for improved efficiency
   - Device selection (CPU or GPU) based on availability
 
-**Potential Use Cases:**
-${MASK}
+**Potential Use Cases:** For generating accurate and context-appropriate image captions.
 
 ---
 
