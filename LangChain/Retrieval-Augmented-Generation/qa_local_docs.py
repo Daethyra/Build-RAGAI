@@ -54,6 +54,7 @@ class PDFProcessor:
             self.OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'sk-')
             if not self.OPENAI_API_KEY:
                 raise ValueError("OPENAI_API_KEY is missing. Please set the environment variable.")
+            self.LLM_CHAIN_PROMPT_URL = os.getenv('LLM_CHAIN_PROMPT_URL', 'https://smith.langchain.com/hub/rlm/rag-prompt')
         except ValueError as ve:
             print(f"ValueError encountered: {ve}")
             raise
@@ -101,7 +102,7 @@ class PDFProcessor:
                 retriever=self.vectorstore.as_retriever(),
                 # Pull premade RAG prompt from 
                 # https://smith.langchain.com/hub/rlm/rag-prompt
-                chain_type_kwargs={"prompt": hub.pull("rlm/rag-prompt")}
+                chain_type_kwargs={"prompt": hub.pull(self.LLM_CHAIN_PROMPT_URL)}
             )
             # Return all text splits from PDFs
             return all_splits

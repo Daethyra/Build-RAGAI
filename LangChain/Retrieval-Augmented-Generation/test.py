@@ -1,11 +1,17 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from qa_local_docs import PDFProcessor
+from qa_local_docs import PDFProcessor, ChatOpenAI, Chroma, UniversalSentenceEncoder, RetrievalQA
 
 # Assumes that 'data/' directory contains PDFs
 class TestPDFProcessor(unittest.TestCase):
+    # Set up reusable objects
     def setUp(self):
-        self.pdf_processor = PDFProcessor()
+        embeddings = UniversalSentenceEncoder()
+        llm = ChatOpenAI()
+        vectorstore = Chroma()
+        qa_chain = RetrievalQA()
+        # Tie reusable objects together
+        self.pdf_processor = PDFProcessor(embeddings, llm, vectorstore, qa_chain)
 
     def test_load_pdfs_from_directory(self):
         # Test that the method returns a non-empty list
