@@ -1,19 +1,15 @@
 import os
-import glob
 from typing import Dict, List, Union
 from dotenv import load_dotenv
 from retrying import retry
-from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.tensorflow import UniversalSentenceEncoder
-from langchain.llms import TensorFlow as TensorFlowLLM
-from langchain.chains.question_answering import load_qa_chain
-from langchain.vectorstores import cosine_similarity
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chains import RetrievalQA
-from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import DirectoryLoader
+from langchain.chat_models import ChatOpenAI
+
 
 class PDFProcessor:
     """
@@ -25,7 +21,6 @@ class PDFProcessor:
         OpenAI API Key for authentication.
     embeddings : UniversalSentenceEncoder
         Object for Universal Sentence Encoder embeddings.
-    llm : TensorFlowLLM
         Language model for generating embeddings.
     vectorstore : Chroma
         Vectorstore for storing document embeddings.
@@ -38,10 +33,8 @@ class PDFProcessor:
         Get query from the user.
     load_pdfs_from_directory(directory_path: str = 'data/') -> List[List[str]]:
         Load PDFs from a specified directory.
-    _load_and_split_document(file_path: str, chunk_size: int = 2000, chunk_overlap: int = 0) -> List[str]:
-        Load and split a single document.
-    perform_similarity_search(documents: List[List[str]], query: str, threshold: float = 0.5) -> List[Dict[str, Union[float, str]]]:
-        Perform similarity search on documents.
+    perform_similarity_search(documents: List[List[str]], query: str, threshold: float = 0.7) -> List[Dict[str, Union[float, str]]]]:
+        Perform similarity search on documents. Higher threshold means more similar results.
     answer_question(question: str) -> str:
         Answer a question using the Retrieval Augmented Generation (RAG) model.
     """
@@ -105,6 +98,8 @@ class PDFProcessor:
             self.qa_chain = RetrievalQA.from_chain_type(
                 self.llm,
                 retriever=self.vectorstore.as_retriever(),
+                # Pull premade RAG prompt from 
+                # https://smith.langchain.com/hub/rlm/rag-prompt
                 chain_type_kwargs={"prompt": hub.pull("rlm/rag-prompt")}
             )
             return all_splits
@@ -173,11 +168,13 @@ if __name__ == "__main__":
 
         # Print the results
         for i, result in enumerate(results):
-            print(f"{i+1}. Similarity score: {result['similarity_score']}, Document: {result['document']}")
+            print(f"{i+1}. Similarity score: {result['similarity_score']}, \nDocument: {result['document']}")
 
         # Answer a question using the RAG model
-        question = pdf_processor.get_user_query("Please enter a question: ")
+        question = pdf_processor.get_user_query("""Welcome! \
+            \nYour document agent has been fully instantiated. \ 
+            Please enter a clear and concise question: """)
         answer = pdf_processor.answer_question(question)
-        print(f"Answer: {answer}")
+        print(f"\nAnswer: {answer}")
     except Exception as e:
         print(f"An error occurred: {e}")
