@@ -1,6 +1,13 @@
 # LLM Utilikit
 
-${INTRO}
+Welcome to LLM-Utilikit, your one-stop library of Python modules designed to supercharge your projects. Whether you're just getting started or looking to enhance an existing project, our toolkit offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. But that's not all—we envision LLM-Utilikit as a communal canvas, inviting contributors from all walks of life to enrich this toolkit with their own prompts, templates, and Python modules. Join us in crafting a toolkit that's greater than the sum of its parts.
+
+### Supported libraries:
+- OpenAI
+- LangChain
+- HuggingFace
+- Pinecone
+
 ${SupportedLibraries}
 ${Intention : Reasoning}
 ${BriefResummary}

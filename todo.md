@@ -1,15 +1,5 @@
 ### Todo list
 
-[README]
-
-- Add intro
-  - Clearly define: [Utilikit, Pluggable/Components, multi-shot, zero-shot,]
-    - create summarization of prompt reusability, and component extendability
-  - Then, clearly state the intention of the repository. : Provide Reasoning, I want this to be a nexus of information to empower my LLMs moving forward. By continually updating this repository as a codebase and conglomeration of documentation, it may serve as a `git clone`able neuron for machine learning models.
-  - Finally, provide one to two brief statements to close out and resummarize
-
----
-
 [GitHub]
 
 - Clean all of my Jupyter notebook Gists to create an agent
