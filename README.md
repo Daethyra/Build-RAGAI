@@ -80,11 +80,7 @@ Distribution as a package for easy installation and integration is planned, howe
 
 <div style="display: flex; flex-direction: row;">
   <div style="flex: 1;">
-    <img src=".github\mindmap_2023-10-07.jpg" alt="Creation Date: Oct 7th, 2023" width="256"/>
-  </div>
-  <div style="flex: 1; display: flex; flex-direction: column;">
-    <img src=".github\pie_chart.jpg" alt="Creation Date: Oct 7th, 2023" width="450"/>
-    <img src=".github\bar_graph.jpg" alt="Creation Date: Oct 7th, 2023" width="450"/>
+    <img src=".github\2023-10-18_Mindmap.jpg" alt="Creation Date: Oct 7th, 2023" width="256"/>
   </div>
 </div>
 
