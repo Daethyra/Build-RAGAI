@@ -2,7 +2,7 @@
 
 Welcome to the Utilikit, your one-stop library of Python modules designed to supercharge your projects. Whether you're just getting started or looking to enhance an existing project, this library offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. But that's not all — I envision the Utilikit as a communal canvas, inviting proompters from all industries and walks of life to enrich this toolkit with their own prompts, templates, and Python modules. Join us in crafting a toolkit that's greater than the sum of its parts.
 
-### Supported libraries:
+## Supported libraries:
 - OpenAI
 - LangChain
 - HuggingFace
@@ -10,9 +10,22 @@ Welcome to the Utilikit, your one-stop library of Python modules designed to sup
 
 This project aims to solve two key challenges faced by developers and data scientists alike: the need for a quick start and the desire for modular, reusable components. This library addresses these challenges head-on by offering a curated set of Python modules that can either serve as a robust starting point for new projects or as plug-and-play components to elevate existing ones.
 
-#### 1. **[OpenAI: Utilikit](./OpenAI/)**
+## 0. **[Prompts](./Prompts/)**
 
----
+There are three main prompt types, [multi-shot](./Prompts/multi-shot), [system-role](./Prompts/system-role), [user-role](./Prompts/user-role).
+
+Please also see the [prompt-cheatsheet](./Prompts/prompt-cheatsheet.md).
+
+- **[Cheatsheet](./Prompts/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
+
+- **[multi-shot](./Prompts/multi-shot)**: Prompts, with prompts inside them. 
+It's kind of like a bundle of Matryoshka prompts!
+
+- **[system-role](./Prompts/system-role)**: Steer your LLM by shifting the ground it stands on.
+
+- **[user-role](./Prompts/user-role)**: Markdown files for user-role prompts.
+
+## 1. **[OpenAI](./OpenAI/)**
 
 A. **[Auto-Embedder](./OpenAI/Auto-Embedder)**
 
@@ -20,28 +33,7 @@ Provides an automated pipeline for retrieving embeddings from [OpenAIs `text-emb
 
 - **[`pinembed.py`](./OpenAI/Auto-Embedder/pinembed.py)**: A Python module to easily automate the retrieval of embeddings from OpenAI and storage in Pinecone.
 
----
-
-B. **[Prompts](./OpenAI/Prompts/)**
-
-There are three main prompt types, [multi-shot](./OpenAI/Prompts/multi-shot), [system-role](./OpenAI/Prompts/system-role), [user-role](./OpenAI/Prompts/user-role).
-
-Please also see the [prompt-cheatsheet](./OpenAI/Prompts/prompt-cheatsheet.md).
-
-- **[Cheatsheet](./OpenAI/Prompts/prompt-cheatsheet.md)**: @Daethyra's go-to prompts.
-
-- **[multi-shot](./OpenAI/Prompts/multi-shot)**: Prompts, with prompts inside them. 
-It's kind of like a bundle of Matryoshka prompts!
-
-- **[system-role](./OpenAI/Prompts/system-role)**: Steer your LLM by shifting the ground it stands on.
-
-- **[user-role](./OpenAI/Prompts/user-role)**: Markdown files for user-role prompts.
-
----
-
-#### 2. **[LangChain: Pluggable Components](./LangChain/)**
-
----
+## 2. **[LangChain](./LangChain/)**
 
 A. **[`stateful_chatbot.py`](./LangChain/Retrieval-Augmented-Generation/qa_local_docs.py)**
 
@@ -53,8 +45,6 @@ This module offers a set of functionalities for conversational agents in LangCha
 - Various embeddings options like `OpenAIEmbeddings`, `CacheBackedEmbeddings`, and `HuggingFaceEmbeddings`
 
 **Potential Use Cases:** For developing conversational agents with advanced features.
-
----
 
 B. **[`qa_local_docs.py`](./LangChain/Retrieval-Agents/qa_local_docs.py)**
 
@@ -68,13 +58,7 @@ This module focuses on querying local documents and employs the following featur
 
 **Potential Use Cases:** For querying large sets of documents efficiently.
 
----
-
-These modules are designed to be extensible and can be easily integrated into your LangChain projects.
-
----
-
-#### 3. **[HuggingFace: Pluggable Components](./HuggingFace/)**
+### 3. **[HuggingFace](./HuggingFace/)**
 
 A. **[`integrable_captioner.py`](./HuggingFace\image_captioner\integrable_image_captioner.py)**
 
@@ -87,6 +71,10 @@ This module focuses on generating captions for images using Hugging Face's trans
   - Device selection (CPU or GPU) based on availability
 
 **Potential Use Cases:** For generating accurate and context-appropriate image captions.
+
+## Installation
+
+Distribution as a package for easy installation and integration is planned, however that *not* currently in progress.
 
 ---
 
