@@ -1,4 +1,6 @@
-# OUT Cheatsheet | OpenAI Utilikit Quick Hacks
+# Prompt Cheatsheet
+
+- '${MASK}' is a placeholder for a masked word or phrase that *YOU* need to fill in.
 
 ### 1. *Instruction: Generate Prompt
 
