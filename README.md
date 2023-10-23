@@ -1,6 +1,6 @@
 # LLM Utilikit
 
-Welcome to the Utilikit, your one-stop library of Python modules designed to supercharge your projects. Whether you're just getting started or looking to enhance an existing project, this library offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. But that's not all — I envision the Utilikit as a communal canvas, inviting proompters from all industries and walks of life to enrich this toolkit with their own prompts, templates, and Python modules. Join us in crafting a toolkit that's greater than the sum of its parts.
+🤍Welcome to the Utilikit, your one-stop library of Python modules designed to supercharge your projects. Whether you're just getting started or looking to enhance an existing project, this library offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. But that's not all — I envision the Utilikit as a communal canvas, inviting proompters from all industries and walks of life to enrich this toolkit with their own prompts, templates, and Python modules. Join us in crafting a toolkit that's greater than the sum of its parts.
 
 ## Supported libraries:
 - OpenAI
