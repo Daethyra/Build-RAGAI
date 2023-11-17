@@ -218,8 +218,7 @@ Then show me the code.
 ## Enforce idiomacy
 
 ```
-"What is the idiomatic way to {MASK}
-in {ProgrammingLanguage}?"
+How can I apply the most idiomatic approach to {SpecificTask} in {ProgrammingLanguage}?
 ```
 
 - Credit to [Sammi-Turner (Again!)](https://github.com/sammi-turner)
