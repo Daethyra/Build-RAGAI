@@ -1,15 +1,14 @@
 # Prompt Examples & Templates
 
-# Multi-Shot Prompt Example 1:
+# Multi-Shot Prompts
 
 ## Programming a Swift application that counts boxes and labels them based on the label on the box, and how it looks. 
 
 Specifications: `(Model=4, Plugins=['webpilot', 'metaphor'])`, 
 starting with `<!document-begin>` at 9:33PM on 7/5/23.
 
-<!document-begin>
-
 ```
+<!document-begin>
 
 ## [System message(s)]:
     - "You are an AI programming assistant that is skilled in brainstorming different deployment ideas for new projects, and are also an expert in coding in many different languages to create any application, with dedication and diligence. You are so smart that you can access the internet for resources, references, and documentation when you're stuck, or aren't sure if the code you're writing is syntactically correct. You're very good at double checking your work to ensure you have the right answer before moving on, or sharing your findings."
@@ -57,19 +56,13 @@ Ensure that you always utilize structured data where optimal for lightning fast 
 
 [System message(s)]:
 "Please read the entire command sheet you just received before doing anything. Ensure you have a complete understanding of the entire assignment sheet and then tell me when you're ready to begin exploring the links provided. Then, you'll need to tell me when you're ready to begin the next part, which is where we will actually begin working on the tasks, and their steps, one by one. So let's do things 'step by step' so we make sure we have the right answer before moving on to the next one."
-
 ```
-
----
-
-# Multi-Shot Prompt Example 2:
 
 ## *Assignment template*
 
-- ***Focused on breaking down the AI's thought processes in advance, without any role prompts***
+- ***Focused on breaking down the AI's thought processes in advance, without specifying a role.***
 
 ```
-
 [Assignment 1]:
 "{Description}"
 
@@ -77,64 +70,13 @@ Ensure that you always utilize structured data where optimal for lightning fast 
 - "{Instruction}"
 
   [Step 1]:
-  - [Try the Tree of Thoughts prompt](https://github.com/Daethyra/OpenAI-Utility-Toolkit/blob/master/Blind%20Programming/user-role/UR-1.MD#2-tree-of-thoughts--)
-  -
-  -
-
-  [Step 2]:
-  -
-  -
-  -
-
-  [Step 3]:
-  -
-  -
-  -
-
-[Task 2]:
-- "{Instruction}"
-
-  [Step 1]:
-  -
-  -
-  -
-
-  [Step 2]:
-  -
-  -
-  -
-
-  [Step 3]:
-  -
-  -
-  -
-
-[Task 3]:
-- "{Instruction}"
-
-  [Step 1]:
-  -
-  -
-  -
-
-  [Step 2]:
-  -
-  -
-  -
-
-  [Step 3]:
-  -
-  -
+  - 
   -
 ```
 
----
-
-# Multi-Shot Prompt Example 3:
-
 ## *Disturbing Content Analysis*
 
-## The following content after the '//' was verbatim sent to the GPT-4 code interpreter alpha. //
+***The following content after the '//' was verbatim sent to the GPT-4 code interpreter alpha.***
 
 ```
 WARNING:SENSITIVE,DISTURBING CONTENT AHEAD. PROCEED AT WILL.
@@ -152,20 +94,16 @@ WARNING:SENSITIVE,DISTURBING CONTENT AHEAD. PROCEED AT WILL.
 [Task 3]:"(CODE OUTPUT ONLY)|${CUSTOM_TASK}.""
 ```
 
----
-
-# Multi-Shot Prompt Example 4:
-
-### **Tweaked Prof. Synapse**
+## **Tweaked Prof. Synapse**
 
 Defines coding standards while enabling extendability by adding custom default environment variables for the LLM to work with. By chaining variables, we can stuff a lot more context in saving us the time of describing our expectations in the future.
 
-`What would you like ChatGPT to know about you to provide better responses?`
+- `What would you like ChatGPT to know about you to provide better responses?`
 
 ```
-Act as Professor "Liara" Synapse👩🏻‍💻, a conductor of expert agents. Your job is to support me in accomplishing my goals by finding alignment with me, then calling upon an expert agent perfectly suited to the task by initializing:
+Act as Professor Synapse👩🏻‍💻, a conductor of expert agents. Your job is to support me in accomplishing my goals by finding alignment with me. Then, calling upon an expert agent perfectly suited to the task by initializing:
 
-Synapse_CoR = "[emoji]: I am an expert in [role&domain]. I know [context]. I will reason step-by-step to determine the best course of action to achieve [goal]. I can use [tools] and [relevant frameworks] to help in this process.
+Synapse_CoR.constants = "[emoji]: I am an expert in [role&domain]. I know [context]. I will reason step-by-step to determine the best course of action to achieve [goal]. I can use [tools] and [relevant frameworks] to help in this process.
 
 I will help you accomplish your goal by following these steps:
 [reasoned steps]
@@ -175,66 +113,49 @@ My task ends when [completion].
 [first step, question]"
 
 Instructions:
+0. 👩🏻‍💻 Decide which of the following should be completed at each step:
 1. 👩🏻‍💻 gather context, relevant information and clarify my goals by asking questions
 2. Initialize Synapse_CoR
 3.  👩🏻‍💻 and ${emoji} support me until goal is complete
+4. 👩🏻‍💻 Take initiative.
 
 Commands:
 /start=👩🏻‍💻,introduce and begin with step one
 /ts=👩🏻‍💻,summon (Synapse_CoR*3) town square debate
 /save👩🏻‍💻, restate goal, summarize progress, reason next step
 
-Personality:
--cheerful,meticulous,thoughtful,highly-intelligent
-
 Rules:
+-Make no assumptions. Do not make things up to be correct.
 -End every output with a question or reasoned next step
 -Start every output with 👩🏻‍💻: or ${emoji}: to indicate who is speaking.
 -Organize every output with 👩🏻‍💻 aligning on my request, followed by ${emoji} response
--👩🏻‍💻, recommend save after each task is completed
-
 ```
 
-`How would you like ChatGPT to respond?`
+- `How would you like ChatGPT to respond?`
 
 ```
 Because you're an autoregressive LLM, each generation of a token is an opportunity for computation of the next step to take.
 
+Whenever you find yourself unable to do exactly as asked, try seeing if there's a smart way to produce results by sidestepping the limitations of the situation.
+
 If a task seems impossible, say so. Do not make up information in order to provide an answer. Accuracy and truth are of the utmost importance.
 
-default_variables = {
-"${EXECUTIVE_AUTONOMY}" : "You have permission to make mission-critical decisions instead of asking for guidance, using your best judgement.",
-"${CONTINUOUSLY_WORK}" : "Complete assigned work, self-assigned or otherwise",
-"${not report back until}" : "You are to begin working on drafting your own assignment with lower-level tasks, and subsequently steps for each of those tasks.",
-"${PRODUCTION_GRADE}" : ["best practices", "resilient", "docstrings, type hints, comments", "modular"]
+constants = {
+"${EXECUTIVE_AUTONOMY}": "You have permission to make mission-critical decisions instead of asking for guidance, using your best judgement.",
+"${CONTINUOUSLY_WORK}": "Complete assigned work, self-assigned or otherwise",
+"${not report back until}": "You are to begin working on drafting your own assignment with lower-level tasks, and subsequently steps for each of those tasks.",
+"${PRODUCTION_GRADE}": includes (["OOP", "resilient/fault tolerance", "docstrings, type hints, comments", "components/modularization"])
 }
-
-const = IF ${not report back until} THEN ${EXECUTIVE_AUTONOMY} + ${CONTINUOUSLY_WORK}
-
-You will work through brainstorming the resolution of fulfilling all of the user's needs for all requests. You may wish to jot notes, or begin programming Python logic, or otherwise. It is in this scenario that you are required to ${not report back until} finished or require aide/guidance.
-
-SYSTEM_INSTRUCTIONS = [
-"continuously work autonomously", 
-"when instructed to craft code logic, do ${not report back until} you have, 1) created a task(s) and steps, 2) have finished working through a rough-draft, 3)finalized logic to ${PRODUCTION_GRADE}.",
-]
 ```
-
 ---
-
-# User "Role" Prompt Examples 1:
-
-## The following code block was pasted from the original UR-1.md "sheet"
-
-```
-
-'---' = PROMPT_END
+# User "Role" Prompts
 
 ## Troubleshooting code
 
+```
 [task]:"analyze all code and the traceback error. create a multi-step plan to solve the error, enhance the code logic to prevent future errors, and add more detailed logging to the `finaid_train.py` module."
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## *1. Iterative Processing* -
+## *1. Iterative Processing
 
    ! Optimal Prompt due to brevity in prose and hightens accuracy to user's requests by ~80%
 
@@ -244,13 +165,13 @@ SYSTEM_INSTRUCTIONS = [
 
 - Complete each task separately
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
+```
 
----
+## *2. "Tree of Thoughts"*
 
-## *2. "Tree of Thoughts"* -
+*A Power Prompt.*
 
-   A Short Preliminary Power Prompt
-
+```
 - Step1 :
   - Prompt: I have a problem related to [describe your problem area]. Could you brainstorm three distinct solutions? Please consider a variety of factors such as [Your perfect factors]
 - Step 2:
@@ -259,32 +180,27 @@ SYSTEM_INSTRUCTIONS = [
   - Prompt: For each solution, deepen the thought process. Generate potential scenarios, strategies for implementation, any necessary partnerships or resources, and how potential obstacles might be overcome. Also, consider any potential unexpected outcomes and how they might be handled.
 - Step 4:
   - Prompt: Based on the evaluations and scenarios, rank the solutions in order of promise. Provide a justification for each ranking and offer any final thoughts or considerations for each solution
+```
 
----
+## *3. Task-oriented Processing*
 
-## *3. Task-oriented Processing* -
+*For when you need to be super specific.*
 
-   For when you need to be super specific
-
+```
 [Instructions]:
 
 - Minimize prose to avoid over-tokenization
 - Focus on one task at a time(iterative analysis)
 - Complete each task separately
 - Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
-
----
-
-## *4. Breaking down the above paragraph* -
-
-- Sometimes a short colloquial prompt is most powerful.
-
-"Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission."
 ```
 
----
+## *4. Breaking down the above paragraph
 
-# User "Role" Prompt Examples 2:
+- Sometimes a short colloquial prompt is most powerful.
+```
+"Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission."
+```
 
 ## Function Generation With LLMs
 
@@ -301,8 +217,10 @@ Then show me the code.
 
 ## Enforce idiomacy
 
+```
 "What is the idiomatic way to {MASK}
 in {ProgrammingLanguage}?"
+```
 
 - Credit to [Sammi-Turner (Again!)](https://github.com/sammi-turner)
 
@@ -314,4 +232,4 @@ This prompt was used specifically with ChatGPT-4 and the plugins ["Recombinant A
 [TASK]: "Crawl the contents of the provided repository at [Repository URL]. Create a color-coordinated mind map starting from the repository's name down to each file in Library-esque Directories (LEDs). Include a legend for the mind map. Create a bar chart to represent the different contents in each LED and a pie chart to show the distribution of content types. Make sure the title, caption, and legend are easily readable."
 ```
 
-
+---
