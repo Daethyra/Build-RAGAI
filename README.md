@@ -8,4 +8,4 @@ This repository has a split purpose but a sole focus.
 * The second is providing prebuilt Python modules to help you jumpstart or augment LLM related projects.
   * It supports libraries like OpenAI, LangChain, HuggingFace, and Pinecone.
 
-### - [LICENSE - GNU Affero GPL](./LICENSE)
+## [LICENSE - GNU Affero GPL](./LICENSE)
