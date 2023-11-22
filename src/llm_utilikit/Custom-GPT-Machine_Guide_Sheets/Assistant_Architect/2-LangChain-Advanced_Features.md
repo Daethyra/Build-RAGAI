@@ -1,4 +1,4 @@
-# LangChain/Serve/Smith Advanced Features
+# LangChain Advanced Features
 
 ## Introduction
 
