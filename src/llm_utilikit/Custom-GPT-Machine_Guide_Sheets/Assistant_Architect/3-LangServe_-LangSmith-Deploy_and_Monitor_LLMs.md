@@ -1,4 +1,4 @@
-# LangChain/Serve/Smith Deployment
+# LangServe Deployment | LangSmith LLM Action Tracing and Monitoring
 
 ## LangServe Deployment and Querying with GPT-3.5-Turbo
 
@@ -30,7 +30,7 @@ print("Model Response:", response.content)
 
 - Showcasing LangSmith tracing within LangServe for detailed monitoring.
   
-- Key concepts: interaction tracing, performance analysis
+- Key concepts: Steps taken by LLM, Agents, etc. interaction tracing, performance analysis
 
 ```python
 from langserve import LangServeClient 
