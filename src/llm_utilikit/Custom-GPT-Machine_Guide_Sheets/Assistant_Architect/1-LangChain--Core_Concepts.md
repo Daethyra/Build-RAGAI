@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document covers the core concepts needed to get started with LangChain, LangServe, and LangSmith. It aims to provide a focused introduction to the essential building blocks for developing applications with these tools.
+This document covers the core concepts needed to get started with LangChain. It aims to provide a focused introduction to the essential building blocks for developing applications with this library.
 
 ## Prompt + LLM
 
