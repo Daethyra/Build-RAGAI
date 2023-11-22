@@ -10,7 +10,6 @@ dependencies = [
     "pinecone-client>=2.2.4",
     "langchain>=0.0.27",
     "transformers>=4.34.1",
-    "langserve[all]>
 ]
 requires-python = ">=3.8"
 readme = "README.md"
