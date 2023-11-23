@@ -1,3 +1,4 @@
+# Assistant Architect is *not* currently using this file, as of 11-22-23.
 For further learning and support, explore the following resources:
 
 - [LangChain Interface](https://python.langchain.com/docs/expression_language/interface)
