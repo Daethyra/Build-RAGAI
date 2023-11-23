@@ -43,7 +43,8 @@ pdm install
 
 Otherwise, install all libraries with the following command:
 ```
-pip install -U openai transformers pinecone-client```
+pip install -U openai transformers pinecone-client
+```
 
 ---
 
