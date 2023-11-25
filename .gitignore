@@ -1,4 +1,6 @@
-.pdm-python
+# DO NOT REMOVE THE FOLLOWING LINE FOR ANY REASON:
+.pdm-python 
+# ---
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

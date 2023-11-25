@@ -505,6 +505,6 @@ For further learning and support, explore the following resources:
 - [LangChain Cookbook - Managing Prompt Size](https://python.langchain.com/docs/expression_language/cookbook/prompt_size)
 - [LangChain Cookbook - Tools](https://python.langchain.com/docs/expression_language/cookbook/tools)
 
-Thank you for engaging with this documentation. May serve as a valuable resource in your journey to mastering LangChain, LangServe, and LangSmith.
+Thank you for engaging with this documentation. May it be a valuable resource in your journey to mastering LangChain, LangServe, and LangSmith.
 
 ---
