@@ -38,12 +38,13 @@ This repository has a split purpose but a sole focus.
 You may wish to use PDM, as I do, to install the project via:
 ```
 cd llm-utilikit
+pip install -U pdm
 pdm install
 ```
 
 Otherwise, install all libraries with the following command:
 ```
-pip install -U openai transformers pinecone-client
+pip install .
 ```
 
 ---
