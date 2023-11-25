@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "chardet>=5.2.0",
-    "numpy==1.21.5",
+    "numpy>=1.25.1",
     "aiohttp>=3.9.0",
     "openai>=0.28.1",
     "pinecone-client>=2.2.4",
