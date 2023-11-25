@@ -107,4 +107,6 @@ trace_logs = Tracing.get_logs()
 print("Trace Logs:", trace_logs)
 ```
 
---
+- **Explanation**: This section highlights the integration of LangSmith tracing in LangServe, enhancing the capability to monitor and analyze model interactions. It is particularly valuable for understanding model behavior, performance optimization, and debugging complex scenarios.
+
+---
