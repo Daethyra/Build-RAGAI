@@ -13,7 +13,7 @@ langserve_client = LangServeClient(api_url="https://api.langserve.com")
 
 # Deploying the GPT-3.5-Turbo model
 model_config = {
-    "model_name": "gpt-3.5-turbo",
+    "model_name": "gpt-3.5-turbo-1106",
     "description": "GPT-3.5 Turbo model for general-purpose use"
 }
 deployment_response = langserve_client.deploy_model(model_config)
@@ -21,7 +21,7 @@ print("Deployment Status:", deployment_response.status)
 
 # Sending a query to the deployed model
 query = "Explain the concept of machine learning in simple terms."
-response = langserve_client.query_model(model_name="gpt-3.5-turbo", query=query)
+response = langserve_client.query_model(model_name="gpt-3.5-turbo-1106", query=query)
 print("Model Response:", response.content)
 ```
 
@@ -49,7 +49,7 @@ print("Custom Model Response:", custom_response.content)
 - **Example**: Managing deployed models and accessing detailed analytics.
 ```python
 # Fetching model analytics
-model_analytics = langserve_client.get_model_analytics(model_name="gpt-3.5-turbo")
+model_analytics = langserve_client.get_model_analytics(model_name="gpt-3.5-turbo-1106")
 print("Model Usage Analytics:", model_analytics)
 
 # Updating a deployed model's configuration
@@ -57,10 +57,10 @@ update_config = {
     "temperature": 0.5,
     "max_tokens": 200
 }
-langserve_client.update_model_config(model_name="gpt-3.5-turbo", new_config=update_config)
+langserve_client.update_model_config(model_name="gpt-3.5-turbo-1106", new_config=update_config)
 
 # Retrieving updated model details
-updated_model_details = langserve_client.get_model_details(model_name="gpt-3.5-turbo")
+updated_model_details = langserve_client.get_model_details(model_name="gpt-3.5-turbo-1106")
 print("Updated Model Details:", updated_model_details)
 ```
 
@@ -70,7 +70,7 @@ print("Updated Model Details:", updated_model_details)
 from langchain.chains import SimpleChain
 
 # Building a SimpleChain with a LangServe deployed model
-chain = SimpleChain(model_name="gpt-3.5-turbo", langserve_client=langserve_client)
+chain = SimpleChain(model_name="gpt-3.5-turbo-1106", langserve_client=langserve_client)
 
 # Executing the chain with a user query
 chain_response = chain.execute("What are the latest trends in AI?")
@@ -92,14 +92,14 @@ Tracing.enable()
 
 # Deploying a model with tracing enabled
 model_config = {
-    "model_name": "gpt-3.5-turbo",
+    "model_name": "gpt-3.5-turbo-1106",
     "description": "GPT-3.5 Turbo model with LangSmith tracing"
 }
 langserve_client.deploy_model(model_config)
 
 # Query with tracing for detailed interaction logs
 query = "Explain the impact of AI on environmental sustainability."
-response = langserve_client.query_model(model_name="gpt-3.5-turbo", query=query)
+response = langserve_client.query_model(model_name="gpt-3.5-turbo-1106", query=query)
 print("Traced Model Response:", response.content)
 
 # Retrieve and analyze trace logs
