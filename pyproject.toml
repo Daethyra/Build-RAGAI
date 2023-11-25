@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "chardet>=5.2.0",
-    "numpy>=1.25.1",
+    "numpy==1.25.1",
     "aiohttp>=3.9.0",
     "openai>=0.28.1",
     "pinecone-client>=2.2.4",
@@ -17,7 +17,7 @@ dependencies = [
     "langchain>=0.0.27",
     "pandas>=2.0.3",
 ]
-requires-python = ">=3.8, <=3.12"
+requires-python = ">=3.9, <=3.11.1"
 readme = "README.md"
 license = {text = "GNU Affero General Public License"}
 [tool.pdm]
