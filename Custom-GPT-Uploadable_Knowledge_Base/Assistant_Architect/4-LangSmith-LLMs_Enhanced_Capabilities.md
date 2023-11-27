@@ -31,6 +31,8 @@ LangSmith, complemented by tools like Lilac, offers advanced capabilities for da
 #### Comprehensive Code Example
 ```python
 # Import necessary libraries
+import langsmith
+import lilac
 # Import necessary libraries
 import langchain
 from langchain.prompt_templates import EditablePromptTemplate
