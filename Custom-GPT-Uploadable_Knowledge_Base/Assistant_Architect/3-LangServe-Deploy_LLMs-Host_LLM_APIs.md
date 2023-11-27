@@ -1,4 +1,4 @@
-# LangServe and LangSmith - Server-side LLM deployment with Tracing and Monitoring
+# LangServe - Server-side LLM deployment
 
 ## Section: LangServe
 
@@ -77,7 +77,7 @@ chain_response = chain.execute("What are the latest trends in AI?")
 print("Chain Response using LangServe Model:", chain_response)
 ```
 
-## Section: LangSmith - LangSmith 'Hub' offers a centralized way to disect all actions taken by the LLM during runtime; from agents, to tools, to responses.
+## Section: LangSmith Tracing - LangSmith 'Hub' offers a centralized way to disect all actions taken by the LLM during runtime; from agents, to tools, to responses.
 
 ### LangSmith Tracing for Enhanced Monitoring
 - **Objective**: Showcasing the use of LangSmith tracing within LangServe for detailed monitoring and analysis.
