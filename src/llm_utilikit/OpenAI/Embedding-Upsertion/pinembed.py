@@ -29,7 +29,6 @@ class EnvConfig:
         self._pinecone_index: str = os.getenv("PINEDEX")
         self._drop_columns: List[str] = os.getenv("DROPCOLUMNS", "").split(",")
         
-        # Remove any empty strings that may appear if "DROPCOLUMNS" is empty or has trailing commas
         self._drop_columns = [col.strip() for col in self._drop_columns if col.strip()]
 
     @property
@@ -85,22 +84,19 @@ class OpenAIHandler:
                 )
             if "data" not in response or not isinstance(response["data"], list):
                 raise ValueError("Invalid embedding response format")
-            # Assuming the response data structure is a list of embeddings
             embedding_data = response["data"][0]
             if "embedding" not in embedding_data:
                 raise ValueError("Missing 'embedding' in response")
             return embedding_data["embedding"]
+        except Exception as e:
+            logger.error(f"Error creating embedding: {e}")
+            raise
 
 class PineconeHandler:
     """Class for handling Pinecone operations."""
 
     def __init__(self, config: EnvConfig) -> None:
-        """
-        Initialize Pinecone API key, environment, and index name.
-
-        Args:
-            config (EnvConfig): An instance of the EnvConfig class containing environment variables and API keys.
-        """
+        """Initialize Pinecone API key, environment, and index name."""
         self.config = config
 
     async def __aenter__(self) -> "PineconeHandler":
@@ -114,32 +110,24 @@ class PineconeHandler:
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     async def upload_embedding(self, embedding: Dict[str, Union[int, List[float]]]) -> None:
         """
-        Asynchronously uploads an embedding to the Pinecone index specified during initialization.
+        Asynchronously uploads an embedding to Pinecone.
         
-        This method will retry up to 3 times in case of failure, using exponential back-off.
-
         Args:
-            embedding (Dict): A dictionary containing the following keys:
-                - 'id': A unique identifier for the embedding (str).
-                - 'values': A list of numerical values for the embedding (List[float]).
-                - 'metadata' (Optional): Any additional metadata as a dictionary (Dict).
-                - 'sparse_values' (Optional): Sparse values of the embedding as a dictionary with 'indices' and 'values' (Dict).
+            embedding (Dict): A dictionary containing the embedding data.
         """
-        # Prepare the item for upsert
-        item = {
-            'id': embedding['id'],
-            'values': embedding['values'],
-            'metadata': embedding.get('metadata', {}),
-            'sparse_values': embedding.get('sparse_values', {})
-        }
-
-        # Perform the upsert operation
         try:
             async with self:
+                # Prepare the item for upsert
+                item = {
+                    'id': embedding['id'],
+                    'values': embedding['values'],
+                    'metadata': embedding.get('metadata', {}),
+                    'sparse_values': embedding.get('sparse_values', {})
+                }
                 required_keys = ["id", "values"]
                 if not all(key in embedding for key in required_keys):
                     raise ValueError(f"Embedding must contain the following keys: {required_keys}")
-                self.index.upsert(vectors=[item])
+                self.index.upsert(vectors=[{'id': embedding['id'], 'values': embedding['values']}])
         except Exception as e:
             logger.error(f"Error uploading embedding: {e}")
             raise
@@ -166,15 +154,16 @@ class TextDataStreamHandler:
         """
         file_path = os.path.join(self.data_dir, filename)
         if not os.path.isfile(file_path):
-            raise ValueError(f"Invalid file path: {file_path}")
-        
-        loader = UnstructuredFileLoader(self.data_dir)
-        docs = loader.load(file_path)
-        data = ""
-        for doc in docs:
-            data += doc.page_content
-        
+            logger.warning(f"File not found: {file_path}")
+            return
+
         try:
+            loader = UnstructuredFileLoader(self.data_dir)
+            docs = loader.load(file_path)
+            data = ""
+            for doc in docs:
+                data += doc.page_content
+            
             async with self.openai_handler, self.pinecone_handler, self.lock:
                 current_time = await asyncio.to_thread(datetime.now)
                 elapsed_time = (current_time - self.last_run_time).total_seconds()
@@ -234,13 +223,22 @@ async def upload_embeddings(pinecone_handler: PineconeHandler, queue: asyncio.Qu
             event.clear()
 
 async def main() -> None:
-    config = EnvConfig()
-    openai_handler = OpenAIHandler(config)
-    pinecone_handler = PineconeHandler(config)
-    data_streams = [TextDataStreamHandler(openai_handler, pinecone_handler) for _ in range(3)]
-    filenames = [entry.name for entry in os.scandir("data") if entry.is_file()]
-    upload_task = asyncio.create_task(upload_embeddings(pinecone_handler, data_streams[0].queue, data_streams[0].event))
-    await asyncio.gather(process_data_streams(data_streams, filenames), upload_task)
+    """
+    The main function orchestrates the entire process of creating and uploading embeddings.
+
+    It initializes the necessary handlers, prepares the data streams, and starts the asynchronous tasks
+    for processing the data and uploading the embeddings.
+    """
+    try:
+        config = EnvConfig()
+        openai_handler = OpenAIHandler(config)
+        pinecone_handler = PineconeHandler(config)
+        data_streams = [TextDataStreamHandler(openai_handler, pinecone_handler) for _ in range(3)]
+        filenames = [entry.name for entry in os.scandir("data") if entry.is_file()]
+        upload_task = asyncio.create_task(upload_embeddings(pinecone_handler, data_streams[0].queue, data_streams[0].event))
+        await asyncio.gather(process_data_streams(data_streams, filenames), upload_task)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
 
 if __name__ == "__main__":
     asyncio.run(main())
