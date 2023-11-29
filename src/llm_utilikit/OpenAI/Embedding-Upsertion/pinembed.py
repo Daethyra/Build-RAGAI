@@ -83,10 +83,13 @@ class OpenAIHandler:
                     model="text-embedding-ada-002",
                     input=input_text,
                 )
-            return response
-        except Exception as e:
-            logger.error(f"Error creating embedding: {e}")
-            raise
+            if "data" not in response or not isinstance(response["data"], list):
+                raise ValueError("Invalid embedding response format")
+            # Assuming the response data structure is a list of embeddings
+            embedding_data = response["data"][0]
+            if "embedding" not in embedding_data:
+                raise ValueError("Missing 'embedding' in response")
+            return embedding_data["embedding"]
 
 class PineconeHandler:
     """Class for handling Pinecone operations."""
@@ -133,6 +136,9 @@ class PineconeHandler:
         # Perform the upsert operation
         try:
             async with self:
+                required_keys = ["id", "values"]
+                if not all(key in embedding for key in required_keys):
+                    raise ValueError(f"Embedding must contain the following keys: {required_keys}")
                 self.index.upsert(vectors=[item])
         except Exception as e:
             logger.error(f"Error uploading embedding: {e}")
