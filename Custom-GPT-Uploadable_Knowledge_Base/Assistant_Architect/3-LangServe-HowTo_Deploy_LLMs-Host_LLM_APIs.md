@@ -1,8 +1,29 @@
 # LangServe - Efficient LLM deployment
 
 ## Overview: Creating Server & Client Python modules with LangServe
+`LangServe` helps developers deploy `LangChain` [runnables and chains](https://python.langchain.com/docs/expression_language/) as a REST API.
 
-### LangChain CLI 🛠️
+This library is integrated with [FastAPI](https://fastapi.tiangolo.com/) and uses [pydantic](https://docs.pydantic.dev/latest/) for data validation.
+
+In addition, it provides a client that can be used to call into runnables deployed on a server. A javascript client is available in [LangChainJS](https://js.langchain.com/docs/api/runnables_remote/classes/RemoteRunnable).
+
+### Features
+- Input and Output schemas automatically inferred from your LangChain object, and enforced on every API call, with rich error messages
+- API docs page with JSONSchema and Swagger (insert example link)
+- Efficient `/invoke`, `/batch` and `/stream` endpoints with support for many concurrent requests on a single server
+- `/stream_log` endpoint for streaming all (or some) intermediate steps from your chain/agent
+- Playground page at `/playground` with streaming output and intermediate steps
+- Built-in (optional) tracing to [LangSmith](https://www.langchain.com/langsmith), just add your API key (see [Instructions](https://docs.smith.langchain.com/)
+- All built with battle-tested open-source Python libraries like FastAPI, Pydantic, uvloop and asyncio.
+- Use the client SDK to call a LangServe server as if it was a Runnable running locally (or call the HTTP API directly)
+- [LangServe Hub](https://github.com/langchain-ai/langchain/blob/master/templates/README.md)
+
+### Installation:
+For both client and server:
+`pip install langserve[all]`
+or `pip install "langserve[client]"` for client code, and `pip install "langserve[server]"` for server code.
+
+## LangChain CLI 🛠️
 Use the `LangChain` CLI to bootstrap a `LangServe` project quickly.
 
 To use the langchain CLI make sure that you have a recent version of `langchain-cli` installed. You can install it with `pip install -U langchain-cli.`
