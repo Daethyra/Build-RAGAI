@@ -1,6 +1,171 @@
-# LangServe - Server-side LLM deployment
+# LangServe - Efficient LLM deployment
 
-## Section: LangServe
+## Overview: Creating Server & Client Python modules with LangServe
+
+### LangChain CLI 🛠️
+Use the `LangChain` CLI to bootstrap a `LangServe` project quickly.
+
+To use the langchain CLI make sure that you have a recent version of `langchain-cli` installed. You can install it with `pip install -U langchain-cli.`
+
+`langchain app new ../path/to/directory`
+
+#### Examples
+Get your LangServe instance started quickly with [LangChain Templates](https://github.com/langchain-ai/langchain/blob/master/templates/README.md "LangChain templates").
+
+For more examples, see the templates [index](https://github.com/langchain-ai/langchain/blob/master/templates/docs/INDEX.md) or the [examples](https://github.com/langchain-ai/langserve/tree/main/examples "Examples") directory.
+
+#### Server
+Here's a server that deploys an OpenAI chat model, an Anthropic chat model, and a chain that uses the Anthropic model to tell a joke about a topic.
+
+```
+#!/usr/bin/env python
+from fastapi import FastAPI
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatAnthropic, ChatOpenAI
+from langserve import add_routes
+
+
+app = FastAPI(
+  title="LangChain Server",
+  version="1.0",
+  description="A simple api server using Langchain's Runnable interfaces",
+)
+
+add_routes(
+    app,
+    ChatOpenAI(),
+    path="/openai",
+)
+
+add_routes(
+    app,
+    ChatAnthropic(),
+    path="/anthropic",
+)
+
+model = ChatAnthropic()
+prompt = ChatPromptTemplate.from_template("tell me a joke about {topic}")
+add_routes(
+    app,
+    prompt | model,
+    path="/joke",
+)
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="localhost", port=8000)
+```
+
+#### Docs
+If you've deployed the server above, you can view the generated OpenAPI docs using:
+
+⚠️ If using pydantic v2, docs will not be generated for invoke/batch/stream/stream_log. See Pydantic section below for more details.
+
+`curl localhost:8000/docs`
+
+make sure to add the /docs suffix.
+
+⚠️ Index page / is not defined by design, so curl localhost:8000 or visiting the URL will return a 404. If you want content at / define an endpoint @app.get("/").
+
+#### Client
+Python SDK
+
+```
+from langchain.schema import SystemMessage, HumanMessage
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.runnable import RunnableMap
+from langserve import RemoteRunnable
+
+openai = RemoteRunnable("http://localhost:8000/openai/")
+anthropic = RemoteRunnable("http://localhost:8000/anthropic/")
+joke_chain = RemoteRunnable("http://localhost:8000/joke/")
+
+joke_chain.invoke({"topic": "parrots"})
+
+# or async
+await joke_chain.ainvoke({"topic": "parrots"})
+
+prompt = [
+    SystemMessage(content='Act like either a cat or a parrot.'),
+    HumanMessage(content='Hello!')
+]
+
+# Supports astream
+async for msg in anthropic.astream(prompt):
+    print(msg, end="", flush=True)
+
+prompt = ChatPromptTemplate.from_messages(
+    [("system", "Tell me a long story about {topic}")]
+)
+
+# Can define custom chains
+chain = prompt | RunnableMap({
+    "openai": openai,
+    "anthropic": anthropic,
+})
+
+chain.batch([{ "topic": "parrots" }, { "topic": "cats" }])
+```
+
+In TypeScript (requires LangChain.js version 0.0.166 or later):
+
+```
+import { RemoteRunnable } from "langchain/runnables/remote";
+
+const chain = new RemoteRunnable({
+  url: `http://localhost:8000/joke/`,
+});
+const result = await chain.invoke({
+  topic: "cats",
+});
+```
+
+Python using requests:
+
+```
+import requests
+response = requests.post(
+    "http://localhost:8000/joke/invoke/",
+    json={'input': {'topic': 'cats'}}
+)
+response.json()
+```
+
+You can also use curl:
+
+```
+curl --location --request POST 'http://localhost:8000/joke/invoke/' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
+        "input": {
+            "topic": "cats"
+        }
+    }'
+```
+
+#### Endpoints:
+The following code:
+
+```
+...
+add_routes(
+  app,
+  runnable,
+  path="/my_runnable",
+)
+```
+
+adds of these endpoints to the server:
+
+- `POST /my_runnable/invoke` - invoke the runnable on a single input
+- `POST /my_runnable/batch` - invoke the runnable on a batch of inputs
+- `POST /my_runnable/stream` - invoke on a single input and stream the output
+- `POST /my_runnable/stream_log` - invoke on a single input and stream the output, including output of intermediate steps as it's generated
+- `GET /my_runnable/input_schema` - json schema for input to the runnable
+- `GET /my_runnable/output_schema` - json schema for output of the runnable
+- `GET /my_runnable/config_schema` - json schema for config of the runnable
+These endpoints match the LangChain Expression Language interface -- please reference this documentation for more details.
 
 ### Basic Deployment and Querying with GPT-3.5-Turbo
 - **Example**: Deploying and querying the GPT-3.5-Turbo model using LangServe.
@@ -76,37 +241,5 @@ chain = SimpleChain(model_name="gpt-3.5-turbo-1106", langserve_client=langserve_
 chain_response = chain.execute("What are the latest trends in AI?")
 print("Chain Response using LangServe Model:", chain_response)
 ```
-
-## Section: LangSmith Tracing - LangSmith 'Hub' offers a centralized way to disect all actions taken by the LLM during runtime; from agents, to tools, to responses.
-
-### LangSmith Tracing for Enhanced Monitoring
-- **Objective**: Showcasing the use of LangSmith tracing within LangServe for detailed monitoring and analysis.
-- **Example Code**:
-```python
-from langserve import LangServeClient
-from langsmith import Tracing
-
-# Initialize LangServe client and enable LangSmith tracing
-langserve_client = LangServeClient(api_url="https://api.langserve.com")
-Tracing.enable()
-
-# Deploying a model with tracing enabled
-model_config = {
-    "model_name": "gpt-3.5-turbo-1106",
-    "description": "GPT-3.5 Turbo model with LangSmith tracing"
-}
-langserve_client.deploy_model(model_config)
-
-# Query with tracing for detailed interaction logs
-query = "Explain the impact of AI on environmental sustainability."
-response = langserve_client.query_model(model_name="gpt-3.5-turbo-1106", query=query)
-print("Traced Model Response:", response.content)
-
-# Retrieve and analyze trace logs
-trace_logs = Tracing.get_logs()
-print("Trace Logs:", trace_logs)
-```
-
-- **Explanation**: This section highlights the integration of LangSmith tracing in LangServe, enhancing the capability to monitor and analyze model interactions. It is particularly valuable for understanding model behavior, performance optimization, and debugging complex scenarios.
 
 ---
