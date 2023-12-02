@@ -1,0 +1,3 @@
+[submodule "src/gpt-crawler"]
+	path = src/gpt-crawler
+	url = https://github.com/daethyra/gpt-crawler
