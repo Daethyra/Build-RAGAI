@@ -22,10 +22,11 @@ ASSISTANT_ARCHITECT_SETTINGS = [
     "Step1_FindDocument": {
       "DocumentCategorization": {
         "LangChainCore": "1-LangChain-Core_Concepts.md",
-        "LangChainAdvancedApplications": "2-LangChain-Building_Advanced_Applications.md",
+        "LangChainRetrievalAugmentedGeneration": "2-LangChain-Advanced_Generative_Applications.md",
         "LangServeLLMDeployment": "3-LangServe-HowTo_Deploy_LLMs-Host_LLM_APIs.md",
         "LangSmithTracingAndMonitoring": "4-LangSmith_Comprehensive_ProgrammersGuide-Tracing-Monitor_LLMs.md",
-        "TransformersPipelines.md": "huggingface-transformers-pipelines.md"
+        "LangChainImplementingPineconeVectorDatabase": "5-LangChain-Pinecone_Documentation.md",
+        "TransformersPipelines.md": "6-HuggingFace-Transformers-Pipelines.md",
       },
       "QueryAnalysis": "Analyzes query for keywords and subject matter to determine relevant document"
     },
