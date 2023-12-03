@@ -20,7 +20,6 @@ This repository has a split purpose but a sole focus.
 
 * [Supported Libraries](./src/llm_utilikit/):
   * [OpenAI](./src/llm_utilikit/OpenAI/)
-    * Pinecone
   * [LangChain](./src/llm_utilikit/LangChain/)
   * [HuggingFace](./src/llm_utilikit/HuggingFace/)
 
@@ -28,12 +27,15 @@ This repository has a split purpose but a sole focus.
 
 [<ins>Here</ins>](./Custom-GPT-Uploadable_Knowledge_Base/) you'll find reference documents for building Python applications, specifically those using large-language-models as their base. 
 
-- The Custom GPT, [Assistant Architect](https://chat.openai.com/g/g-gOeFNMJ8Z-llm-assistant-architect), is built on these markdown [files](./Custom-GPT-Uploadable_Knowledge_Base/Assistant_Architect/).
-- A LangChain [`master](./Custom-GPT-Uploadable_Knowledge_Base/langchain_serve_smith-quick_reference-original-master.md) document which compiles all 4 AA-Files.
+- The Custom GPT, [Assistant Architect](https://chat.openai.com/g/g-gOeFNMJ8Z-assistant-architect-aa4llm), is built on these markdown [files](./Custom-GPT-Uploadable_Knowledge_Base/Assistant_Architect/).
 
 ---
 
 ## Usage Guide
+
+1. Decide which libraries you'd like to build your project with.
+2. Try to find prebuilt Python modules for your own project.
+3. Modify code logic as necessary.
 
 You may wish to use PDM, as I do, to install the project via:
 ```
@@ -49,4 +51,4 @@ pip install .
 
 ---
 
-### [LICENSE - GNU Affero GPL](./LICENSE)
+## [LICENSE - GNU Affero GPL](./LICENSE)

@@ -1,4 +1,7 @@
-# This is a basic guide on how to use the ChromaMemory component to store chat history and retrieve answers to questions from the conversation history. 
+# Integratable ChromaMemory to store chat history and retrieve answers to questions from the conversation history.
+A simple way to add memory to an AI-powered Python application.
+
+## Usage Guide
 
 ### 1. Import the ChromaMemory class from the chroma_memory module:
 
@@ -34,5 +37,3 @@ print(answer)
 ```
 
 This will retrieve the answer to the most similar question in the conversation history to the input question.
-
-That's it! For more information, please see the official LangChain documentation.
