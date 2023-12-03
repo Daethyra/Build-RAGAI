@@ -1,6 +1,0 @@
-{
-    "IMAGE_FOLDER": "images",
-    "ENDING_CAPTION": "AI generated Artwork by Daethyra using Stable Diffusion XL.",
-    "MODEL_NAME": "Salesforce/blip-image-captioning-base",
-    "USE_CONDITIONAL_CAPTION": true
-}
