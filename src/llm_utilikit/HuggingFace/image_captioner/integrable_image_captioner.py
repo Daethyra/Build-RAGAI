@@ -43,6 +43,7 @@ class ImageCaptioner:
         self.is_initialized = True
         self.caption_cache = {}
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        model_name = os.getenv('MODEL_NAME', "Salesforce/blip-image-captioning-base")
         try:
             self.processor = BlipProcessor.from_pretrained(model_name)
             self.model = BlipForConditionalGeneration.from_pretrained(model_name).to(self.device)
@@ -228,10 +229,11 @@ async def main() -> None:
     config = config_manager.config
     
     # Initialize the ImageCaptioner with the specified model
-    captioner = ImageCaptioner()
+    captioner = ImageCaptioner(model_name=config.get('MODEL_NAME'))
     
     # Get a list of all image files in the specified directory from configuration
     image_files = ConfigurationManager.list_image_files(config['IMAGE_FOLDER'])
+    use_conditional_caption = config.get('USE_CONDITIONAL_CAPTION', True)
     
     # Determine whether to use conditional captioning based on configuration
     use_conditional_caption = config.get('USE_CONDITIONAL_CAPTION', True)
