@@ -127,88 +127,6 @@ class ImageCaptioner:
         except Exception as e:
             logger.error(f"Failed to write to CSV file: {e}")
 
-class ConfigurationManager:
-    """
-    A class for managing configuration settings for the ImageCaptioner.
-    
-    Attributes:
-        config (dict): The configuration settings.
-    """
-    
-    def __init__(self):
-        """
-        Initializes the ConfigurationManager and loads settings from a JSON file and environment variables.
-        """
-        self.config = self.load_config()
-
-    def load_config(self) -> dict:
-        """
-        Loads and validates configuration settings from a JSON file and environment variables.
-        
-        This method includes logic to check for updates in environment variables and potentially updates the configuration file if changes are detected.
-        
-        Returns:
-            dict: The loaded and validated configuration settings.
-        """
-        # Initialize with default values
-        config_updated = False
-        config = {
-            'IMAGE_FOLDER': 'images',
-            'BASE_NAME': 'your_image_name_here.jpg',
-            'ENDING_CAPTION': "AI generated Artwork by Daethyra using DallE"
-        }
-        
-        # Try to load settings from configuration file
-        try:
-            with open('config.json', 'r') as f:
-                file_config = json.load(f)
-            config.update(file_config)
-        except FileNotFoundError:
-            logging.error("Configuration file config.json not found.")
-        except json.JSONDecodeError as e:
-            logging.error(f"Failed to parse configuration file: {e}")
-        except Exception as e:
-            logging.error(f"An unknown error occurred while loading the configuration file: {e}")
-        
-        # Validate the loaded settings
-        self.validate_config(config)
-        
-        # Fallback to environment variables and offer to update the JSON configuration
-        for key in config.keys():
-            env_value = os.getenv(key, None)
-            if env_value:
-                logging.info(f"Falling back to environment variable for {key}: {env_value}")
-                config[key] = env_value
-        
-        # Offering to update the JSON configuration file with new settings
-        if config_updated:
-            try:
-                with open('config.json', 'w') as f:
-                    json.dump(config, f, indent=4)
-            except Exception as e:
-                logging.error(f"Failed to update configuration file: {e}")
-        
-        return config
-
-    def validate_config(self, config: dict):
-        """
-        Validates the loaded configuration settings.
-        
-        Args:
-            config (dict): The loaded configuration settings.
-        """
-        if not all(key in config for key in ['IMAGE_FOLDER', 'BASE_NAME', 'ENDING_CAPTION']):
-            raise ValueError("Invalid configuration settings.")
-
-    @staticmethod
-    def list_image_files(directory: str) -> list:
-        # Set file types collected | Images only
-        file_patterns = ["*.jpg", "*.jpeg", "*.png"]
-        image_files = []
-        for pattern in file_patterns:
-            image_files.extend(glob.glob(os.path.join(directory, pattern)))
-        return image_files
-
 async def main() -> None:
     """
     Asynchronous main function to initialize and run the image captioning pipeline.
@@ -220,23 +138,15 @@ async def main() -> None:
     4. List all image files in the configured directory.
     5. Loop through each image file to generate and save both unconditional and conditional captions.
     """
-    # Load environment variables from a .env file
-    load_dotenv()
-    
-    # Initialize the configuration manager to handle settings
-    config_manager = ConfigurationManager()
-    # Retrieve the configuration settings from the manager
-    config = config_manager.config
-    
-    # Initialize the ImageCaptioner with the specified model
-    captioner = ImageCaptioner(model_name=config.get('MODEL_NAME'))
-    
-    # Get a list of all image files in the specified directory from configuration
-    image_files = ConfigurationManager.list_image_files(config['IMAGE_FOLDER'])
-    use_conditional_caption = config.get('USE_CONDITIONAL_CAPTION', True)
-    
-    # Determine whether to use conditional captioning based on configuration
-    use_conditional_caption = config.get('USE_CONDITIONAL_CAPTION', True)
+    # Get configuration from environment variables
+    image_folder = os.getenv('IMAGE_FOLDER', 'images')
+    ending_caption = os.getenv('ENDING_CAPTION', 'AI generated Artwork by Daethyra using Stable Diffusion XL.').strip('"')
+    model_name = os.getenv('MODEL_NAME', 'Salesforce/blip-image-captioning-base')
+    use_conditional_caption = os.getenv('USE_CONDITIONAL_CAPTION', 'true').lower() == 'true'
+
+    captioner = ImageCaptioner(model_name=model_name)
+
+    image_files = glob.glob(os.path.join(image_folder, "*.jpg"), os.path.join(image_folder, "*.jpeg"), os.path.join(image_folder, "*.png"))
     
     # Process each image file in the directory
     for image_file in image_files:
