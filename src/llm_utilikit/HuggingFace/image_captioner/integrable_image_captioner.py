@@ -1,4 +1,5 @@
 import os
+import glob
 import logging
 import csv
 import json
@@ -7,11 +8,16 @@ from dotenv import load_dotenv
 import asyncio
 import torch
 from PIL import Image, UnidentifiedImageError
-from transformers import BlipProcessor, BlipForConditionalGeneration, PreTrainedModel
+from transformers import BlipProcessor, BlipForConditionalGeneration
+import hashlib
 
-# Initialize logging at the beginning of the script
+# Initialize module-specific logger
+logger = logging.getLogger(__name__)
 logging_level = os.getenv('LOGGING_LEVEL', 'INFO').upper()
-logging.basicConfig(level=getattr(logging, logging_level, logging.INFO))
+logger.setLevel(getattr(logging, logging_level, logging.INFO))
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 
 class ImageCaptioner:
     """
@@ -31,16 +37,18 @@ class ImageCaptioner:
         
         Args:
             model_name (str): The name of the model to be loaded.
+            
+        This initializer sets the device to 'cuda:0' if a CUDA-capable GPU is available, otherwise defaults to 'cpu'.
         """
         self.is_initialized = True
         self.caption_cache = {}
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         try:
             self.processor = BlipProcessor.from_pretrained(model_name)
             self.model = BlipForConditionalGeneration.from_pretrained(model_name).to(self.device)
-            logging.info("Successfully loaded model and processor.")
+            logger.info("Successfully loaded model and processor.")
         except Exception as e:
-            logging.error(f"Failed to load model and processor: {e}")
+            logger.error(f"Failed to load model and processor: {e}")
             self.is_initialized = False
             raise
 
@@ -57,12 +65,18 @@ class ImageCaptioner:
         try:
             return Image.open(image_path).convert('RGB')
         except UnidentifiedImageError as e:
-            logging.error(f"Failed to load image: {e}")
-            return None
+            logger.error(f"Failed to load image: {e}")
+        except FileNotFoundError:
+            logger.error(f"Image file not found: {image_path}")
+        except Exception as e:
+            logger.error(f"Unknown error occurred while loading image: {e}")
+        return None
 
     async def generate_caption(self, raw_image: Image.Image, text: str = None) -> str:
         """
         Generates a caption for the given image asynchronously with added features like caching and device selection.
+        
+        This method uses a hash of the image contents for caching to efficiently store and retrieve previously generated captions.
         
         Args:
             raw_image (Image.Image): The image for which to generate a caption.
@@ -72,26 +86,30 @@ class ImageCaptioner:
             str or None: The generated caption or None if captioning failed.
         """
         try:
-            # Check if this image has been processed before
-            cache_key = f"{id(raw_image)}_{text}"
+            def image_hash(image: Image.Image) -> str:
+                image_bytes = image.tobytes()
+                return hashlib.md5(image_bytes).hexdigest()
+
+            cache_key = f"{image_hash(raw_image)}_{text}"
             if cache_key in self.caption_cache:
                 return self.caption_cache[cache_key]
-            
+
             inputs = self.processor(raw_image, text, return_tensors="pt").to(self.device) if text else self.processor(raw_image, return_tensors="pt").to(self.device)
             out = self.model.generate(**inputs)
             caption = self.processor.batch_decode(out, skip_special_tokens=True)[0]
-            
-            # Store the generated caption in cache
+
             self.caption_cache[cache_key] = caption
-            
+
             return caption
         except Exception as e:
-            logging.error(f"Failed to generate caption: {e}")
+            logger.error(f"Failed to generate caption: {e}")
             return None
 
     def save_to_csv(self, image_name: str, caption: str, file_name: str = None, csvfile=None):
         """
         Saves the image name and the generated caption to a CSV file, supporting both file name and file object inputs.
+        
+        This method now includes enhanced error handling to manage potential issues when writing to the CSV file.
         
         Args:
             image_name (str): The name of the image file.
@@ -99,14 +117,14 @@ class ImageCaptioner:
             file_name (str, optional): The name of the CSV file. Defaults to a timestamp-based name.
             csvfile (file object, optional): The CSV file to write to. Takes precedence over file_name if provided.
         """
-        if csvfile is None:
-            if file_name is None:
-                file_name = f"captions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        if file_name is None:
+            file_name = f"captions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        try:
             with open(file_name, 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow([image_name, caption])
-            if csvfile is not None and file_name is not None:
-                csvfile.close()
+        except Exception as e:
+            logger.error(f"Failed to write to CSV file: {e}")
 
 class ConfigurationManager:
     """
@@ -121,10 +139,12 @@ class ConfigurationManager:
         Initializes the ConfigurationManager and loads settings from a JSON file and environment variables.
         """
         self.config = self.load_config()
-    
+
     def load_config(self) -> dict:
         """
         Loads and validates configuration settings from a JSON file and environment variables.
+        
+        This method includes logic to check for updates in environment variables and potentially updates the configuration file if changes are detected.
         
         Returns:
             dict: The loaded and validated configuration settings.
@@ -176,14 +196,17 @@ class ConfigurationManager:
         Args:
             config (dict): The loaded configuration settings.
         """
-        if not config.get('IMAGE_FOLDER'):
-            logging.error("The IMAGE_FOLDER is missing or invalid.")
-        
-        if not config.get('BASE_NAME'):
-            logging.error("The BASE_NAME is missing or invalid.")
-        
-        if not config.get('ENDING_CAPTION'):
-            logging.error("The ENDING_CAPTION is missing or invalid.")
+        if not all(key in config for key in ['IMAGE_FOLDER', 'BASE_NAME', 'ENDING_CAPTION']):
+            raise ValueError("Invalid configuration settings.")
+
+    @staticmethod
+    def list_image_files(directory: str) -> list:
+        # Set file types collected | Images only
+        file_patterns = ["*.jpg", "*.jpeg", "*.png"]
+        image_files = []
+        for pattern in file_patterns:
+            image_files.extend(glob.glob(os.path.join(directory, pattern)))
+        return image_files
 
 async def main() -> None:
     """
@@ -199,37 +222,37 @@ async def main() -> None:
     # Load environment variables from a .env file
     load_dotenv()
     
-    # Initialize the configuration manager to load and manage settings
+    # Initialize the configuration manager to handle settings
     config_manager = ConfigurationManager()
+    # Retrieve the configuration settings from the manager
     config = config_manager.config
-
+    
     # Initialize the ImageCaptioner with the specified model
     captioner = ImageCaptioner()
-
-    # Get a list of all image files in the specified directory
-    image_files = list_image_files(config['IMAGE_FOLDER'])
     
-    # Default to using the conditional captioning logic
+    # Get a list of all image files in the specified directory from configuration
+    image_files = ConfigurationManager.list_image_files(config['IMAGE_FOLDER'])
+    
+    # Determine whether to use conditional captioning based on configuration
     use_conditional_caption = config.get('USE_CONDITIONAL_CAPTION', True)
-
-    # Loop through each image file in the directory
+    
+    # Process each image file in the directory
     for image_file in image_files:
+        # Load the image from file
         raw_image = captioner.load_image(image_file)
-        
+    
         try:
+            # Check if the image was successfully loaded
             if raw_image:
-                # If the user has opted for conditional captions, generate and save them.
-                if use_conditional_caption:
-                    caption = await captioner.generate_caption(raw_image, config['ENDING_CAPTION'])
-                else:
-                    # Fallback to unconditional caption if the conditional caption is not selected.
-                    caption = await captioner.generate_caption(raw_image)
-                
-                # Save the chosen caption to a CSV file.
+                # Generate a caption, conditionally or unconditionally, based on the configuration
+                caption = await captioner.generate_caption(raw_image, config['ENDING_CAPTION']) if use_conditional_caption else await captioner.generate_caption(raw_image)
+    
+                # Save the image file name and its generated caption to a CSV file
                 captioner.save_to_csv(os.path.basename(image_file), caption)
-                
         except Exception as e:
-            logging.error(f"An unexpected error occurred: {e}")
+            # Log any errors that occur during the caption generation or CSV writing process
+            logger.error(f"An unexpected error occurred: {e}")
 
+# Entry point for the script execution
 if __name__ == "__main__":
     asyncio.run(main())
