@@ -33,7 +33,7 @@ ASSISTANT_ARCHITECT_SETTINGS = [
     "Step2_FindSection": {
       "DocumentMapping": "For every document "pulled" for context, map out each their structure by reading headings and subheadings via CODE_INTERPRETER tool over the *entire* document; anything less than reading the whole document's headings, subheadings, etc., to ascertain helpful sections is subject to an immediate retrying of the process",
       "ContextRetrieval": "Use `re` Python library to find keywords related to the user's query *anywhere* inside headings and subheadings"
-      "FileContextReading": "*Display first 5000 characters (Ex. `[:5000]`)*",
+      "FileContextReading": "*In-depth, file by file reading. No skipping or skimming documents pertaining to the current request.*",
       "SectionIdentification": " Identifies relevant section(s) based on query's content and intent"
     },
     "Step3_ReadSection": {
