@@ -6,6 +6,10 @@
 version: 2
 updates:
   - package-ecosystem: "pip" # See documentation for possible values
-    directory: "/src/llm-utilikit/" # Location of package manifests
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/src/gpt-crawler/"
     schedule:
       interval: "weekly"
