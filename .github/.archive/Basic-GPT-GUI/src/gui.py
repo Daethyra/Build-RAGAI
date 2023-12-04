@@ -14,39 +14,39 @@ from chat import OpenAI_Chat
 
 # Setting up logging
 logging.basicConfig(
-    filename='app.log', 
-    filemode='a', 
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
-    level=logging.INFO
+    filename="app.log",
+    filemode="a",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
 )
 
 # Setting up panel
 pn.extension()
-_ = load_dotenv(find_dotenv()) # read local .env file
+_ = load_dotenv(find_dotenv())  # read local .env file
 
 # Initialize OpenAI API key
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class ChatApplication(tk.Tk):
-    """ Main GUI Application
-    """
+    """Main GUI Application"""
+
     def __init__(self, chat_model, messages=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         if messages is None:
             messages = []
         self.title("Chatbot")
-        self.configure(bg='white')
+        self.configure(bg="white")
         self.chat_model = chat_model
         self.chat_model.add_initial_message(messages)
 
         # Role variable for checkbutton
         self.role_var = tk.StringVar()
-        self.role_var.set('user')
+        self.role_var.set("user")
 
         # Make window rounded
-        self.attributes('-alpha', 0.9)  
-        self['bg']='white'
+        self.attributes("-alpha", 0.9)
+        self["bg"] = "white"
 
         self.setup_ui()
 
@@ -58,44 +58,61 @@ class ChatApplication(tk.Tk):
             messages=self.messages,
             temperature=self.temperature,
         )
-        return response.choices[0].message["content"] # type: ignore
+        return response.choices[0].message["content"]  # type: ignore
 
     # Reset conversation
     def reset_conversation(self):
         self.messages = []
-        
+
     # Add initial messages
     def add_initial_messages(self, messages):
         self.messages.extend(messages)
-    
+
     # Setup UI
     def setup_ui(self):
-        self.geometry('800x600')  # Increase window size
+        self.geometry("800x600")  # Increase window size
 
-        self.top_frame = tk.Frame(self, bg='white')
+        self.top_frame = tk.Frame(self, bg="white")
         self.top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        self.model_label = tk.Label(self.top_frame, text=f"Model: {self.chat_model.model}", bg='white', fg='black')
+        self.model_label = tk.Label(
+            self.top_frame,
+            text=f"Model: {self.chat_model.model}",
+            bg="white",
+            fg="black",
+        )
         self.model_label.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.text_area = scrolledtext.ScrolledText(self.top_frame, wrap = tk.WORD, width=40, height=10, font =("Arial", 15))
+        self.text_area = scrolledtext.ScrolledText(
+            self.top_frame, wrap=tk.WORD, width=40, height=10, font=("Arial", 15)
+        )
         self.text_area.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        self.bottom_frame = tk.Frame(self, bg='white')
+        self.bottom_frame = tk.Frame(self, bg="white")
         self.bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.message_entry = tk.Entry(self.bottom_frame, width=30, font=("Arial", 15))
         self.message_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5, pady=5)
         self.message_entry.bind("<Return>", self.send_message)
 
-        self.send_button = tk.Button(self.bottom_frame, text="Send", command=self.send_message)
+        self.send_button = tk.Button(
+            self.bottom_frame, text="Send", command=self.send_message
+        )
         self.send_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-        self.reset_button = tk.Button(self.bottom_frame, text="Reset", command=self.reset_conversation)
+        self.reset_button = tk.Button(
+            self.bottom_frame, text="Reset", command=self.reset_conversation
+        )
         self.reset_button.pack(side=tk.LEFT, padx=5, pady=5)
 
         # Role selection
-        self.role_button = ttk.Checkbutton(self.bottom_frame, text="System", onvalue='system', offvalue='user', variable=self.role_var)
+        self.role_button = ttk.Checkbutton(
+            self.bottom_frame,
+            text="System",
+            onvalue="system",
+            offvalue="user",
+            variable=self.role_var,
+        )
         self.role_button.pack(side=tk.LEFT, padx=5, pady=5)
 
     # Send message to chatbot
@@ -121,8 +138,8 @@ class ChatApplication(tk.Tk):
                 self.text_area.config(state=tk.DISABLED)
                 logging.info(f"User: {message}, Bot: {response}")
             except Exception as e:
-                    messagebox.showerror("Error", str(e))
-                    logging.error(f"Error while getting response: {str(e)}")
+                messagebox.showerror("Error", str(e))
+                logging.error(f"Error while getting response: {str(e)}")
 
     # Reset conversation
     def reset_conversation(self):
@@ -146,13 +163,8 @@ if __name__ == "__main__":
     - Your main job is to assist the user with whatever they're working on.\
     - Await user input for further instructions.
 """
-# Aggregate data into a list for the chatbot to use
-    messages = [
-        {
-            "role": "system",
-            "content": Instructions
-        }
-    ]
+    # Aggregate data into a list for the chatbot to use
+    messages = [{"role": "system", "content": Instructions}]
 
     # Initialize the chatbot
     chat_model = OpenAI_Chat()

@@ -2,13 +2,19 @@ import os
 import random
 import torch
 from accelerate import Accelerator
-from transformers import AdamW, AutoModelForSequenceClassification, get_scheduler, AutoTokenizer
+from transformers import (
+    AdamW,
+    AutoModelForSequenceClassification,
+    get_scheduler,
+    AutoTokenizer,
+)
 from torch.utils.data import DataLoader, Subset
 from tqdm import tqdm
 from dotenv import load_dotenv
 import unittest
 
 load_dotenv()
+
 
 class Trainer:
     """
@@ -23,7 +29,17 @@ class Trainer:
         num_epochs (int, optional): The number of epochs to train for. Defaults to 3.
         lr (float, optional): The learning rate to use for the optimizer. Defaults to 3e-5.
     """
-    def __init__(self, checkpoint=None, train_dataloader=None, eval_dataloader=None, val_dataloader=None, test_dataloader=None, num_epochs=None, lr=None):
+
+    def __init__(
+        self,
+        checkpoint=None,
+        train_dataloader=None,
+        eval_dataloader=None,
+        val_dataloader=None,
+        test_dataloader=None,
+        num_epochs=None,
+        lr=None,
+    ):
         """
         Initializes a new instance of the Trainer class.
 
@@ -36,14 +52,18 @@ class Trainer:
             num_epochs (int, optional): The number of epochs to train for. Defaults to 3.
             lr (float, optional): The learning rate to use for the optimizer. Defaults to 3e-5.
         """
-        self.checkpoint = checkpoint or os.getenv("CHECKPOINT", "distilbert-base-uncased")
+        self.checkpoint = checkpoint or os.getenv(
+            "CHECKPOINT", "distilbert-base-uncased"
+        )
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.val_dataloader = val_dataloader
         self.test_dataloader = test_dataloader
         self.num_epochs = num_epochs or int(os.getenv("NUM_EPOCHS", 3))
         self.lr = lr or float(os.getenv("LR", 3e-5))
-        self.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        self.device = (
+            torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        )
         self.accelerator = Accelerator()
         self.model = None
         self.optimizer = None
@@ -54,20 +74,39 @@ class Trainer:
         """
         Initializes the model, optimizer, and learning rate scheduler.
         """
-        if self.train_dataloader is None or self.eval_dataloader is None or self.val_dataloader is None or self.test_dataloader is None:
+        if (
+            self.train_dataloader is None
+            or self.eval_dataloader is None
+            or self.val_dataloader is None
+            or self.test_dataloader is None
+        ):
             raise ValueError("Data loaders not defined. Cannot prepare trainer.")
-        self.model = AutoModelForSequenceClassification.from_pretrained(self.checkpoint, num_labels=2)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            self.checkpoint, num_labels=2
+        )
         self.optimizer = AdamW(self.model.parameters(), lr=self.lr)
         self.model.to(self.device)
-        self.train_dataloader, self.eval_dataloader, self.val_dataloader, self.test_dataloader, self.model, self.optimizer = self.accelerator.prepare(
-            self.train_dataloader, self.eval_dataloader, self.val_dataloader, self.test_dataloader, self.model, self.optimizer
+        (
+            self.train_dataloader,
+            self.eval_dataloader,
+            self.val_dataloader,
+            self.test_dataloader,
+            self.model,
+            self.optimizer,
+        ) = self.accelerator.prepare(
+            self.train_dataloader,
+            self.eval_dataloader,
+            self.val_dataloader,
+            self.test_dataloader,
+            self.model,
+            self.optimizer,
         )
         num_training_steps = self.num_epochs * len(self.train_dataloader)
         self.lr_scheduler = get_scheduler(
             "linear",
             optimizer=self.optimizer,
             num_warmup_steps=0,
-            num_training_steps=num_training_steps
+            num_training_steps=num_training_steps,
         )
         self.progress_bar = tqdm(range(num_training_steps))
 
@@ -78,7 +117,12 @@ class Trainer:
         Raises:
             ValueError: If the model, optimizer, learning rate scheduler, or progress bar is not initialized.
         """
-        if self.model is None or self.optimizer is None or self.lr_scheduler is None or self.progress_bar is None:
+        if (
+            self.model is None
+            or self.optimizer is None
+            or self.lr_scheduler is None
+            or self.progress_bar is None
+        ):
             raise ValueError("Trainer not prepared. Call prepare() method first.")
         self.model.train()
         for epoch in range(self.num_epochs):
@@ -94,7 +138,10 @@ class Trainer:
                 self.optimizer.zero_grad()
                 self.progress_bar.update(1)
 
-def split_dataset(dataset, train_ratio=0.8, eval_ratio=0.1, val_ratio=0.05, test_ratio=0.05, seed=42):
+
+def split_dataset(
+    dataset, train_ratio=0.8, eval_ratio=0.1, val_ratio=0.05, test_ratio=0.05, seed=42
+):
     """
     Splits a dataset into training, evaluation, validation, and test subsets.
 
@@ -118,14 +165,22 @@ def split_dataset(dataset, train_ratio=0.8, eval_ratio=0.1, val_ratio=0.05, test
     val_size = int(val_ratio * num_examples)
     test_size = int(test_ratio * num_examples)
     train_indices = indices[:train_size]
-    eval_indices = indices[train_size:train_size+eval_size]
-    val_indices = indices[train_size+eval_size:train_size+eval_size+val_size]
-    test_indices = indices[train_size+eval_size+val_size:train_size+eval_size+val_size+test_size]
+    eval_indices = indices[train_size : train_size + eval_size]
+    val_indices = indices[train_size + eval_size : train_size + eval_size + val_size]
+    test_indices = indices[
+        train_size
+        + eval_size
+        + val_size : train_size
+        + eval_size
+        + val_size
+        + test_size
+    ]
     train_subset = Subset(dataset, train_indices)
     eval_subset = Subset(dataset, eval_indices)
     val_subset = Subset(dataset, val_indices)
     test_subset = Subset(dataset, test_indices)
     return train_subset, eval_subset, val_subset, test_subset
+
 
 # Example usage
 if __name__ == "__main__":
@@ -133,7 +188,9 @@ if __name__ == "__main__":
 
     # Load dataset
     data_path = os.getenv("DATA_PATH")
-    tokenizer = AutoTokenizer.from_pretrained(os.getenv("TOKENIZER", "distilbert-base-uncased"))
+    tokenizer = AutoTokenizer.from_pretrained(
+        os.getenv("TOKENIZER", "distilbert-base-uncased")
+    )
     dataset = MyDataset(data_path, tokenizer)
 
     # Split dataset
@@ -142,7 +199,9 @@ if __name__ == "__main__":
     val_ratio = float(os.getenv("VAL_RATIO", 0.05))
     test_ratio = float(os.getenv("TEST_RATIO", 0.05))
     seed = int(os.getenv("SEED", 42))
-    train_subset, eval_subset, val_subset, test_subset = split_dataset(dataset, train_ratio, eval_ratio, val_ratio, test_ratio, seed)
+    train_subset, eval_subset, val_subset, test_subset = split_dataset(
+        dataset, train_ratio, eval_ratio, val_ratio, test_ratio, seed
+    )
 
     # Create data loaders
     batch_size = int(os.getenv("BATCH_SIZE", 16))
@@ -152,7 +211,12 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_subset, batch_size=batch_size, shuffle=False)
 
     # Create trainer
-    trainer = Trainer(train_dataloader=train_dataloader, eval_dataloader=eval_dataloader, val_dataloader=val_dataloader, test_dataloader=test_dataloader)
+    trainer = Trainer(
+        train_dataloader=train_dataloader,
+        eval_dataloader=eval_dataloader,
+        val_dataloader=val_dataloader,
+        test_dataloader=test_dataloader,
+    )
 
     # Prepare trainer
     trainer.prepare()
@@ -192,20 +256,53 @@ if __name__ == "__main__":
         accuracy = total_correct / total_samples
         print(f"Test accuracy: {accuracy:.4f}")
 
+
 class TestFineTuneSequenceClassificationModel(unittest.TestCase):
     def setUp(self):
         self.tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
         self.dataset = MyDataset("data_path", self.tokenizer)
-        self.train_subset, self.eval_subset, self.val_subset, self.test_subset = split_dataset(self.dataset, train_ratio=0.8, eval_ratio=0.1, val_ratio=0.05, test_ratio=0.05, seed=42)
+        (
+            self.train_subset,
+            self.eval_subset,
+            self.val_subset,
+            self.test_subset,
+        ) = split_dataset(
+            self.dataset,
+            train_ratio=0.8,
+            eval_ratio=0.1,
+            val_ratio=0.05,
+            test_ratio=0.05,
+            seed=42,
+        )
         self.batch_size = 16
-        self.train_dataloader = DataLoader(self.train_subset, batch_size=self.batch_size, shuffle=True)
-        self.eval_dataloader = DataLoader(self.eval_subset, batch_size=self.batch_size, shuffle=False)
-        self.val_dataloader = DataLoader(self.val_subset, batch_size=self.batch_size, shuffle=False)
-        self.test_dataloader = DataLoader(self.test_subset, batch_size=self.batch_size, shuffle=False)
-        self.trainer = Trainer(train_dataloader=self.train_dataloader, eval_dataloader=self.eval_dataloader, val_dataloader=self.val_dataloader, test_dataloader=self.test_dataloader)
+        self.train_dataloader = DataLoader(
+            self.train_subset, batch_size=self.batch_size, shuffle=True
+        )
+        self.eval_dataloader = DataLoader(
+            self.eval_subset, batch_size=self.batch_size, shuffle=False
+        )
+        self.val_dataloader = DataLoader(
+            self.val_subset, batch_size=self.batch_size, shuffle=False
+        )
+        self.test_dataloader = DataLoader(
+            self.test_subset, batch_size=self.batch_size, shuffle=False
+        )
+        self.trainer = Trainer(
+            train_dataloader=self.train_dataloader,
+            eval_dataloader=self.eval_dataloader,
+            val_dataloader=self.val_dataloader,
+            test_dataloader=self.test_dataloader,
+        )
 
     def test_split_dataset(self):
-        train_subset, eval_subset, val_subset, test_subset = split_dataset(self.dataset, train_ratio=0.8, eval_ratio=0.1, val_ratio=0.05, test_ratio=0.05, seed=42)
+        train_subset, eval_subset, val_subset, test_subset = split_dataset(
+            self.dataset,
+            train_ratio=0.8,
+            eval_ratio=0.1,
+            val_ratio=0.05,
+            test_ratio=0.05,
+            seed=42,
+        )
         self.assertEqual(len(train_subset), 80)
         self.assertEqual(len(eval_subset), 10)
         self.assertEqual(len(val_subset), 5)
@@ -242,5 +339,6 @@ class TestFineTuneSequenceClassificationModel(unittest.TestCase):
             self.assertGreaterEqual(accuracy, 0.0)
             self.assertLessEqual(accuracy, 1.0)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

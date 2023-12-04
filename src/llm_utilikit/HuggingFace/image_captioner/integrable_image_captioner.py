@@ -11,16 +11,19 @@ import hashlib
 
 # Initialize module-specific logger
 logger = logging.getLogger(__name__)
-logging_level = os.getenv('LOGGING_LEVEL', 'INFO').upper()
+logging_level = os.getenv("LOGGING_LEVEL", "INFO").upper()
 logger.setLevel(getattr(logging, logging_level, logging.INFO))
 handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+handler.setFormatter(
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
 logger.addHandler(handler)
+
 
 class ImageCaptioner:
     """
     A class for generating captions for images using the BlipForConditionalGeneration model.
-    
+
     Attributes:
         processor (BlipProcessor): Processor for image and text data.
         model (BlipForConditionalGeneration): The captioning model.
@@ -32,19 +35,21 @@ class ImageCaptioner:
     def __init__(self, model_name: str = "Salesforce/blip-image-captioning-base"):
         """
         Initializes the ImageCaptioner with a specific model and additional features like caching and device selection.
-        
+
         Args:
             model_name (str): The name of the model to be loaded.
-            
+
         This initializer sets the device to 'cuda:0' if a CUDA-capable GPU is available, otherwise defaults to 'cpu'.
         """
         self.is_initialized = True
         self.caption_cache = {}
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        model_name = os.getenv('MODEL_NAME', "Salesforce/blip-image-captioning-base")
+        model_name = os.getenv("MODEL_NAME", "Salesforce/blip-image-captioning-base")
         try:
             self.processor = BlipProcessor.from_pretrained(model_name)
-            self.model = BlipForConditionalGeneration.from_pretrained(model_name).to(self.device)
+            self.model = BlipForConditionalGeneration.from_pretrained(model_name).to(
+                self.device
+            )
             logger.info("Successfully loaded model and processor.")
         except Exception as e:
             logger.error(f"Failed to load model and processor: {e}")
@@ -54,15 +59,15 @@ class ImageCaptioner:
     def load_image(self, image_path: str) -> Image.Image:
         """
         Loads an image from a specified path and converts it to RGB format with enhanced error handling.
-        
+
         Args:
             image_path (str): The path to the image file.
-            
+
         Returns:
             PIL.Image.Image or None: The loaded image or None if loading failed.
         """
         try:
-            return Image.open(image_path).convert('RGB')
+            return Image.open(image_path).convert("RGB")
         except UnidentifiedImageError as e:
             logger.error(f"Failed to load image: {e}")
         except FileNotFoundError:
@@ -74,17 +79,18 @@ class ImageCaptioner:
     async def generate_caption(self, raw_image: Image.Image, text: str = None) -> str:
         """
         Generates a caption for the given image asynchronously with added features like caching and device selection.
-        
+
         This method uses a hash of the image contents for caching to efficiently store and retrieve previously generated captions.
-        
+
         Args:
             raw_image (Image.Image): The image for which to generate a caption.
             text (str, optional): Optional text to condition the captioning.
-            
+
         Returns:
             str or None: The generated caption or None if captioning failed.
         """
         try:
+
             def image_hash(image: Image.Image) -> str:
                 image_bytes = image.tobytes()
                 return hashlib.md5(image_bytes).hexdigest()
@@ -93,7 +99,11 @@ class ImageCaptioner:
             if cache_key in self.caption_cache:
                 return self.caption_cache[cache_key]
 
-            inputs = self.processor(raw_image, text, return_tensors="pt").to(self.device) if text else self.processor(raw_image, return_tensors="pt").to(self.device)
+            inputs = (
+                self.processor(raw_image, text, return_tensors="pt").to(self.device)
+                if text
+                else self.processor(raw_image, return_tensors="pt").to(self.device)
+            )
             out = self.model.generate(**inputs)
             caption = self.processor.batch_decode(out, skip_special_tokens=True)[0]
 
@@ -104,7 +114,14 @@ class ImageCaptioner:
             logger.error(f"Failed to generate caption: {e}")
             return None
 
-    def save_to_csv(self, image_name: str, caption: str, file_name: str = None, csvfile=None, mode='a'):
+    def save_to_csv(
+        self,
+        image_name: str,
+        caption: str,
+        file_name: str = None,
+        csvfile=None,
+        mode="a",
+    ):
         """
         Saves the image name and the generated caption to a CSV file. This method supports writing to a CSV file using either a file name or a file object. If a file object is provided, it takes precedence over the file name.
 
@@ -118,8 +135,8 @@ class ImageCaptioner:
             mode (str, optional): The file mode for writing to the CSV (e.g., 'a' for append, 'w' for write). Defaults to 'a'.
         """
         if csvfile is None and file_name is not None:
-            csvfile = open(file_name, mode, newline='')
-        
+            csvfile = open(file_name, mode, newline="")
+
         try:
             writer = csv.writer(csvfile)
             writer.writerow([image_name, caption])
@@ -129,10 +146,11 @@ class ImageCaptioner:
             if csvfile and file_name is not None:
                 csvfile.close()
 
+
 async def main() -> None:
     """
     Asynchronous main function to initialize and run the image captioning pipeline.
-    
+
     This function performs the following tasks:
     1. Load environment variables.
     2. Initialize the configuration manager.
@@ -141,31 +159,44 @@ async def main() -> None:
     5. Loop through each image file to generate and save both unconditional and conditional captions.
     """
     # Get configuration from environment variables
-    image_folder = os.getenv('IMAGE_FOLDER', 'images')
-    ending_caption = os.getenv('ENDING_CAPTION', 'AI generated Artwork by Daethyra using Stable Diffusion XL.').strip('"')
-    model_name = os.getenv('MODEL_NAME', 'Salesforce/blip-image-captioning-base')
-    use_conditional_caption = os.getenv('USE_CONDITIONAL_CAPTION', 'true').lower() == 'true'
+    image_folder = os.getenv("IMAGE_FOLDER", "images")
+    ending_caption = os.getenv(
+        "ENDING_CAPTION", "AI generated Artwork by Daethyra using Stable Diffusion XL."
+    ).strip('"')
+    model_name = os.getenv("MODEL_NAME", "Salesforce/blip-image-captioning-base")
+    use_conditional_caption = (
+        os.getenv("USE_CONDITIONAL_CAPTION", "true").lower() == "true"
+    )
 
     captioner = ImageCaptioner(model_name=model_name)
 
-    image_files = glob.glob(os.path.join(image_folder, "*.jpg"), os.path.join(image_folder, "*.jpeg"), os.path.join(image_folder, "*.png"))
-    
+    image_files = glob.glob(
+        os.path.join(image_folder, "*.jpg"),
+        os.path.join(image_folder, "*.jpeg"),
+        os.path.join(image_folder, "*.png"),
+    )
+
     # Process each image file in the directory
     for image_file in image_files:
         # Load the image from file
         raw_image = captioner.load_image(image_file)
-    
+
         try:
             # Check if the image was successfully loaded
             if raw_image:
                 # Generate a caption, conditionally or unconditionally, based on the configuration
-                caption = await captioner.generate_caption(raw_image, ending_caption) if use_conditional_caption else await captioner.generate_caption(raw_image)
-    
+                caption = (
+                    await captioner.generate_caption(raw_image, ending_caption)
+                    if use_conditional_caption
+                    else await captioner.generate_caption(raw_image)
+                )
+
                 # Save the image file name and its generated caption to a CSV file
                 captioner.save_to_csv(os.path.basename(image_file), caption)
         except Exception as e:
             # Log any errors that occur during the caption generation or CSV writing process
             logger.error(f"An unexpected error occurred with {image_file}: {e}")
+
 
 # Entry point for the script execution
 if __name__ == "__main__":
