@@ -7,53 +7,44 @@ from langchain.llms import OpenAI
 from tqdm import tqdm
 import torch
 
-# Setting up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class SpeechProcessor:
     """
-    SpeechProcessor handles the process of converting speech to text, extracting tasks from the transcribed text,
-    and organizing these tasks based on a structured template.
+    Handles the process of converting speech to text and extracting tasks from the transcribed text.
 
-    Workflow:
-    1. Transcription: The `transcribe` method uses an ASR (Automatic Speech Recognition) model to convert
-       speech from an audio file into text.
-    2. Task Extraction: The `extract_tasks` method takes the transcribed text and formats it into a prompt
-       for the LLM (Large Language Model). This prompt includes instructions for the model to organize and
-       categorize tasks based on the content of the transcribed text.
-    3. Prompt Formatting: The `format_prompt` static method constructs the prompt sent to the LLM. It incorporates
-       the transcribed text into a larger template that guides the model in structuring and organizing tasks.
-       This method allows for the dynamic integration of transcribed text with placeholders for task organization.
-
-    Each of these functions works in conjunction to process speech input and extract organized task lists as output.
+    Attributes:
+        asr_pipe (pipeline): The pipeline for automatic speech recognition.
+        llm (OpenAI): The Large Language Model for task extraction.
     """
 
-    def __init__(
-        self,
-        asr_model="openai/whisper-large-v3",
-        llm_model="gpt-3.5-turbo-1106",
-        cuda_device=0,
-    ):
+    def __init__(self, asr_model="openai/whisper-large-v3", llm_model="gpt-3.5-turbo-1106", cuda_device=0):
         """
-        Initializes the SpeechProcessor with specified models and device.
+        Initializes the SpeechProcessor with the specified ASR and LLM models.
 
-        :param asr_model: Automatic Speech Recognition model name.
-        :param llm_model: Large Language Model name.
-        :param cuda_device: CUDA device ID for GPU usage.
+        Args:
+            asr_model (str): The name of the ASR model.
+            llm_model (str): The name of the LLM model.
+            cuda_device (int): CUDA device ID for GPU usage.
         """
         try:
-            self.asr_pipe = pipeline(
-                "automatic-speech-recognition", model=asr_model, device=cuda_device
-            )
+            self.asr_pipe = pipeline("automatic-speech-recognition", model=asr_model, device=cuda_device)
             self.llm = OpenAI(model=llm_model)
         except Exception as e:
             logging.error(f"Error initializing models: {e}")
             raise
 
     def transcribe(self, speech_file):
+        """
+        Transcribes speech from an audio file into text.
+
+        Args:
+            speech_file (str): The path to the audio file.
+
+        Returns:
+            str: Transcribed text or None if transcription fails.
+        """
         try:
             return self.asr_pipe(speech_file)["text"]
         except Exception as e:
@@ -63,6 +54,15 @@ class SpeechProcessor:
             torch.cuda.empty_cache()
 
     def extract_tasks(self, transcribed_text):
+        """
+        Extracts tasks from the transcribed text using a Large Language Model.
+
+        Args:
+            transcribed_text (str): The transcribed text from the speech.
+
+        Returns:
+            dict: Extracted tasks or None if task extraction fails.
+        """
         try:
             prompt = self.format_prompt(transcribed_text)
             return self.llm(prompt, max_tokens=150)
@@ -72,7 +72,15 @@ class SpeechProcessor:
 
     @staticmethod
     def format_prompt(transcribed_text):
-        # Enhanced prompt formatting logic
+        """
+        Formats the transcribed text into a prompt for the LLM.
+
+        Args:
+            transcribed_text (str): The transcribed text.
+
+        Returns:
+            str: A formatted prompt for the LLM.
+        """
         return f"""
         Please use the following template to organize the user's tasks based on the provided text. Feel free to add sections, use numbering, and structure the content as needed.
 
@@ -87,7 +95,7 @@ class SpeechProcessor:
             1. 
             2. 
           - Intentions:
-            - (when a user makes intentions clear for how they'll go about their day, or an intention is implicitly, yet clearly, mentioned.)
+            - ["When a user makes intentions clear for how they'll go about their day, or an intention is implicitly, yet clearly, mentioned."]
           - Additional Notes:
             - [POTENTIAL_MISSED_TASKS]
             - [ANY_OTHER_RELEVANT_INFORMATION]
@@ -95,28 +103,22 @@ class SpeechProcessor:
         Please structure the tasks and information in an organized and clear manner, adding sections and numbers as appropriate.
         """
 
-
 class DataStore:
     """
-    DataStore manages the storage, retrieval, and updating of transcribed text and extracted tasks.
+    Manages the storage, retrieval, and updating of transcribed text and extracted tasks.
 
-    Workflow:
-    1. Data Initialization: The constructor (__init__) initializes the data store, attempting to load
-       existing data from a specified JSON file or creating a new, empty data structure if the file does not exist.
-    2. Data Loading: The `load_data` method attempts to read and return data from a JSON file. If the file
-       is not found, it initializes an empty data structure with keys for 'transcriptions' and 'tasks'.
-    3. Key Generation: The `get_next_key` method generates a unique key for each new speech transcription,
-       ensuring organized storage.
-    4. Data Addition: The `add_transcription` and `add_tasks` methods allow for the addition of new transcriptions
-       and tasks to the data store under the generated keys.
-    5. Data Saving: The `save_to_file` method writes the current state of the data store to a JSON file,
-       either overwriting the existing file or creating a new timestamped file based on the 'overwrite' flag.
-
-    This class serves as a persistent storage mechanism for the speech-to-task processing workflow, allowing
-    for data persistence and retrieval between sessions.
+    Attributes:
+        data_file (str): The file path for storing data.
+        data (dict): The data structure holding transcriptions and tasks.
     """
 
     def __init__(self, data_file="data_output.json"):
+        """
+        Initializes the DataStore with a specified data file.
+
+        Args:
+            data_file (str): The path to the JSON file for storing data.
+        """
         self.data_file = data_file
         try:
             self.data = self.load_data()
@@ -125,6 +127,12 @@ class DataStore:
             raise
 
     def load_data(self):
+        """
+        Loads data from the specified JSON file.
+
+        Returns:
+            dict: The loaded data or an empty data structure if file not found.
+        """
         try:
             with open(self.data_file, "r") as infile:
                 return json.load(infile)
@@ -132,56 +140,64 @@ class DataStore:
             return {"transcriptions": {}, "tasks": {}}
 
     def get_next_key(self):
+        """
+        Generates a unique key for new data entries.
+
+        Returns:
+            str: A unique key.
+        """
         return f"speech_{len(self.data['transcriptions']) + 1}"
 
     def add_transcription(self, key, transcription):
+        """
+        Adds a transcription to the data store.
+
+        Args:
+            key (str): The key under which to store the transcription.
+            transcription (str): The transcription text.
+        """
         self.data["transcriptions"][key] = transcription
 
     def add_tasks(self, key, tasks):
+        """
+        Adds extracted tasks to the data store.
+
+        Args:
+            key (str): The key under which to store the tasks.
+            tasks (dict): The extracted tasks.
+        """
         self.data["tasks"][key] = tasks
 
     def save_to_file(self, overwrite=False):
+        """
+        Saves the current state of the data store to a JSON file.
+
+        Args:
+            overwrite (bool): If True, overwrite the existing file; otherwise, create a new timestamped file.
+        """
         try:
-            filename = (
-                self.data_file
-                if overwrite
-                else f'{datetime.now().strftime("%m%d%Y_%H%M%S")}_{self.data_file}'
-            )
+            filename = self.data_file if overwrite else f'{datetime.now().strftime("%m%d%Y_%H%M%S")}_{self.data_file}'
             with open(filename, "w") as outfile:
                 json.dump(self.data, outfile, indent=4)
         except Exception as e:
             logging.error(f"Error saving data: {e}")
             raise
 
-
 def get_args():
-    parser = argparse.ArgumentParser(
-        description="Speech Processing and Task Extraction"
-    )
-    parser.add_argument(
-        "--speech_file",
-        type=str,
-        required=True,
-        help="Path to the speech file to process",
-    )
-    parser.add_argument(
-        "--overwrite", action="store_true", help="Overwrite existing data file"
-    )
-    return parser.parse_args()
+    """
+    Parses and returns command-line arguments.
 
+    Returns:
+        Namespace: The parsed command-line arguments.
+    """
+    parser = argparse.ArgumentParser(description="Speech Processing and Task Extraction")
+    parser.add_argument("--speech_file", type=str, required=True, help="Path to the speech file to process")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing data file")
+    return parser.parse_args()
 
 def main():
     """
-    Main execution function for the speech processing and task extraction pipeline.
-
-    Steps:
-    1. Argument Parsing: Parses command-line arguments for the speech file path and overwrite flag.
-    2. Initialization: Creates instances of SpeechProcessor and DataStore.
-    3. Processing:
-        a. Transcription: Transcribes the speech from the provided file.
-        b. Task Extraction: Extracts and organizes tasks from the transcribed text.
-        c. Data Storage: Stores both the transcribed text and the extracted tasks in the DataStore.
-    4. Data Saving: Saves the processed data to a file, with an option to overwrite existing data.
+    Main function to execute the speech-to-task processing pipeline.
     """
     args = get_args()
     speech_processor = SpeechProcessor()
@@ -201,7 +217,6 @@ def main():
 
     data_store.save_to_file(overwrite=args.overwrite)
     logging.info("Data processing completed successfully.")
-
 
 if __name__ == "__main__":
     main()
