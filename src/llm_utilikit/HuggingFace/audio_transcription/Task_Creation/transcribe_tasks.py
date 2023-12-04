@@ -1,3 +1,7 @@
+"""
+The module primarily focuses on converting spoken tasks into a structured and organized format using an AI model, making task management more accessible and user-friendly. The format_prompt method plays a crucial role in achieving this goal by dynamically formatting transcribed speech into a template that guides a Large Language Model (LLM) in categorizing tasks effectively. This process aims to enhance task organization and improve the accessibility and usability of task information for users.
+"""
+
 import json
 import logging
 import argparse
