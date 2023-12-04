@@ -1,7 +1,7 @@
 [project]
 name = "LLM-Utilikit"
 version = "1.0.0"
-description = "This library is designed to enhance large language model projects by offering a curated set of Python modules that can either serve as a robust starting point for new projects or as plug-and-play components to elevate existing ones. The library offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. The library supports OpenAI, LangChain, HuggingFace, and Pinecone libraries. The README file provides a detailed description of the library's modules, including their functionalities and potential use cases. The README file also includes a mind map image and a GNU Affero GPL license."
+description = "Prebuilt AI-powered Python components for leveraging Large Language Models."
 authors = [
     {name = "Daethyra", email = "109057945+Daethyra@users.noreply.github.com"},
 ]
