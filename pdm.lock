@@ -5,7 +5,7 @@
 groups = ["default", "black", "flake8"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:abd2d407df607700c6006326abd486fb0a136042133fcf880b3cf88fb2dfb647"
+content_hash = "sha256:465d1436b5770249e226a30ec38d56de05e82f582628f328b8ac2b6d4964f3b4"
 
 [[package]]
 name = "accelerate"
@@ -1161,7 +1161,6 @@ summary = "Powerful data structures for data analysis, time series, and statisti
 dependencies = [
     "numpy>=1.20.3; python_version < \"3.10\"",
     "numpy>=1.21.0; python_version >= \"3.10\"",
-    "numpy>=1.23.2; python_version >= \"3.11\"",
     "python-dateutil>=2.8.2",
     "pytz>=2020.1",
     "tzdata>=2022.1",
