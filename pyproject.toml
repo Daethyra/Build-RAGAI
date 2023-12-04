@@ -1,6 +1,6 @@
 [project]
 name = "LLM-Utilikit"
-version = "0.3.0"
+version = "1.0.0"
 description = "This library is designed to enhance large language model projects by offering a curated set of Python modules that can either serve as a robust starting point for new projects or as plug-and-play components to elevate existing ones. The library offers a rich set of pluggable components and a treasure trove of large language model prompts and templates. The library supports OpenAI, LangChain, HuggingFace, and Pinecone libraries. The README file provides a detailed description of the library's modules, including their functionalities and potential use cases. The README file also includes a mind map image and a GNU Affero GPL license."
 authors = [
     {name = "Daethyra", email = "109057945+Daethyra@users.noreply.github.com"},
@@ -16,12 +16,26 @@ dependencies = [
     "transformers>=4.34.1",
     "langchain>=0.0.27",
     "pandas>=2.0.3",
+    "langserve[all]>=0.0.32",
+    "torch>=2.1.1",
+    "accelerate>=0.25.0",
+    #"pyaudio>=0.2.14",
+    "PyPDF2>=3.0.1",
+    "Pillow>=10.1.0",
 ]
-requires-python = ">=3.9, <=3.11.1"
+requires-python = ">=3.9, <=3.10.12"
 readme = "README.md"
 license = {text = "GNU Affero General Public License"}
 [tool.pdm]
 index = "https://pypi.org/simple"
+
+[tool.pdm.dev-dependencies]
+black = [
+    "black>=23.11.0",
+]
+flake8 = [
+    "flake8>=6.1.0",
+]
 [tool.black]
 line-length = 88  # Adjust this to your preferred line length
 include = '\.pyi?$'  # Include only Python files
