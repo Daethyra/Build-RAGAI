@@ -11,10 +11,12 @@ from io import StringIO
 from contextlib import redirect_stdout
 from RealTimeASR import RealTimeASR
 
+
 class TestRealTimeASR(unittest.TestCase):
     """
     This class contains unit tests for the RealTimeASR class.
     """
+
     def setUp(self):
         """
         This method sets up the test environment before each test case is run.
@@ -28,7 +30,9 @@ class TestRealTimeASR(unittest.TestCase):
         """
         audio_data = np.ones(16000, dtype=np.int16)
         self.asr_app.sliding_window = np.array([])
-        self.asr_app.sliding_window = np.concatenate((self.asr_app.sliding_window, audio_data))
+        self.asr_app.sliding_window = np.concatenate(
+            (self.asr_app.sliding_window, audio_data)
+        )
         self.assertEqual(len(self.asr_app.sliding_window), 16000)
 
     def test_transcription_cache(self):
@@ -46,7 +50,9 @@ class TestRealTimeASR(unittest.TestCase):
         """
         audio_data = np.ones(16000 * 30, dtype=np.int16)
         self.asr_app.sliding_window = np.array([])
-        self.asr_app.sliding_window = np.concatenate((self.asr_app.sliding_window, audio_data))
+        self.asr_app.sliding_window = np.concatenate(
+            (self.asr_app.sliding_window, audio_data)
+        )
         with redirect_stdout(StringIO()):
             self.asr_app.capture_and_transcribe()
         self.assertEqual(len(self.asr_app.transcription_cache), 1)
@@ -78,7 +84,9 @@ class TestRealTimeASR(unittest.TestCase):
         """
         audio_data = np.ones(16000 * 30, dtype=np.int16)
         self.asr_app.sliding_window = np.array([])
-        self.asr_app.sliding_window = np.concatenate((self.asr_app.sliding_window, audio_data))
+        self.asr_app.sliding_window = np.concatenate(
+            (self.asr_app.sliding_window, audio_data)
+        )
         with redirect_stdout(StringIO()):
             self.asr_app.capture_and_transcribe()
         self.assertEqual(len(self.asr_app.transcription_cache), 1)
@@ -92,5 +100,5 @@ class TestRealTimeASR(unittest.TestCase):
         self.asr_app.close_stream()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

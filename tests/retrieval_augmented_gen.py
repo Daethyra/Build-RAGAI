@@ -1,6 +1,13 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from qa_local_docs import PDFProcessor, ChatOpenAI, Chroma, UniversalSentenceEncoder, RetrievalQA
+from qa_local_docs import (
+    PDFProcessor,
+    ChatOpenAI,
+    Chroma,
+    UniversalSentenceEncoder,
+    RetrievalQA,
+)
+
 
 # Assumes that 'data/' directory contains PDFs
 class TestPDFProcessor(unittest.TestCase):
@@ -26,9 +33,9 @@ class TestPDFProcessor(unittest.TestCase):
         self.assertTrue(isinstance(result, list))
         self.assertTrue(len(result) > 0)
 
-    @patch('qa_local_docs.ChatOpenAI')
-    @patch('qa_local_docs.Chroma')
-    @patch('qa_local_docs.UniversalSentenceEncoder')
+    @patch("qa_local_docs.ChatOpenAI")
+    @patch("qa_local_docs.Chroma")
+    @patch("qa_local_docs.UniversalSentenceEncoder")
     def test_answer_question(self, mock_embeddings, mock_vectorstore, mock_llm):
         # Test that the method returns a string
         mock_result = MagicMock()

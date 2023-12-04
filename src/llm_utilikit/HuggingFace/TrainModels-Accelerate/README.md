@@ -1,18 +1,18 @@
 # Getting Started with Sequence Classification
 
-Welcome to the Sequence Classification example! This guide will help you get started with training a sequence classification model using the Hugging Face Transformers library.
+Welcome to the Sequence Classification example! This guide will help you get started with training a sequence classification model using the Transformers and Accelerate Python libraries.
 
 ## Installation
 
 To install the required packages, you can use pip:
 
-`pip install torch transformers accelerate tqdm python-dotenv`
+`pip install -U torch transformers accelerate tqdm python-dotenv`
 
 ## Usage
 
-To use the Sequence Classification example, you can run the `sequence_classification.py` script:
+To use the Sequence Classification example, you can run the `fine_tune_sequence_classification.py` script:
 
-`python sequence_classification.py`
+`python fine_tune_sequence_classification.py`
 
 This will train a sequence classification model on a dataset and evaluate its performance on the validation and test sets.
 
@@ -31,10 +31,6 @@ The behavior of the Sequence Classification example can be configured using envi
 - `TEST_RATIO`: The ratio of examples to use for testing. Default is `0.05`.
 - `SEED`: The random seed to use for shuffling the dataset. Default is `42`.
 - `BATCH_SIZE`: The batch size to use for training, evaluation, and validation. Default is `16`.
-
-You can set these environment variables using a `.env` file in the same directory as the `sequence_classification.py` script. Here's an example `.env` file:
-
-```DATA_PATH=data.csv TRAIN_RATIO=0.7 EVAL_RATIO=0.15 VAL_RATIO=0.05 TEST_RATIO=0.1```
 
 ---
 

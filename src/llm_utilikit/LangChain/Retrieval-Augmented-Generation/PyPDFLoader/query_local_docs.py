@@ -9,14 +9,17 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.llms import OpenAI as OpenAILLM
 from langchain.chains.question_answering import load_qa_chain
 
+
 # Define the retrying decorator for specific functions
 def retry_if_value_error(exception):
     """Return True if we should retry (in this case when it's a ValueError), False otherwise"""
     return isinstance(exception, ValueError)
 
+
 def retry_if_file_not_found_error(exception):
     """Return True if we should retry (in this case when it's a FileNotFoundError), False otherwise"""
     return isinstance(exception, FileNotFoundError)
+
 
 class PDFProcessor:
     """
@@ -53,9 +56,11 @@ class PDFProcessor:
         """Load environment variables."""
         try:
             load_dotenv()
-            self.OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'sk-')
+            self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-")
             if not self.OPENAI_API_KEY:
-                raise ValueError("OPENAI_API_KEY is missing. Please set the environment variable.")
+                raise ValueError(
+                    "OPENAI_API_KEY is missing. Please set the environment variable."
+                )
         except ValueError as ve:
             print(f"ValueError encountered: {ve}")
             raise
@@ -79,7 +84,7 @@ class PDFProcessor:
         return input(prompt)
 
     @retry(retry_on_exception=retry_if_file_not_found_error, stop_max_attempt_number=3)
-    def load_pdfs_from_directory(self, directory_path='data/'):
+    def load_pdfs_from_directory(self, directory_path="data/"):
         """
         Load all PDF files from a given directory.
 
@@ -91,10 +96,14 @@ class PDFProcessor:
         """
         try:
             if not os.path.exists(directory_path):
-                raise FileNotFoundError(f"The directory {directory_path} does not exist.")
+                raise FileNotFoundError(
+                    f"The directory {directory_path} does not exist."
+                )
             pdf_files = glob.glob(f"{directory_path}/*.pdf")
             if not pdf_files:
-                raise FileNotFoundError(f"No PDF files found in the directory {directory_path}.")
+                raise FileNotFoundError(
+                    f"No PDF files found in the directory {directory_path}."
+                )
             all_texts = []
             for pdf_file in pdf_files:
                 all_texts.extend(self._load_and_split_document(pdf_file))
@@ -119,7 +128,9 @@ class PDFProcessor:
             raise FileNotFoundError(f"The file {file_path} does not exist.")
         loader = PyPDFLoader(file_path)
         data = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
         return text_splitter.split_documents(data)
 
     def perform_similarity_search(self, docsearch, query):
@@ -137,6 +148,7 @@ class PDFProcessor:
             raise ValueError("Query should not be empty.")
         return docsearch.similarity_search(query)
 
+
 if __name__ == "__main__":
     try:
         # Initialize PDFProcessor class
@@ -145,7 +157,7 @@ if __name__ == "__main__":
         # Load PDFs from directory and count the number of loaded documents
         texts = pdf_processor.load_pdfs_from_directory()
         num_docs = len(texts)
-        print(f'Loaded {num_docs} document(s).')
+        print(f"Loaded {num_docs} document(s).")
 
         # Create a Chroma object for document similarity search
         docsearch = Chroma.from_documents(texts, pdf_processor.embeddings)

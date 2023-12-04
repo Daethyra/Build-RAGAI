@@ -11,6 +11,7 @@ from collections import deque
 import sys
 import os
 
+
 class RealTimeASR:
     """
     A class to handle real-time Automatic Speech Recognition (ASR) using the Transformers library.
@@ -22,6 +23,7 @@ class RealTimeASR:
         sliding_window (np.array): A sliding window buffer to store real-time audio data.
         sample_rate (int): The sample rate for audio data (in Hz).
     """
+
     def __init__(self, maxlen=300):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.asr_pipeline = pipeline(
@@ -29,7 +31,7 @@ class RealTimeASR:
             model="openai/whisper-large-v2",
             chunk_length_s=30,
             device=self.device,
-            return_timestamps=True
+            return_timestamps=True,
         )
         self.transcription_cache = deque(maxlen=maxlen)
         self.sliding_window = np.array([])
@@ -38,29 +40,31 @@ class RealTimeASR:
     def initialize_audio(self):
         """
         Initializes the audio stream for capturing real-time audio data.
-    
+
         Utilizes PyAudio to open an audio stream with the specified format, channel, rate, and buffer size.
-    
+
         Returns:
             None
         """
         self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(format=pyaudio.paInt16,
-                                  channels=1,
-                                  rate=self.sample_rate,
-                                  input=True,
-                                  frames_per_buffer=1024)
+        self.stream = self.p.open(
+            format=pyaudio.paInt16,
+            channels=1,
+            rate=self.sample_rate,
+            input=True,
+            frames_per_buffer=1024,
+        )
 
     def capture_and_transcribe(self, log_file=None):
         """
         Captures audio from the microphone, transcribes it, and manages the sliding window and transcription cache.
-    
+
         Continuously reads audio data from the microphone, appends it to the sliding window, and performs transcription
         when the window reaches a certain length. Transcribed text is added to a cache and optionally logged to a file.
-    
+
         Args:
             log_file (str, optional): Path to the log file for writing transcriptions. If None, transcriptions are not logged.
-    
+
         Returns:
             None
         """
@@ -74,9 +78,13 @@ class RealTimeASR:
                 self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
                 if len(self.sliding_window) >= self.sample_rate * 30:  # 30 seconds
-                    transcription = self.transcribe_audio(self.sliding_window[:self.sample_rate * 30])
+                    transcription = self.transcribe_audio(
+                        self.sliding_window[: self.sample_rate * 30]
+                    )
                     self.handle_transcription(transcription, log_file)
-                    self.sliding_window = self.sliding_window[self.sample_rate * 5:]  # Shift by 5 seconds
+                    self.sliding_window = self.sliding_window[
+                        self.sample_rate * 5 :
+                    ]  # Shift by 5 seconds
 
                 self.write_transcription_cache_to_log(log_file)
             except Exception as e:
@@ -88,10 +96,10 @@ class RealTimeASR:
     def transcribe_audio(self, audio):
         """
         Transcribes a chunk of audio data using the ASR pipeline.
-    
+
         Args:
             audio (np.array): The audio data to transcribe.
-    
+
         Returns:
             dict: A dictionary containing the transcription result.
         """
@@ -111,10 +119,10 @@ class RealTimeASR:
     def is_log_file_writable(self, log_file):
         """
         Checks if the specified log file is writable.
-    
+
         Args:
             log_file (str): Path to the log file.
-    
+
         Returns:
             bool: True if the file is writable, False otherwise.
         """
@@ -145,6 +153,7 @@ class RealTimeASR:
         if log_file:
             while self.transcription_cache:
                 self.write_transcription_cache_to_log(log_file)
+
 
 def create_new_log_file(log_file):
     """
