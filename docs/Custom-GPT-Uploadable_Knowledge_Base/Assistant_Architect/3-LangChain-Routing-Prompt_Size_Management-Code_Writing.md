@@ -1,10 +1,10 @@
-# LangChain Advanced Features
+# LangChain Advanced Features: Embedding Routers, Prompt Size Management, Code Writing
 
 ## Introduction
 
 Building on the core concepts, this guide covers advanced features like embeddings, prompt management, agents, and code writing. These empower sophisticated applications.
 
-###  Embedding Router
+#  Embedding Router
 - **Objective**: To answer "what are routers?" and demonstrate the use of embeddings to dynamically route queries to the most relevant prompt based on semantic similarity. This advanced feature allows LangChain applications to handle a variety of inputs more intelligently.
 - **Example Code**:
 ```python
@@ -48,7 +48,7 @@ print(response)
 ```
 - **Explanation**: This code demonstrates how embeddings and cosine similarity are used to determine which prompt template is most relevant to the user's query. Based on the query's content, it chooses between a physics and a math expert prompt. The response is then generated accordingly by the chat model.
 
-###  Managing Prompt Size
+#  Managing Prompt Size
 - **Objective**: To illustrate strategies for managing the size of prompts within LangChain applications, ensuring they remain efficient and within the model's context window. This is crucial for maintaining performance, especially in complex chains or agents.
 - **Example Code**:
 ```python
@@ -102,7 +102,7 @@ print(response)
 
 
 
-### Code Writing with LangChain
+# Code Writing with LangChain
 - **Example Code**:
 ```python
 from langchain.chat_models import ChatOpenAI

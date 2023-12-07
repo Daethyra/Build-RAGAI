@@ -11,12 +11,12 @@ A prompt for a language model is a set of instructions or input provided by a us
 3. Retrieval Augmented Generation
 4. Agents
 
-## 1. Prompt + LLM
+# 1. Prompt + LLM
 The most common and valuable composition is taking:
 `PromptTemplate` / `ChatPromptTemplate` -> `LLM` / `ChatModel` -> `OutputParser`
 - Almost any other chains you build will use this building block.
 
-### - **PromptTemplate + LLM**: 
+## - **PromptTemplate + LLM**: 
 The simplest composition is just combining a prompt and model to create a chain that takes user input, adds it to a prompt, passes it to a model, and returns the raw model output.
 
 Note, you can mix and match PromptTemplate/ChatPromptTemplates and LLMs/ChatModels as you like here.
@@ -33,7 +33,7 @@ chain = prompt | model
 response = chain.invoke({"topic": "science"})  
 print(response.content)
 ```
-#### `PromptTemplate`
+### `PromptTemplate`
 Use `PromptTemplate` to create a template for a string prompt.
 
 By default, `PromptTemplate` uses Python’s str.format syntax for templating.
@@ -54,7 +54,7 @@ prompt_template = PromptTemplate.from_template("Tell me a joke")
 prompt_template.format()
 ```
 `'Tell me a joke'`
-##### Adding Validation
+#### Adding Validation
 For additional validation, specify input_variables explicitly. These variables will be compared against the variables present in the template string during instantiation, raising an exception if there is a mismatch. For example:
 ```
 from langchain.prompts import PromptTemplate
@@ -70,7 +70,7 @@ __root__
   Invalid prompt schema; check for mismatched or missing input parameters. 'content' (type=value_error)
   ```
 
-#### `ChatPromptTemplate`
+### `ChatPromptTemplate`
 The prompt to chat models is a list of chat messages.
 
 Each chat message is associated with content, and an additional parameter called `role`. For example, in the OpenAI Chat Completions API, a chat message can be associated with an AI assistant, a human or a system role.
@@ -117,7 +117,7 @@ llm(chat_template.format_messages(text="i dont like eating tasty things."))
 `AIMessage(content='I absolutely love indulging in delicious treats!')`
 This provides you with a lot of flexibility in how you construct your chat prompts.
 
-#### Attaching Function Call information
+### Attaching Function Call information
 - Create custom, re-useable functions
 
 ```
@@ -143,7 +143,7 @@ chain = prompt | model.bind(function_call={"name": "joke"}, functions=functions)
 `chain.invoke({"foo": "bears"}, config={})`
 Response:  `AIMessage(content='', additional_kwargs={'function_call': {'name': 'joke', 'arguments': '{\n  "setup": "Why don\'t bears wear shoes?",\n  "punchline": "Because they have bear feet!"\n}'}}, example=False)`
 
-### PromptTemplate + LLM + OutputParser
+## PromptTemplate + LLM + OutputParser
 We can also add in an output parser to easily transform the raw LLM/ChatModel output into a more workable format.
 ```
 from langchain.schema.output_parser import StrOutputParser
@@ -154,7 +154,7 @@ Notice that this now returns a string - a much more workable format for downstre
 `chain.invoke({"foo": "bears"})`
 Response: `"Why don't bears wear shoes?\n\nBecause they have bear feet!"`
 
-#### Functions Output Parser
+### Functions Output Parser
 When you specify the function to retun, you must just want to parse that directly
 ```
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
@@ -185,7 +185,7 @@ chain = (
 
 ```"Why don't bears wear shoes?"```
 
-### Simplifying Input
+## Simplifying Input
 To make invocation even simpler, we can add a `RunnableParallel` to take care of creating the prompt input dict for us:
 ```
 from langchain.schema.runnable import RunnableParallel, RunnablePassthrough
@@ -213,11 +213,11 @@ In either composition, we still invoke like this:
 `chain.invoke("bears")`
 `"Why don't bears like fast food?"`
 
-### Chat Models
+## Chat Models
 Chat models are a variation on language models. While chat models use language models under the hood, the interface they use is a bit different. Rather than using a “text in, text out” API, they use an interface where “chat messages” are the inputs and outputs.
-#### Messages
+### Messages
 The chat model interface is based around messages rather than raw text. The types of messages currently supported in LangChain are `AIMessage`, `HumanMessage`, `SystemMessage`, `FunctionMessage` and `ChatMessage` – `ChatMessage` takes in an arbitrary role parameter. Most of the time, you’ll just be dealing with HumanMessage, AIMessage, and `SystemMessage`
-#### LangChain Expression Language (LCEL)
+### LangChain Expression Language (LCEL)
 Chat models implement the [Runnable interface](https://python.langchain.com/docs/expression_language/interface "Online documentation"), the basic building block of the LangChain Expression Language (LCEL). This means they support `invoke`, `ainvoke`, `stream`, `astream`, `batch`, `abatch`, `astream_log` calls.
 
 Chat models accept `List[BaseMessage]` as inputs, or objects which can be coerced to messages, including `str` (converted to `HumanMessage`) and `PromptValue`.
@@ -253,8 +253,8 @@ async for chunk in chat.astream_log(messages):
 
 ---
 
-## 2. Memory
-### **Adding Memory**: 
+# 2. Memory
+## **Adding Memory**: 
 This shows how to add memory to an arbitrary chain. Right now, you can use the memory classes but need to hook it up manually
 ```python
 from operator import itemgetter
@@ -305,7 +305,7 @@ response
 
 This code demonstrates the use of `ConversationBufferMemory` to keep a record of the conversation. The `ChatPromptTemplate` is configured to include a history of messages, allowing the model to generate responses considering previous interactions.
 
-#### Conversation Buffer End2End Example
+### Conversation Buffer End2End Example
 Finally, let's take a look at using this in a chain. We'll use an `LLMChain`, and show working with both an LLM and a ChatModel.
 
 **Using an LLM**
@@ -374,7 +374,7 @@ conversation = LLMChain(
 conversation({"question": "hi"})
 ```
 
-### Chat Messages | Quickest implementation
+## Chat Messages | Quickest implementation
 One of the core utility classes underpinning most (if not all) memory modules is the `ChatMessageHistory` class. This is a super lightweight wrapper that provides convenience methods for saving HumanMessages, AIMessages, and then fetching them all.
 
 You may want to use this class directly if you are managing memory outside of a chain.
@@ -391,7 +391,7 @@ history.add_ai_message("whats up?")
 history.messages
 ```
 
-### Vector store-backed retriever
+## Vector store-backed retriever
 A vector store retriever is a retriever that uses a vector store to retrieve documents. It is a lightweight wrapper around the vector store class to make it conform to the retriever interface. It uses the search methods implemented by a vector store, like similarity search and MMR, to query the texts in the vector store.
 
 Once you construct a vector store, it's very easy to construct a retriever. Let's walk through an example.
@@ -411,25 +411,25 @@ db = FAISS.from_documents(texts, embeddings)
 retriever = db.as_retriever()
 docs = retriever.get_relevant_documents("what did he say about ketanji brown jackson")
 ```
-#### Maximum Marginal Relevance Retrieval
+### Maximum Marginal Relevance Retrieval
 By default, the vector store retriever uses similarity search. If the underlying vector store supports maximum marginal relevance search, you can specify that as the search type.
 ```
 retriever = db.as_retriever(search_type="mmr")
 docs = retriever.get_relevant_documents("what did he say about ketanji brown jackson")
 ```
-#### Similarity Score Threshold Retrieval
+### Similarity Score Threshold Retrieval
 You can also set a retrieval method that sets a similarity score threshold and only returns documents with a score above that threshold.
 ```
 retriever = db.as_retriever(search_type="similarity_score_threshold", search_kwargs={"score_threshold": .5})
 docs = retriever.get_relevant_documents("what did he say about ketanji brown jackson")
 ```
-#### Specifying top_k
+### Specifying top_k
 ```
 retriever = db.as_retriever(search_kwargs={"k": 1})
 docs = retriever.get_relevant_documents("what did he say about ketanji brown jackson")
 ```
 
-### Backed by a Vector Store
+## Backed by a Vector Store
 `VectorStoreRetrieverMemory` stores memories in a vector store and queries the top-K most "salient" docs every time it is called.
 
 This differs from most of the other Memory classes in that it doesn't explicitly track the order of interactions.
@@ -445,7 +445,7 @@ from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
 ```
 
-#### Initialize Your Vector Store
+### Initialize Your Vector Store
 Depending on the store you choose, this step may look different. Consult the relevant vector store documentation for more details.
 ```
 import faiss
@@ -459,7 +459,7 @@ index = faiss.IndexFlatL2(embedding_size)
 embedding_fn = OpenAIEmbeddings().embed_query
 vectorstore = FAISS(embedding_fn, index, InMemoryDocstore({}), {})
 ```
-#### Create your `VectorStoreRetrieverMemory`
+### Create your `VectorStoreRetrieverMemory`
 The memory object is instantiated from any vector store retriever.
 ```
 # In actual usage, you would set `k` to be a higher value, but we use k=1 to show that
@@ -475,7 +475,7 @@ memory.save_context({"input": "I don't the Celtics"}, {"output": "ok"})
 # to a 1099 than the other documents, despite them both containing numbers.
 print(memory.load_memory_variables({"prompt": "what sport should i watch?"})["history"])
 ```
-### Using in a Chain
+## Using in a Chain
 Let's walk through an example, again setting `verbose=True` so we can see the prompt.
 ```
 llm = OpenAI(temperature=0) # Can be any valid LLM
@@ -511,7 +511,7 @@ conversation_with_summary.predict(input="Whats my favorite food")
 conversation_with_summary.predict(input="What's my name?")
 ```
 
-#### LangSmith Tracing
+### LangSmith Tracing
 All `ChatModel`s come with built-in LangSmith tracing. Just set the following environment variables:
 
 ```
@@ -524,13 +524,465 @@ In LangSmith you can then provide feedback for any trace, compile annotated data
 
 ---
 
-### 3. Retrieval Augmented Generation
+# 3. Retrieval Augmented Generation (RAG)
+## Example 1: Basic RAG
+Let’s look at adding in a retrieval step to a prompt and LLM, which adds up to a “retrieval-augmented generation” chain
+### Dependencies
+`pip install langchain openai faiss-cpu tiktoken`
+```
+from operator import itemgetter
 
+from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
+from langchain.vectorstores import FAISS
+
+vectorstore = FAISS.from_texts(
+    ["harrison worked at kensho"], embedding=OpenAIEmbeddings()
+)
+retriever = vectorstore.as_retriever()
+
+template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+"""
+prompt = ChatPromptTemplate.from_template(template)
+
+model = ChatOpenAI()
+
+chain = (
+    {"context": retriever, "question": RunnablePassthrough()}
+    | prompt
+    | model
+    | StrOutputParser()
+)
+chain.invoke("where did harrison work?")
+```
+```
+template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+
+Answer in the following language: {language}
+"""
+prompt = ChatPromptTemplate.from_template(template)
+
+chain = (
+    {
+        "context": itemgetter("question") | retriever,
+        "question": itemgetter("question"),
+        "language": itemgetter("language"),
+    }
+    | prompt
+    | model
+    | StrOutputParser()
+)
+chain.invoke({"question": "where did harrison work", "language": "italian"})
+```
+
+## Example 2: Conversational Retrieval Chain
+We can easily add in conversation history. This primarily means adding in chat_message_history
+
+```
+from langchain.schema import format_document
+from langchain.schema.messages import get_buffer_string
+from langchain.schema.runnable import RunnableParallel
+from langchain_core.messages import AIMessage, HumanMessage
+
+from langchain.prompts.prompt import PromptTemplate
+
+_template = """Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question, in its original language.
+
+Chat History:
+{chat_history}
+Follow Up Input: {question}
+Standalone question:"""
+CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template(_template)
+
+template = """Answer the question based only on the following context:
+{context}
+
+Question: {question}
+"""
+ANSWER_PROMPT = ChatPromptTemplate.from_template(template)
+
+DEFAULT_DOCUMENT_PROMPT = PromptTemplate.from_template(template="{page_content}")
+
+
+def _combine_documents(
+    docs, document_prompt=DEFAULT_DOCUMENT_PROMPT, document_separator="\n\n"
+):
+    doc_strings = [format_document(doc, document_prompt) for doc in docs]
+    return document_separator.join(doc_strings)
+
+_inputs = RunnableParallel(
+    standalone_question=RunnablePassthrough.assign(
+        chat_history=lambda x: get_buffer_string(x["chat_history"])
+    )
+    | CONDENSE_QUESTION_PROMPT
+    | ChatOpenAI(temperature=0)
+    | StrOutputParser(),
+)
+_context = {
+    "context": itemgetter("standalone_question") | retriever | _combine_documents,
+    "question": lambda x: x["standalone_question"],
+}
+# Prepare qa_chain
+conversational_qa_chain = _inputs | _context | ANSWER_PROMPT | ChatOpenAI()
+# Invoke qa_chain
+conversational_qa_chain.invoke(
+    {
+        "question": "where did harrison work?",
+        "chat_history": [],
+    }
+)
+```
+```
+conversational_qa_chain.invoke(
+    {
+        "question": "where did he work?",
+        "chat_history": [
+            HumanMessage(content="Who wrote this notebook?"),
+            AIMessage(content="Harrison"),
+        ],
+    }
+)
+```
+
+## Example 3: Add Memory and Returning Source Documents
+This shows how to use memory with the above. For memory, we need to manage that outside at the memory. For returning the retrieved documents, we just need to pass them through all the way.
+```
+from operator import itemgetter
+from langchain.memory import ConversationBufferMemory
+
+memory = ConversationBufferMemory(
+    return_messages=True, output_key="answer", input_key="question"
+)
+
+# First we add a step to load memory
+# This adds a "memory" key to the input object
+loaded_memory = RunnablePassthrough.assign(
+    chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("history"),
+)
+# Now we calculate the standalone question
+standalone_question = {
+    "standalone_question": {
+        "question": lambda x: x["question"],
+        "chat_history": lambda x: get_buffer_string(x["chat_history"]),
+    }
+    | CONDENSE_QUESTION_PROMPT
+    | ChatOpenAI(temperature=0)
+    | StrOutputParser(),
+}
+# Now we retrieve the documents
+retrieved_documents = {
+    "docs": itemgetter("standalone_question") | retriever,
+    "question": lambda x: x["standalone_question"],
+}
+# Now we construct the inputs for the final prompt
+final_inputs = {
+    "context": lambda x: _combine_documents(x["docs"]),
+    "question": itemgetter("question"),
+}
+# And finally, we do the part that returns the answers
+answer = {
+    "answer": final_inputs | ANSWER_PROMPT | ChatOpenAI(),
+    "docs": itemgetter("docs"),
+}
+# And now we put it all together!
+final_chain = loaded_memory | standalone_question | retrieved_documents | answer
+
+# Invoke using the `final_chain`
+inputs = {"question": "where did harrison work?"}
+result = final_chain.invoke(inputs)
+result
+```
+```
+# Note that the memory does not save automatically
+# This will be improved in the future
+# For now you need to save it yourself
+memory.save_context(inputs, {"answer": result["answer"].content})
+
+# Load memory
+memory.load_memory_variables({})
+
+# Further questioning
+inputs = {"question": "but where did he really work?"}
+result = final_chain.invoke(inputs)
+result
+```
+
+
+## Example !X!: Setup
+### Dependencies
+We’ll use an OpenAI chat model and embeddings and a Chroma vector store in this walkthrough, but everything shown here works with any [ChatModel](https://python.langchain.com/docs/integrations/chat/) or [LLM](https://python.langchain.com/docs/integrations/llms/), [Embeddings](https://python.langchain.com/docs/integrations/text_embedding/), and [VectorStore](https://python.langchain.com/docs/integrations/vectorstores/) or [Retriever](https://python.langchain.com/docs/integrations/retrievers).
+
+We’ll use the following packages:
+`pip install -U langchain openai chromadb langchainhub bs4`
+
+### RAG Quickstart
+```python
+import bs4
+from langchain import hub
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import WebBaseLoader
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.schema import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import Chroma
+
+loader = WebBaseLoader(
+    web_paths=("https://lilianweng.github.io/posts/2023-06-23-agent/",),
+    bs_kwargs=dict(
+        parse_only=bs4.SoupStrainer(
+            class_=("post-content", "post-title", "post-header")
+        )
+    ),
+)
+docs = loader.load()
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+splits = text_splitter.split_documents(docs)
+
+vectorstore = Chroma.from_documents(documents=splits, embedding=OpenAIEmbeddings())
+retriever = vectorstore.as_retriever()
+
+prompt = hub.pull("rlm/rag-prompt")
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+
+
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
+rag_chain = (
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+rag_chain.invoke("What is Task Decomposition?")
+
+# cleanup
+vectorstore.delete_collection()
+```
+#### Adding Sources
+With LCEL it’s easy to return the retrieved documents or certain source metadata from the documents:
+```
+from operator import itemgetter
+
+from langchain.schema.runnable import RunnableParallel
+
+rag_chain_from_docs = (
+    {
+        "context": lambda input: format_docs(input["documents"]),
+        "question": itemgetter("question"),
+    }
+    | rag_prompt_custom
+    | llm
+    | StrOutputParser()
+)
+rag_chain_with_source = RunnableParallel(
+    {"documents": retriever, "question": RunnablePassthrough()}
+) | {
+    "documents": lambda input: [doc.metadata for doc in input["documents"]],
+    "answer": rag_chain_from_docs,
+}
+
+rag_chain_with_source.invoke("What is Task Decomposition")
+```
+
+#### Adding Memory
+Suppose we want to create a stateful application that remembers past user inputs. There are two main things we need to do to support this. 1. Add a messages placeholder to our chain which allows us to pass in historical messages 2. Add a chain that takes the latest user query and reformulates it in the context of the chat history into a standalone question that can be passed to our retriever.
+
+Let’s start with 2. We can build a “condense question” chain that looks something like this:
+```
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+condense_q_system_prompt = """Given a chat history and the latest user question \
+which might reference the chat history, formulate a standalone question \
+which can be understood without the chat history. Do NOT answer the question, \
+just reformulate it if needed and otherwise return it as is."""
+condense_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", condense_q_system_prompt),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+condense_q_chain = condense_q_prompt | llm | StrOutputParser()
+
+from langchain.schema.messages import AIMessage, HumanMessage
+
+condense_q_chain.invoke(
+    {
+        "chat_history": [
+            HumanMessage(content="What does LLM stand for?"),
+            AIMessage(content="Large language model"),
+        ],
+        "question": "What is meant by large",
+    }
+)
+```
+
+```python
+condense_q_chain.invoke(
+    {
+        "chat_history": [
+            HumanMessage(content="What does LLM stand for?"),
+            AIMessage(content="Large language model"),
+        ],
+        "question": "How do transformers work",
+    }
+)
+```
+
+And now we can build our full QA chain. Notice we add some routing functionality to only run the “condense question chain” when our chat history isn’t empty.
+
+```python
+qa_system_prompt = """You are an assistant for question-answering tasks. \
+Use the following pieces of retrieved context to answer the question. \
+If you don't know the answer, just say that you don't know. \
+Use three sentences maximum and keep the answer concise.\
+
+{context}"""
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", qa_system_prompt),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{question}"),
+    ]
+)
+
+
+def condense_question(input: dict):
+    if input.get("chat_history"):
+        return condense_q_chain
+    else:
+        return input["question"]
+
+
+rag_chain = (
+    RunnablePassthrough.assign(context=condense_question | retriever | format_docs)
+    | qa_prompt
+    | llm
+)
+
+chat_history = []
+
+question = "What is Task Decomposition?"
+ai_msg = rag_chain.invoke({"question": question, "chat_history": chat_history})
+chat_history.extend([HumanMessage(content=question), ai_msg])
+
+second_question = "What are common ways of doing it?"
+rag_chain.invoke({"question": second_question, "chat_history": chat_history})
+```
+
+## Add Message History (memory)
+The `RunnableWithMessageHistory` let’s us add message history to certain types of chains.
+
+Specifically, it can be used for any Runnable that takes as input one of * a sequence of `BaseMessage` a dict with a key that takes a sequence of `BaseMessage` a dict with a key that takes the latest message(s) as a string or sequence of `BaseMessage`, and a separate key that takes historical messages
+
+And returns as output one of a string that can be treated as the contents of an `AIMessage` a sequence of `BaseMessage` * a dict with a key that contains a sequence of `BaseMessage`
+
+Let’s take a look at some examples to see how it works.
+
+### Setup
+We’ll use Redis to store our chat message histories and Anthropic’s claude-2 model so we’ll need to install the following dependencies:
+`pip install -U langchain redis anthropic`
+
+Set your Anthropic API key:
+```
+import getpass
+import os
+
+os.environ["ANTHROPIC_API_KEY"] = getpass.getpass()
+```
+Start a local Redis Stack server if we don’t have an existing Redis deployment to connect to:
+`docker run -d -p 6379:6379 -p 8001:8001 redis/redis-stack:latest`
+`REDIS_URL = "redis://localhost:6379/0"`
+
+#### Example: Messages Input, Dictionary Output
+Let’s create a simple chain that takes a dict as input and returns a `BaseMessage`.
+
+In this case the `"question"` key in the input represents our input message, and the `"history"` key is where our historical messages will be injected.
+```
+from typing import Optional
+
+from langchain.chat_models import ChatAnthropic
+from langchain.memory.chat_message_histories import RedisChatMessageHistory
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.schema.chat_history import BaseChatMessageHistory
+from langchain.schema.runnable.history import RunnableWithMessageHistory
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You're an assistant who's good at {ability}"),
+        MessagesPlaceholder(variable_name="history"),
+        ("human", "{question}"),
+    ]
+)
+
+chain = prompt | ChatAnthropic(model="claude-2")
+```
+### Adding Message History
+To add message history to our original chain we wrap it in the `RunnableWithMessageHistory` class.
+
+Crucially, we also need to define a method that takes a session_id string and based on it returns a `BaseChatMessageHistory`. Given the same input, this method should return an equivalent output.
+
+In this case we’ll also want to specify `input_messages_key` (the key to be treated as the latest input message) and `history_messages_key` (the key to add historical messages to).
+```
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+    lambda session_id: RedisChatMessageHistory(session_id, url=REDIS_URL),
+    input_messages_key="question",
+    history_messages_key="history",
+)
+```
+
+### Invoking with Configuration
+Whenever we call our chain with message history, we need to include a config that contains the `session_id`
+`config={"configurable": {"session_id": "<SESSION_ID>"}}`
+Given the same configuration, our chain should be pulling from the same chat message history.
+```
+chain_with_history.invoke(
+    {"ability": "math", "question": "What does cosine mean?"},
+    config={"configurable": {"session_id": "foobar"}},
+)
+```
+#### Example: Messages Input, Dictionary Output
+```
+from langchain.schema.messages import HumanMessage
+from langchain.schema.runnable import RunnableParallel
+
+chain = RunnableParallel({"output_message": ChatAnthropic(model="claude-2")})
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+    lambda session_id: RedisChatMessageHistory(session_id, url=REDIS_URL),
+    output_messages_key="output_message",
+)
+
+chain_with_history.invoke(
+    [HumanMessage(content="What did Simone de Beauvoir believe about free will")],
+    config={"configurable": {"session_id": "baz"}},
+)
+```
+AI Response: 
+`{'output_message': AIMessage(content=' Here is a summary of Simone de Beauvoir\'s views on free will:\n\n- De Beauvoir was an existentialist philosopher and believed strongly in the concept of free will. She rejected the idea that human nature or instincts determine behavior.\n\n- Instead, de Beauvoir argued that human beings define their own essence or nature through their actions and choices. As she famously wrote, "One is not born, but rather becomes, a woman."\n\n- De Beauvoir believed that while individuals are situated in certain cultural contexts and social conditions, they still have agency and the ability to transcend these situations. Freedom comes from choosing one\'s attitude toward these constraints.\n\n- She emphasized the radical freedom and responsibility of the individual. We are "condemned to be free" because we cannot escape making choices and taking responsibility for our choices. \n\n- De Beauvoir felt that many people evade their freedom and responsibility by adopting rigid mindsets, ideologies, or conforming uncritically to social roles.\n\n- She advocated for the recognition of ambiguity in the human condition and warned against the quest for absolute rules that deny freedom and responsibility. Authentic living involves embracing ambiguity.\n\nIn summary, de Beauvoir promoted an existential ethics')}`
+
+```
+```
 
 
 ---
 
-### 4. Agents 
+# 4. Agents 
 #### Construction and Management
 - **Objective**: To demonstrate the process of constructing and managing agents in LangChain. This includes creating agents from runnables and understanding the key components and logic involved in agent operation.
 - **Example Code**:
