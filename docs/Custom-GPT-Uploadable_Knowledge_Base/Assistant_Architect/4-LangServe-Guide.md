@@ -1,4 +1,4 @@
-# LangServe - Efficient LLM deployment
+# LangServe Guide - Efficient LLM deployment
 
 ## Overview: Creating Server & Client Python modules with LangServe
 `LangServe` helps developers deploy `LangChain` [runnables and chains](https://python.langchain.com/docs/expression_language/) as a REST API.

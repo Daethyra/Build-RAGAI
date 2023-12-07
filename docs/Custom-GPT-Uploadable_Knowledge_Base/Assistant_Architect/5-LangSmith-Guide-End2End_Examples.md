@@ -13,9 +13,9 @@ os.environ["LANGCHAIN_HUB_API_KEY"] = "YOUR API KEY" # Update with your Hub API 
 project_name = "YOUR PROJECT NAME" # Change to your project name
 ```
 
-## Use cases and code examples
+# Use cases and code examples
 
-### Example 1: Customizing Run Names
+## Example 1: Customizing Run Names
 
 ```python
 from langsmith import Client
@@ -37,7 +37,7 @@ with callbacks.collect_runs() as cb:
 next(client.list_runs(project_name=project_name, filter='eq(name, "StringReverse")'))
 ```
 
-#### Example 2: Runnable Lambda
+## Example 2: Runnable Lambda
 LangChain's RunnableLambdas are custom functions that can be invoked, batched, streamed, and/or transformed.
 
 By default (in langchain versions >= 0.0.283), the name of the lambda is the function name. You can customize this by calling with_config({"run_name": "My Run Name"}) on the runnable lambda object.
@@ -69,7 +69,7 @@ callbacks.tracers.langchain.wait_for_all_tracers()
 print(f"Saved name: {run.name}")
 ```
 
-#### Example 3: Agents
+## Example 3: Agents
 Since LangChain agents and agent executors are types of chains.
 
 ```python
@@ -91,7 +91,7 @@ with callbacks.collect_runs() as cb:
 
 # LangSmith: Real-time LLM Algorithmic Automated Feedback Pipeline
 
-### Creating an Automated Feedback Pipeline with LangSmith
+## Creating an Automated Feedback Pipeline
 
 Description: If the metrics reveal issues, you can isolate problematic runs for debugging or fine-tuning. This tutorial shows you how to set up an automated feedback pipeline for your language models.
 
@@ -129,7 +129,7 @@ All feedback needs a key and should have a (nullable) numeric score. You can app
 
 The following examples run on the "input" and "output" keys of runs. If your runs use different keys, you may have to update.
 
-#### Example A: Simple Text Statistics
+### Example A: Simple Text Statistics
 We will start out by adding some simple text statistics on the input text as feedback. We use this to illustrate that you can use any simple or custom algorithm to generate scores.
 
 Scores can be null, boolean, integesr, or float values.
@@ -180,7 +180,7 @@ _ = RunnableLambda(compute_stats).batch(
 )
 ```
 
-#### Example B: AI-assisted feedback
+### Example B: AI-assisted feedback
 Text statistics are simple to generate but often not very informative. Let's make an example that scores each run's input using an LLM. This method lets you score runs based on targeted axes relevant to your application. You could apply this technique to select metrics as proxies for quality or to help curate data to fine-tune an LLM.
 
 In the example below, we will instruct an LLM to score user input queries along a number of simple axes. We will be using this prompt to drive the chain.
@@ -269,7 +269,7 @@ _ = wrapped_function.batch(runs, {"max_concurrency": 10}, return_errors=True)
 client.read_project(project_name=project_name).feedback_stats
 ```
 
-#### Example C: LangChain Evaluators
+### Example C: LangChain Evaluators
 LangChain has a number of reference-free evaluators you can use off-the-shelf or configure to your needs. You can apply these directly to your runs to log the evaluation results as feedback. For more information on available LangChain evaluators, check out the open source documentation.
 
 Below, we will demonstrate this by using the criteria evaluator, which instructs an LLM to check that the prediction against the described criteria. The criterion we specify will be "completeness".
@@ -316,7 +316,7 @@ wrapped_function = RunnableLambda(lambda run: client.evaluate_run(run, evaluator
 _ = wrapped_function.batch(runs, {"max_concurrency": 10}, return_errors=True)
 ```
 
-### Real-time Automated Feedback
+## Real-time Automated Feedback
 if the metrics reveal issues, you can isolate problematic runs for debugging or fine-tuning.
 
 Steps:
@@ -568,90 +568,3 @@ if prompt := st.chat_input(placeholder="Ask me a question!"):
             except Exception:
                 logger.exception("Failed to get run URL.")
 ```
-
----
-
-# LangSmith Enhanced Capabilities: Integrating Lilac, Prompt Versioning, and More
-
-## Introduction
-LangSmith, complemented by tools like Lilac, offers advanced capabilities for data analysis and prompt management. This section explores how to leverage these tools for enhanced functionality in LangSmith, incorporating prompt versioning, retrieval QA chains, and editable prompt templates.
-
-#### Integrating Lilac for Enhanced Data Analysis
-- **Functionality**: Utilize Lilac to import, enrich, and analyze datasets from LangSmith.
-- **Workflow**:
-   1. Query datasets from LangSmith.
-   2. Import and enrich datasets using Lilac's advanced analysis tools.
-   3. Export the processed data for further application within LangSmith.
-
-#### Advanced Prompt Management with Versioning
-- **Functionality**: Manage different versions of prompts in LangSmith to ensure consistency and accuracy.
-- **Application**:
-   1. Track and manage versions of prompts.
-   2. Apply specific prompt versions in complex deployments like retrieval QA chains.
-
-#### Retrieval QA Chains
-- **Functionality**: Configure retrieval QA chains in LangSmith, leveraging the specific versions of prompts for precise information retrieval.
-- **Implementation**:
-   1. Define the prompt and its version for the QA chain.
-   2. Execute queries using the retrieval QA chain to obtain accurate results.
-
-#### Editable Prompt Templates
-- **Functionality**: Use editable prompt templates to customize and experiment with different prompt structures in LangSmith.
-- **Usage**:
-   1. Create and edit prompt templates dynamically.
-   2. Apply edited templates in LangSmith workflows for varied applications.
-
-#### Comprehensive Code Example
-```python
-# Import necessary libraries
-import langsmith
-import lilac
-# Import necessary libraries
-import langchain
-from langchain.prompt_templates import EditablePromptTemplate
-# Assuming LangSmith and Lilac libraries are imported correctly
-
-# LangSmith setup (assuming required configurations and authentications are done)
-langsmith.initialize(api_key="YOUR_LANGSMITH_API_KEY", endpoint="https://api.langsmith.com")
-
-# Query and fetch datasets from LangSmith using the list_runs method
-project_runs = langsmith.client.list_runs(project_name="your_project_name")
-
-# Import dataset into Lilac and enrich it
-lilac_dataset = lilac.import_dataset(project_runs)
-lilac_dataset.compute_signal(lilac.PIISignal(), 'question')  # Example signal
-lilac_dataset.compute_signal(lilac.NearDuplicateSignal(), 'output')  # Another example signal
-
-# Export the enriched dataset for integration with LangSmith
-exported_dataset = lilac.export_dataset(lilac_dataset)
-
-# Implementing Prompt Versioning (assuming the existence of such functionality in LangSmith)
-prompt_version = 'specific_version_hash'
-prompt_name = 'your_prompt_name'
-prompt = langsmith.load_prompt(prompt_name, version=prompt_version)
-
-# Configuring a Retrieval QA Chain with the versioned prompt
-qa_chain = langchain.RetrievalQAChain(prompt=prompt)
-
-# Execute a query using the QA Chain
-query_result = qa_chain.query("What is LangSmith's functionality?")
-print(f"QA Chain Query Result: {query_result}")
-
-# Editable Prompt Templates for dynamic prompt editing
-editable_prompt = EditablePromptTemplate(prompt_name)
-editable_prompt.edit(new_template="New template content for LangSmith")
-edited_prompt = editable_prompt.apply()
-
-# Example usage of the edited prompt in a LangSmith application
-edited_prompt_result = langsmith.run_prompt(edited_prompt, input_data="Sample input for edited prompt")
-print(f"Edited Prompt Result: {edited_prompt_result}")
-
-# Final step: Integrate the exported dataset back into LangSmith for further use
-integration_status = langsmith.integrate_dataset(exported_dataset)
-if integration_status.success:
-    print("Dataset successfully integrated back into LangSmith.")
-else:
-    print(f"Integration failed with error: {integration_status.error}")
-```
-
----

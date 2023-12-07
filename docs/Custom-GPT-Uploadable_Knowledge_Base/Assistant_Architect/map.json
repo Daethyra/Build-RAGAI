@@ -1,0 +1,203 @@
+{
+  "docs": {
+    "1-LangChain-Quickstart.md": {
+      "Quickstart Overview": {
+        "overview": "Introduction and setup instructions for LangChain.", 
+        "sections": [
+          "Setup",
+          "LangChain Components",
+          "Simple App Development"
+        ]
+      },
+      "Setup Details": {
+        "overview": "Detailed setup process for LangChain, LangSmith, and LangServe.",
+        "sections": [
+          "Installation",
+          "Environment Setup",
+          "LangSmith Integration",
+          "LangServe Deployment"  
+        ]
+      },
+      "Building with LangChain": {
+        "overview": "Guidelines for building applications with LangChain components.", 
+        "sections": [
+          "Model and Template Usage",
+          "Output Parsing"  
+        ]
+      },
+      "LangChain Application Development": {
+        "overview": "Steps for defining, setting up, and adding routes in LangChain applications.",
+        "sections": [  
+          "Chain Definition",
+          "App Configuration",
+          "Route Addition"
+        ]
+      },
+      "LangServe Utilities": {
+        "overview": "Information about LangServe's client setup and playground.",
+        "sections": [
+          "Playground Usage",
+          "Client Setup"
+        ]
+      }
+    },
+    "2-LangChain-Core_Concepts.md": {
+      "LangChain Expression Language (LCEL)": {
+        "overview": "Exploring the foundation of LangChain's interaction design.",
+        "sections": [
+          "LLMs vs Chat Models",
+          "Prompts vs PromptTemplate"
+        ]
+      },
+      "Core Concepts": { 
+        "overview": "Understanding the key elements of LangChain.", 
+        "sections": [
+          "Prompt + LLM",
+          "PromptTemplate + LLM",  
+          "Output Parsers"
+        ]
+      },
+      "Advanced Concepts": {
+        "overview": "Diving into more complex LangChain functionalities.",
+        "sections": [  
+          "Memory and Message History",
+          "Agents",
+          "Routing" 
+        ]
+      },
+      "Practical Applications": {
+        "overview": "Applying LangChain concepts in real-world scenarios.",
+        "sections": [
+          "Chat Models",
+          "Code Writing",
+          "Customization"  
+        ]
+      },
+      "Building Blocks": {
+        "overview": "Components and tools available for LangChain development.", 
+        "sections": [
+          "Tools Setup",
+          "Chain Construction",  
+          "Agent Design"
+        ]
+      }
+    }
+  },
+  "3-LangChain Advanced Features: Embedding Routers, Prompt Size Management, Code Writing": {
+    "overview": "Overview of the section 'LangChain Advanced Features: Embedding Routers, Prompt Size Management, Code Writing'.", 
+    "sections": []
+  },
+  "Introduction": {
+    "overview": "Overview of the section 'Introduction'.",
+    "sections": []
+  },
+  "Embedding Router": {
+    "overview": "Overview of the section 'Embedding Router'.", 
+    "sections": []
+  },
+  "Managing Prompt Size": {
+    "overview": "Overview of the section 'Managing Prompt Size'.",
+    "sections": [] 
+  },
+  "Code Writing with LangChain": {
+    "overview": "Overview of the section 'Code Writing with LangChain'.",
+    "sections": []
+  },
+  "4-LangServe-Guide": {
+    "Overview": {
+      "overview": "Overview of LangServe",
+      "sections": [ 
+        "Creating Server & Client Modules",
+        "Features", 
+        "Installation"  
+      ]
+    },
+    "Examples": {
+      "overview": "LangServe usage examples",
+      "sections": [
+        "Server",
+        "Docs",
+        "Client",
+        "Endpoints"
+      ]
+    },
+    "Basic Deployment": { 
+      "overview": "Basic deployment & querying",
+      "sections": []
+    },
+    "Advanced Deployment": {
+      "overview": "Custom deployment & configuration", 
+      "sections": []
+    },
+    "Model Management": {
+      "overview": "Managing models & analytics",
+      "sections": []
+    },
+    "LangChain Integration": {
+      "overview": "Integrating LangServe with LangChain",  
+      "sections": []
+    }
+  },
+  "5-LangSmith-Guide-End2End_Examples": {
+    "Setup": {
+      "overview": "Overview of setting up environment variables for LangSmith",
+      "sections": []
+    },
+    "Customizing Run Names": {
+      "overview": "Example of customizing run names in LangSmith",
+      "sections": []
+    },
+    "Runnable Lambda": {
+      "overview": "Using RunnableLambda functions with LangSmith", 
+      "sections": []
+    },
+    "Agents": {
+      "overview": "Tracing agents with LangSmith",  
+      "sections": []
+    },
+    "Automated Feedback Pipeline": {
+      "overview": "Creating automated feedback pipelines with LangSmith",
+      "sections": [
+        "Select Runs",
+        "Define Feedback Logic",
+        "Send Feedback to LangSmith"  
+      ]
+    },
+    "Real-time Automated Feedback": {
+      "overview": "Implementing real-time automated feedback with LangSmith",
+      "sections": [
+        "Define Feedback Logic", 
+        "Include in Callbacks"
+      ]
+    },
+    "Tracing Agents": {
+      "overview": "Full example of tracing agents using LangSmith",
+      "sections": []
+    }
+  },
+  "6-LangChain-VectorDatabases.md": {
+    "Vector Stores": {
+      "ChromaDB": {
+        "overview": "Overview of using ChromaDB vector store with LangChain",
+        "sections": [
+          "Basic Example",
+          "Saving to Disk",
+          "Passing Client to LangChain", 
+          "Docker Container",
+          "Update and Delete",
+          "OpenAI Embeddings",
+          "Similarity Search with Scores"
+        ]
+      },
+      "Pinecone": {
+        "overview": "Overview of using Pinecone vector store with LangChain",
+        "sections": [
+          "Installation",
+          "Basic Example",  
+          "Adding Text",
+          "Maximal Marginal Relevance"
+        ]
+      }
+    }
+  } 
+}

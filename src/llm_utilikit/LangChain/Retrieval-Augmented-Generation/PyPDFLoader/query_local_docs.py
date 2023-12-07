@@ -1,7 +1,7 @@
 import os
 import glob
 from dotenv import load_dotenv
-from retrying import retry
+from datetime import datetime, timedelta
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -9,17 +9,36 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.llms import OpenAI as OpenAILLM
 from langchain.chains.question_answering import load_qa_chain
 
+def custom_retry(max_retries=3, retry_exceptions=(Exception,), initial_delay=1, backoff_factor=2):
+    """
+    A decorator for adding retry logic to functions.
 
-# Define the retrying decorator for specific functions
-def retry_if_value_error(exception):
-    """Return True if we should retry (in this case when it's a ValueError), False otherwise"""
-    return isinstance(exception, ValueError)
+    Parameters:
+    - max_retries (int): Maximum number of retry attempts.
+    - retry_exceptions (tuple): A tuple of exception classes that trigger a retry.
+    - initial_delay (int): Initial delay between retries in seconds.
+    - backoff_factor (int): Factor by which the delay increases after each retry.
 
-
-def retry_if_file_not_found_error(exception):
-    """Return True if we should retry (in this case when it's a FileNotFoundError), False otherwise"""
-    return isinstance(exception, FileNotFoundError)
-
+    Returns:
+    - wrapper function: A wrapper function that adds retry logic to the decorated function.
+    """
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            attempts, delay = 0, timedelta(seconds=initial_delay)
+            while attempts < max_retries:
+                try:
+                    return func(*args, **kwargs)
+                except retry_exceptions as e:
+                    attempts += 1
+                    next_retry = datetime.now() + delay
+                    print(f"Retry attempt {attempts} for {func.__name__} due to {e}. Next retry at {next_retry}.")
+                    if attempts == max_retries:
+                        raise
+                    while datetime.now() < next_retry:
+                        pass
+                    delay *= backoff_factor
+        return wrapper
+    return decorator
 
 class PDFProcessor:
     """
@@ -51,12 +70,12 @@ class PDFProcessor:
         self._load_env_vars()
         self._initialize_reusable_objects()
 
-    @retry(retry_on_exception=retry_if_value_error, stop_max_attempt_number=3)
+    @custom_retry(max_retries=3, retry_exceptions=(ValueError,))
     def _load_env_vars(self):
         """Load environment variables."""
         try:
             load_dotenv()
-            self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "sk-")
+            self.OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", None)
             if not self.OPENAI_API_KEY:
                 raise ValueError(
                     "OPENAI_API_KEY is missing. Please set the environment variable."
@@ -68,7 +87,7 @@ class PDFProcessor:
     def _initialize_reusable_objects(self):
         """Initialize reusable objects like embeddings and language models."""
         self.embeddings = OpenAIEmbeddings(openai_api_key=self.OPENAI_API_KEY)
-        self.llm = OpenAILLM(temperature=0, openai_api_key=self.OPENAI_API_KEY)
+        self.llm = OpenAILLM(temperature=0.25, openai_api_key=self.OPENAI_API_KEY)
 
     @staticmethod
     def get_user_query(prompt="Please enter your query: "):
@@ -83,8 +102,8 @@ class PDFProcessor:
         """
         return input(prompt)
 
-    @retry(retry_on_exception=retry_if_file_not_found_error, stop_max_attempt_number=3)
-    def load_pdfs_from_directory(self, directory_path="data/"):
+    @custom_retry(max_retries=3, retry_exceptions=(FileNotFoundError,))
+    def load_pdfs_from_directory(self, directory_path="data/"): # Configure Target Directory
         """
         Load all PDF files from a given directory.
 
@@ -172,6 +191,6 @@ if __name__ == "__main__":
         result = pdf_processor.perform_similarity_search(docsearch, query)
 
         # Run the QA chain on the result
-        chain.run(input_documents=result, question=query)
+        for chain.run(input_documents=result, question=query)
     except Exception as e:
         print(f"An error occurred: {e}")

@@ -1,6 +1,7 @@
 # DO NOT REMOVE THE FOLLOWING LINE FOR ANY REASON:
 .pdm-python 
 # ---
+src/llm_utilikit/LangChain/Retrieval-Augmented-Generation/PyPDFLoader/data/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
