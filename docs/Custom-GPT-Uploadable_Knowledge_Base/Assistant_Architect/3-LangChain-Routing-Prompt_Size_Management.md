@@ -4,7 +4,7 @@
 
 Building on the core concepts, this guide covers advanced features like embeddings, prompt management, agents, and code writing. These empower sophisticated applications.
 
-### Section: Embedding Router
+###  Embedding Router
 - **Objective**: To answer "what are routers?" and demonstrate the use of embeddings to dynamically route queries to the most relevant prompt based on semantic similarity. This advanced feature allows LangChain applications to handle a variety of inputs more intelligently.
 - **Example Code**:
 ```python
@@ -48,7 +48,7 @@ print(response)
 ```
 - **Explanation**: This code demonstrates how embeddings and cosine similarity are used to determine which prompt template is most relevant to the user's query. Based on the query's content, it chooses between a physics and a math expert prompt. The response is then generated accordingly by the chat model.
 
-### Section: Managing Prompt Size
+###  Managing Prompt Size
 - **Objective**: To illustrate strategies for managing the size of prompts within LangChain applications, ensuring they remain efficient and within the model's context window. This is crucial for maintaining performance, especially in complex chains or agents.
 - **Example Code**:
 ```python
@@ -99,3 +99,35 @@ response = agent_executor.invoke({
 print(response)
 ```
 - **Explanation**: This code showcases an agent setup that includes a Wikipedia query tool and a prompt template. The agent's construction focuses on managing the prompt size by limiting the content from intermediate steps. The response to a query is generated with consideration to the prompt's overall size, ensuring efficiency.
+
+
+
+### Code Writing with LangChain
+- **Example Code**:
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain_experimental.utilities import PythonREPL
+
+# Creating a prompt template to instruct the model to write Python code
+template = "Write Python code to solve the following problem: {problem}"
+prompt = ChatPromptTemplate.from_messages([("system", template), ("human", "{problem}")])
+
+# Initializing the chat model
+model = ChatOpenAI()
+
+# Function to sanitize and extract Python code from the model's output
+def sanitize_output(text):
+    _, after = text.split("```python")
+    return after.split("```")[0]
+
+# Building the chain for code writing
+chain = prompt | model | StrOutputParser() | sanitize_output | PythonREPL().run
+
+# Invoking the chain with a programming problem
+problem = "calculate the factorial of a number"
+code_result = chain.invoke({"problem": problem})
+print(code_result)
+```
+- **Explanation**: This code block demonstrates how LangChain can be used to automatically generate Python code in response to a given problem statement. The `ChatPromptTemplate` guides the AI to focus on code generation, and the output is sanitized and executed using `PythonREPL`. This illustrates LangChain's capability in automating and assisting with coding tasks.

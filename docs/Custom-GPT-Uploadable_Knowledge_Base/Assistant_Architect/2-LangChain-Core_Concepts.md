@@ -524,6 +524,12 @@ In LangSmith you can then provide feedback for any trace, compile annotated data
 
 ---
 
+### 3. Retrieval Augmented Generation
+
+
+
+---
+
 ### 4. Agents 
 #### Construction and Management
 - **Objective**: To demonstrate the process of constructing and managing agents in LangChain. This includes creating agents from runnables and understanding the key components and logic involved in agent operation.
@@ -574,38 +580,5 @@ response = agent_executor.invoke({"question": "What's the weather in New York to
 print(response)
 ```
 - **Explanation**: This code block illustrates how to build an agent using LangChain's `XMLAgent`. The agent includes a custom tool for weather information and logic to process and format intermediate steps. The agent is executed with a specific query, demonstrating its ability to manage and utilize its components effectively.
-
----
-
-### Section: Code Writing with LangChain
-- **Objective**: To showcase how LangChain can be utilized for writing and executing Python code. This feature enhances the AI's ability to assist in programming tasks, making it a valuable tool for developers.
-- **Example Code**:
-```python
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.output_parser import StrOutputParser
-from langchain_experimental.utilities import PythonREPL
-
-# Creating a prompt template to instruct the model to write Python code
-template = "Write Python code to solve the following problem: {problem}"
-prompt = ChatPromptTemplate.from_messages([("system", template), ("human", "{problem}")])
-
-# Initializing the chat model
-model = ChatOpenAI()
-
-# Function to sanitize and extract Python code from the model's output
-def sanitize_output(text):
-    _, after = text.split("```python")
-    return after.split("```")[0]
-
-# Building the chain for code writing
-chain = prompt | model | StrOutputParser() | sanitize_output | PythonREPL().run
-
-# Invoking the chain with a programming problem
-problem = "calculate the factorial of a number"
-code_result = chain.invoke({"problem": problem})
-print(code_result)
-```
-- **Explanation**: This code block demonstrates how LangChain can be used to automatically generate Python code in response to a given problem statement. The `ChatPromptTemplate` guides the AI to focus on code generation, and the output is sanitized and executed using `PythonREPL`. This illustrates LangChain's capability in automating and assisting with coding tasks.
 
 ---
