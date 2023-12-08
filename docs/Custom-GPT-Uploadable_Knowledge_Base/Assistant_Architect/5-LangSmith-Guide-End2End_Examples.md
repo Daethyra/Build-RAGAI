@@ -42,8 +42,6 @@ llm.invoke("Hello, world!")
 Congratulations! Your first run has been traced and is now visible in LangSmith! In this short example, we initialize LangSmith tracing via environment variables and run `invoke` of the LangChain library as normal. 
 Navigate to the [projects page](https://smith.langchain.com/projects) to view your "Hello, world!" trace.
 
-# Tracing Integration
-
 ## Overview: How LangSmith works under the hood.
 LangSmith helps you visualize, debug, and improve your LLM apps. This section reviews some functionality LangSmith provides around logging and tracing.
 
@@ -58,6 +56,8 @@ Every time you run a LangChain component with tracing enabled or use the LangSmi
 
 ### Running in the Playground
 Once you have a run trace, you can directly modify the prompts and parameters of supported chains, LLMs, and chat models to see how they impact the output. This is a great way to quickly iterate on model and prompt configurations without having to switch contexts. All playground runs are logged to a "playground" project for safe keeping.
+
+# Tracing Integration
 
 ## Tracing Agents: What are agents, and how can we trace them?
 The core idea of agents is to use a language model to choose a sequence of actions to take. In chains, a sequence of actions is hardcoded (in code). In _agents_, a language model is used as a **reasoning engine** to determine which actions to take and in which order.
