@@ -79,6 +79,96 @@ with callbacks.collect_runs() as cb:
     run = cb.traced_runs[0]
     print(result['output'])
 ```
+- The files in the current directory are:
+  1. run-naming.ipynb
+  2. img
+  3. .ipynb_checkpoints
+```python
+callbacks.tracers.langchain.wait_for_all_tracers()
+print(f"Saved name: {run.name}")
+```
+- Saved name: File Agent
+  - The resulting agent trace will reflect the custom name you've assigned to it.
+
+## Customizing Run Names
+Every LangSmith run receives a name. This name is visible in the UI and can be employed later for querying a particular run. In the context of tracing chains constructed with LangChain, the default run name is derived from the class name of the invoked object.
+
+For runs categorized as "Chain", the name can be configured by calling the [runnable](https://python.langchain.com/docs/expression_language/ "LangChain Expression Language Documentation") object's `with_config({"run_name": "My Run Name"})` method. This guide illustrates its application through several examples.
+
+Note: Only chains and general runnables support custom naming; LLMs, chat models, prompts, and retrievers do not.
+
+```python
+# %pip install -U langchain --quiet
+import os
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com" # Update with your API URL if using a hosted instance of Langsmith.
+os.environ["LANGCHAIN_API_KEY"] = "YOUR API KEY" # Update with your API key
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+project_name = "YOUR PROJECT NAME" # Update with your project name
+os.environ["LANGCHAIN_PROJECT"] = project_name # Optional: "default" is used if not set
+# ---
+from langsmith import Client
+client = Client()
+from langchain import chat_models, prompts, callbacks, schema
+
+chain = (
+    prompts.ChatPromptTemplate.from_template("Reverse the following string: {text}")
+    | chat_models.ChatOpenAI()
+).with_config({"run_name": "StringReverse"})
+
+with callbacks.collect_runs() as cb:
+    for chunk in chain.stream({"text": "🌑🌒🌓🌔🌕"}):
+        print(chunk.content, flush=True, end="")
+    run = cb.traced_runs[0]
+```
+If you inspect the run object on the [LangSmith webpage](https://smith.langchain.com/), you can see the run name is now "StringReverse". You can query within a project for runs with this name to see all the times this chain was used. Do so using the filter syntax `eq(name, "MyRunName")`.
+`print(f"Saved name {run.name}")`
+- Saved name StringReverse
+
+```
+# List with the name filter to get runs with the assigned name
+next(client.list_runs(project_name=project_name, filter='eq(name, "StringReverse")'))
+```
+- Run(id=UUID('7fc65bbe-b3dc-401d-9bb2-e99b6cffb312'), name='StringReverse', start_time=datetime.datetime(2023, 9, 20, 21, 55, 42, 612598), run_type='chain', end_time=datetime.datetime(2023, 9, 20, 21, 55, 43, 550029), extra={'runtime': {'cpu': {'time': {'sys': 2.635597312, 'user': 1.89599424}, 'percent': 0.0, 'ctx_switches': {'voluntary': 12382.0, 'involuntary': 0.0}}, 'mem': {'rss': 98828288.0}, 'library': 'langchain', 'runtime': 'python', 'platform': 'macOS-13.5-arm64-arm-64bit', 'sdk_version': '0.0.38', 'thread_count': 35.0, 'library_version': '0.0.296', 'runtime_version': '3.11.5', 'langchain_version': '0.0.296', 'py_implementation': 'CPython'}}, error=None, serialized=None, events=[{'name': 'start', 'time': '2023-09-20T21:55:42.612598'}, {'name': 'end', 'time': '2023-09-20T21:55:43.550029'}], inputs={'text': '🌑🌒🌓🌔🌕'}, outputs={'output': {'content': '🌕🌔🌓🌒🌑', 'example': False, 'additional_kwargs': {}}}, reference_example_id=None, parent_run_id=None, tags=[], execution_order=1, session_id=UUID('41597437-b152-43e0-b05a-1cbd454d2519'), child_run_ids=[UUID('f974cb03-8878-4a86-8208-00ae940bf34a'), UUID('af466088-14c9-42bb-afe2-7a0bc766513c')], child_runs=None, feedback_stats=None, app_path='/o/9a6371ef-ea6a-4860-b3bd-9614084873e7/projects/p/41597437-b152-43e0-b05a-1cbd454d2519/r/7fc65bbe-b3dc-401d-9bb2-e99b6cffb312', manifest_id=UUID('27e257cd-cfe8-4b9c-9f52-9b9401893b59'), status='success', prompt_tokens=None, completion_tokens=None, total_tokens=None, first_token_time=None, parent_run_ids=None)
+
+## Runnable Lambda
+
+### Simple Chain
+LangChain's [RunnableLambdas](https://api.python.langchain.com/en/latest/schema/langchain.schema.runnable.base.RunnableLambda.html#langchain.schema.runnable.base.RunnableLambda) are custom functions that can be invoked, batched, streamed, and/or transformed.
+
+By default (in langchain versions >= 0.0.283), the name of the lambda is the function name. You can customize this by calling `with_config({"run_name": "My Run Name"})` on the runnable lambda object.
+
+```python
+def reverse_and_concat(txt: str) -> str:
+    return txt[::-1] + txt
+
+lambda_chain = chain | schema.output_parser.StrOutputParser() | reverse_and_concat
+# ---
+with callbacks.collect_runs() as cb:
+    print(lambda_chain.invoke({"text": "🌑🌒🌓🌔🌕"}))
+    # We will fetch just the lambda run (which is the last child run in this root trace)
+    run = cb.traced_runs[0].child_runs[-1]
+
+# If you are using LangChain < 0.0.283, this will be "RunnableLambda"
+callbacks.tracers.langchain.wait_for_all_tracers()
+print(f"Saved name: {run.name}")
+```
+- Saved name: reverse_and_concat
+
+#### Customize Lambda Name
+In the lambda_chain above, our function was automatically promoted to a "RunnableLambda" via the piping syntax. We can customize the run name using the with_config syntax once the object is created.
+
+### Runnable Lambda
+```python
+from langchain.schema import runnable
+
+configured_lambda_chain = chain | schema.output_parser.StrOutputParser() | runnable.RunnableLambda(reverse_and_concat).with_config({"run_name": "LambdaReverse"})
+with callbacks.collect_runs() as cb:
+    print(configured_lambda_chain.invoke({"text": "🌑🌒🌓🌔🌕"}))
+    run = cb.traced_runs[0].child_runs[-1]
+callbacks.tracers.langchain.wait_for_all_tracers()
+print(f"Saved name: {run.name}")
+```
+- Saved name: LambdaReverse
 
 ### End-to-end Python example of Tracing Agents using LangSmith
 
@@ -247,61 +337,6 @@ if prompt := st.chat_input(placeholder="Ask me a question!"):
                 )
             except Exception:
                 logger.exception("Failed to get run URL.")
-```
-
-## Customizing Run Names
-Every LangSmith run receives a name. This name is visible in the UI and can be employed later for querying a particular run. In the context of tracing chains constructed with LangChain, the default run name is derived from the class name of the invoked object.
-
-```python
-from langsmith import Client
-client = Client()
-from langchain import chat_models, prompts, callbacks, schema
-
-chain = (
-    prompts.ChatPromptTemplate.from_template("Reverse the following string: {text}")
-    | chat_models.ChatOpenAI()
-).with_config({"run_name": "StringReverse"})
-
-
-with callbacks.collect_runs() as cb:
-    for chunk in chain.stream({"text": "🌑🌒🌓🌔🌕"}):
-        print(chunk.content, flush=True, end="")
-    run = cb.traced_runs[0]
-
-# List with the name filter to get runs with the assigned name
-next(client.list_runs(project_name=project_name, filter='eq(name, "StringReverse")'))
-```
-
-## Runnable Lambda
-LangChain's RunnableLambdas are custom functions that can be invoked, batched, streamed, and/or transformed.
-
-By default (in langchain versions >= 0.0.283), the name of the lambda is the function name. You can customize this by calling with_config({"run_name": "My Run Name"}) on the runnable lambda object.
-
-```python
-def reverse_and_concat(txt: str) -> str:
-    return txt[::-1] + txt
-
-lambda_chain = chain | schema.output_parser.StrOutputParser() | reverse_and_concat
-with callbacks.collect_runs() as cb:
-    print(lambda_chain.invoke({"text": "🌑🌒🌓🌔🌕"}))
-    # We will fetch just the lambda run (which is the last child run in this root trace)
-    run = cb.traced_runs[0].child_runs[-1]
-# If you are using LangChain < 0.0.283, this will be "RunnableLambda"
-callbacks.tracers.langchain.wait_for_all_tracers()
-print(f"Saved name: {run.name}")
-
-"""
-Customize Lambda Name
-In the lambda_chain above, our function was automatically promoted to a "RunnableLambda" via the piping syntax. We can customize the run name using the with_config syntax once the object is created.
-"""
-from langchain.schema import runnable
-
-configured_lambda_chain = chain | schema.output_parser.StrOutputParser() | runnable.RunnableLambda(reverse_and_concat).with_config({"run_name": "LambdaReverse"})
-with callbacks.collect_runs() as cb:
-    print(configured_lambda_chain.invoke({"text": "🌑🌒🌓🌔🌕"}))
-    run = cb.traced_runs[0].child_runs[-1]
-callbacks.tracers.langchain.wait_for_all_tracers()
-print(f"Saved name: {run.name}")
 ```
 
 ---
