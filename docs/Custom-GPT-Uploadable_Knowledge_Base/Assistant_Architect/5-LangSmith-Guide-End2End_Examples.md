@@ -4,7 +4,7 @@ LangSmith is an innovative and dynamic testing framework for evaluating language
 It lets you debug, test, evaluate, and monitor chains and intelligent agents built on any LLM framework and seamlessly integrates with LangChain, the go-to open source framework for building with LLMs.
 - LangSmith is developed by LangChain, the company behind the open source LangChain framework.
 
-## Get started: Installation and setup
+## Get started: Installation and Enable tracing
 If you already use LangChain, you can connect to LangSmith in a few steps:
 
 1. Create a LangSmith account using one of the supported login methods.
@@ -18,20 +18,20 @@ If you already use LangChain, you can connect to LangSmith in a few steps:
 The LangSmith SDK is automatically installed by LangChain. If not using LangChain, install with:
 - `pip install -U langsmith`
 
-**Set environment variables**
-Python code example for setting evironment variables:
-
+##### Enable LangSmith tracing via **setting environment variables**
+First, configure your environment variables to tell LangChain to log traces. This is done by setting the `LANGCHAIN_TRACING_V2` environment variable to true. You can tell LangChain which project to log to by setting the `LANGCHAIN_PROJECT` environment variable (if this isn’t set, runs will be logged to the default project). This will automatically create the project for you if it doesn’t exist. You must also set the `LANGCHAIN_ENDPOINT` and `LANGCHAIN_API_KEY` environment variables.
 ```python
 # Notice the subtle differences in the env-vars below, as there are multiple endpoints being set.
-# Always set the following variables
-os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com" # Leave unchanged unless using a hosted instance of LangSmith.
-os.environ["LANGCHAIN_API_KEY"] = "YOUR API KEY" # Update with your API key
-os.environ["LANGCHAIN_PROJECT"] = "TEST PROJECT"  # if not specified, defaults to "default"
+# Required variables; Always set the following 2 variables
+import os
+os.environ["LANGCHAIN_API_KEY"] = "<your api key>"
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
 # Optional variables depending on current use case
-os.environ["LANGCHAIN_HUB_API_URL"] = "https://api.hub.langchain.com" # Update with your API URL if using a hosted instance of Langsmith.
-os.environ["LANGCHAIN_HUB_API_KEY"] = "YOUR API KEY" # Update with your Hub API key
 os.environ["OPENAI_API_KEY"] = "sk-" # Update with your OpenAI API key
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com" # Leave unchanged unless using a hosted instance of LangSmith.
+os.environ["LANGCHAIN_PROJECT"] = f"Tracing Walkthrough - {unique_id}"  # Example project name. Defaults to "default"
 ```
+##### Trace your first run
 5. Run the example code below:
 ```python
 from langchain.chat_models import ChatOpenAI
@@ -39,7 +39,7 @@ from langchain.chat_models import ChatOpenAI
 llm = ChatOpenAI()
 llm.invoke("Hello, world!")
 ```
-Congratulations! Your first run is now visible in LangSmith! In this short example, we initialize LangSmith tracing via environment variables and run `invoke` of the LangChain library as normal. 
+Congratulations! Your first run has been traced and is now visible in LangSmith! In this short example, we initialize LangSmith tracing via environment variables and run `invoke` of the LangChain library as normal. 
 Navigate to the [projects page](https://smith.langchain.com/projects) to view your "Hello, world!" trace.
 
 # Tracing Integration
@@ -59,7 +59,7 @@ Every time you run a LangChain component with tracing enabled or use the LangSmi
 ### Running in the Playground
 Once you have a run trace, you can directly modify the prompts and parameters of supported chains, LLMs, and chat models to see how they impact the output. This is a great way to quickly iterate on model and prompt configurations without having to switch contexts. All playground runs are logged to a "playground" project for safe keeping.
 
-## Agents
+## Tracing Agents: What are agents, and how can we trace them?
 The core idea of agents is to use a language model to choose a sequence of actions to take. In chains, a sequence of actions is hardcoded (in code). In _agents_, a language model is used as a **reasoning engine** to determine which actions to take and in which order.
   - Note: The following snippet doesn't set up the tools or agents to actually be workable, but uses real logic that can be built on top of.
 
