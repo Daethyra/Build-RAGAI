@@ -1,21 +1,256 @@
-# LangSmith: Basics of, and Getting Started
+# LangSmith: a platform for building production-grade LLM applications
+LangSmith is an innovative and dynamic testing framework for evaluating language models and AI applications. As a platform, it is capable of building production-grade LLM applications. In the realm of language model testing, LangSmith emerges as a robust and versatile testing framework.
 
-## Setup - Set environment variables
-- *Setting environment variables is always necessary when working with LangSmith, the way you go about setting them is completely up to you.*
+It lets you debug, test, evaluate, and monitor chains and intelligent agents built on any LLM framework and seamlessly integrates with LangChain, the go-to open source framework for building with LLMs.
+- LangSmith is developed by LangChain, the company behind the open source LangChain framework.
+
+## Get started: Installation and setup
+If you already use LangChain, you can connect to LangSmith in a few steps:
+
+1. Create a LangSmith account using one of the supported login methods.
+2. Create an API Key by navigating to the settings page.
+3. Install the latest version LangChain for your target environment and programming language.
+- `pip install -U langchain`
+4. Configure runtime environment:
+* Replace "your-api-key" with the API key generated in step 1
+* Replace "your-openai-api-key" with an OpenAI API Key from here
+
+The LangSmith SDK is automatically installed by LangChain. If not using LangChain, install with:
+- `pip install -U langsmith`
+
+**Set environment variables**
+Python code example for setting evironment variables:
 
 ```python
-import os
-
-os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com" # Update with your API URL if using a hosted instance of Langsmith.
+# Notice the subtle differences in the env-vars below, as there are multiple endpoints being set.
+# Always set the following variables
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com" # Leave unchanged unless using a hosted instance of LangSmith.
 os.environ["LANGCHAIN_API_KEY"] = "YOUR API KEY" # Update with your API key
+os.environ["LANGCHAIN_PROJECT"] = "TEST PROJECT"  # if not specified, defaults to "default"
+# Optional variables depending on current use case
 os.environ["LANGCHAIN_HUB_API_URL"] = "https://api.hub.langchain.com" # Update with your API URL if using a hosted instance of Langsmith.
 os.environ["LANGCHAIN_HUB_API_KEY"] = "YOUR API KEY" # Update with your Hub API key
-project_name = "YOUR PROJECT NAME" # Change to your project name
+os.environ["OPENAI_API_KEY"] = "sk-" # Update with your OpenAI API key
+```
+5. Run the example code below:
+```python
+from langchain.chat_models import ChatOpenAI
+
+llm = ChatOpenAI()
+llm.invoke("Hello, world!")
+```
+Congratulations! Your first run is now visible in LangSmith! In this short example, we initialize LangSmith tracing via environment variables and run `invoke` of the LangChain library as normal. 
+Navigate to the [projects page](https://smith.langchain.com/projects) to view your "Hello, world!" trace.
+
+# Tracing Integration
+
+## Overview: How LangSmith works under the hood.
+LangSmith helps you visualize, debug, and improve your LLM apps. This section reviews some functionality LangSmith provides around logging and tracing.
+
+### Log Run
+LLM applications can get complicated quickly, especially if you are building working with agents or complex chains where there could be many layers of LLMs and other components. LangSmith makes it easy to log runs of your LLM applications so you can inspect the inputs and outputs of each component in the chain. This is especially useful when you are trying to debug your application or understand how a given component is behaving. This is done in two steps.
+
+### Organize your work
+Runs are saved to projects. Root level runs are called `traces` and are saved to the `default` project if you don't specify a project name. You can also view all of your runs un-nested. You can create as many projects as you like to help you organize your work by context. For instance, you might have a project for each of your production LLM application environments, or you might have a project to separate runs on different days. You can also create projects for specific experiments or debugging sessions.
+
+### Visualize your Runs
+Every time you run a LangChain component with tracing enabled or use the LangSmith SDK to save run trees directly, the call hierarchy for the run is saved and can be visualized in the app. You can drill down into the components inputs and outputs, invocation parameters, response time, feedback, token usage, and other important information to help you inspect your run. You can even rate the run to help you keep collect data for training, testing, and other analysis.
+
+### Running in the Playground
+Once you have a run trace, you can directly modify the prompts and parameters of supported chains, LLMs, and chat models to see how they impact the output. This is a great way to quickly iterate on model and prompt configurations without having to switch contexts. All playground runs are logged to a "playground" project for safe keeping.
+
+## Agents
+The core idea of agents is to use a language model to choose a sequence of actions to take. In chains, a sequence of actions is hardcoded (in code). In _agents_, a language model is used as a **reasoning engine** to determine which actions to take and in which order.
+  - Note: The following snippet doesn't set up the tools or agents to actually be workable, but uses real logic that can be built on top of.
+
+Since LangChain agents and agent executors are types of chains, we can trace them:
+##### Trace agents, agent executors, and chains: Snippet
+```python
+from langchain import agents, tools
+
+
+agent_executor = agents.initialize_agent(
+    llm=chat_models.ChatOpenAI(),
+    tools=[tools.ReadFileTool(), tools.WriteFileTool(), tools.ListDirectoryTool()],
+    agent=agents.AgentType.OPENAI_FUNCTIONS,
+)
+with callbacks.collect_runs() as cb:
+    result = agent_executor.with_config({"run_name": "File Agent"}).invoke("What files are in the current directory?")
+    run = cb.traced_runs[0]
+    print(result['output'])
 ```
 
-# Use cases and code examples
+### End-to-end Python example of Tracing Agents using LangSmith
 
-## Example 1: Customizing Run Names
+```python
+"""Example implementation of a LangChain Agent."""
+import logging
+from datetime import datetime
+from functools import partial
+import streamlit as st
+from langchain.agents import AgentExecutor
+from langchain.agents.format_scratchpad import format_to_openai_functions
+from langchain.agents.output_parsers.openai_functions import (
+    OpenAIFunctionsAgentOutputParser,
+)
+from langchain.callbacks.manager import tracing_v2_enabled
+from langchain.chat_models import ChatOpenAI
+from langchain.callbacks.streamlit import StreamlitCallbackHandler
+from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain.tools.ddg_search.tool import DuckDuckGoSearchResults
+from langchain.tools.render import format_tool_to_openai_function
+from langsmith import Client
+from streamlit_feedback import streamlit_feedback
+
+st.set_page_config(
+    page_title="Streamlit Agent with LangSmith",
+    page_icon="🦜️️🛠️",
+)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+client = Client()
+st.subheader("🦜🛠️ Ask the bot some questions")
+
+llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+
+class DDGInput(BaseModel):
+    query: str = Field(description="search query to look up")
+
+tools = [
+    DuckDuckGoSearchResults(
+        name="duck_duck_go", args_schema=DDGInput
+    ),  # General internet search using DuckDuckGo
+]
+
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are a helpful assistant. Current date: {time}"),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("user", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ]
+).partial(time=lambda: datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"))
+
+MEMORY = ConversationBufferMemory(
+    chat_memory=StreamlitChatMessageHistory(key="langchain_messages"),
+    return_messages=True,
+    memory_key="chat_history",
+)
+agent = (
+    {
+        "input": lambda x: x["input"],
+        "agent_scratchpad": lambda x: format_to_openai_functions(
+            x["intermediate_steps"]
+        ),
+        "chat_history": lambda x: x.get("chat_history") or [],
+    }
+    | prompt
+    | llm.bind_functions(functions=[format_tool_to_openai_function(t) for t in tools])
+    | OpenAIFunctionsAgentOutputParser()
+)
+
+agent_executor = AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True)
+
+def _submit_feedback(user_response: dict, emoji=None, run_id=None):
+    score = {"👍": 1, "👎": 0}.get(user_response.get("score"))
+    client.create_feedback(
+        run_id=run_id,
+        key=user_response["type"],
+        score=score,
+        comment=user_response.get("text"),
+        value=user_response.get("score"),
+    )
+    return user_response
+
+if st.sidebar.button("Clear message history"):
+    MEMORY.clear()
+
+feedback_kwargs = {
+    "feedback_type": "thumbs",
+    "optional_text_label": "Rate this response in LangSmith",
+}
+if "feedback_key" not in st.session_state:
+    st.session_state.feedback_key = 0
+
+messages = st.session_state.get("langchain_messages", [])
+for i, msg in enumerate(messages):
+    avatar = "🦜" if msg.type == "ai" else None
+    with st.chat_message(msg.type, avatar=avatar):
+        st.markdown(msg.content)
+    if msg.type == "ai":
+        feedback_key = f"feedback_{int(i/2)}"
+
+        if feedback_key not in st.session_state:
+            st.session_state[feedback_key] = None
+
+        disable_with_score = (
+            st.session_state[feedback_key].get("score")
+            if st.session_state[feedback_key]
+            else None
+        )
+        # This actually commits the feedback
+        streamlit_feedback(
+            **feedback_kwargs,
+            key=feedback_key,
+            disable_with_score=disable_with_score,
+            on_submit=partial(
+                _submit_feedback, run_id=st.session_state[f"run_{int(i/2)}"]
+            ),
+        )
+
+if st.session_state.get("run_url"):
+    st.markdown(
+        f"View trace in [🦜🛠️ LangSmith]({st.session_state.run_url})",
+        unsafe_allow_html=True,
+    )
+if prompt := st.chat_input(placeholder="Ask me a question!"):
+    st.chat_message("user").write(prompt)
+    with st.chat_message("assistant", avatar="🦜"):
+        message_placeholder = st.empty()
+        full_response = ""
+        # Define the basic input structure for the chains
+        input_dict = {
+            "input": prompt,
+        }
+        input_dict.update(MEMORY.load_memory_variables({"query": prompt}))
+        st_callback = StreamlitCallbackHandler(st.container())
+        with tracing_v2_enabled("langsmith-streamlit-agent") as cb:
+            for chunk in agent_executor.stream(
+                input_dict,
+                config={"tags": ["Streamlit Agent"], "callbacks": [st_callback]},
+            ):
+                full_response += chunk["output"]
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+            feedback_kwargs = {
+                "feedback_type": "thumbs",
+                "optional_text_label": "Please provide extra information",
+                "on_submit": _submit_feedback,
+            }
+            run = cb.latest_run
+            MEMORY.save_context(input_dict, {"output": full_response})
+            feedback_index = int(
+                (len(st.session_state.get("langchain_messages", [])) - 1) / 2
+            )
+            st.session_state[f"run_{feedback_index}"] = run.id
+            # This displays the feedback widget and saves to session state
+            # It will be logged on next render
+            streamlit_feedback(**feedback_kwargs, key=f"feedback_{feedback_index}")
+            try:
+                url = cb.get_run_url()
+                st.session_state.run_url = url
+                st.markdown(
+                    f"View trace in [🦜🛠️ LangSmith]({url})",
+                    unsafe_allow_html=True,
+                )
+            except Exception:
+                logger.exception("Failed to get run URL.")
+```
+
+## Customizing Run Names
+Every LangSmith run receives a name. This name is visible in the UI and can be employed later for querying a particular run. In the context of tracing chains constructed with LangChain, the default run name is derived from the class name of the invoked object.
 
 ```python
 from langsmith import Client
@@ -37,7 +272,7 @@ with callbacks.collect_runs() as cb:
 next(client.list_runs(project_name=project_name, filter='eq(name, "StringReverse")'))
 ```
 
-## Example 2: Runnable Lambda
+## Runnable Lambda
 LangChain's RunnableLambdas are custom functions that can be invoked, batched, streamed, and/or transformed.
 
 By default (in langchain versions >= 0.0.283), the name of the lambda is the function name. You can customize this by calling with_config({"run_name": "My Run Name"}) on the runnable lambda object.
@@ -69,27 +304,9 @@ callbacks.tracers.langchain.wait_for_all_tracers()
 print(f"Saved name: {run.name}")
 ```
 
-## Example 3: Agents
-Since LangChain agents and agent executors are types of chains.
-
-```python
-from langchain import agents, tools
-
-
-agent_executor = agents.initialize_agent(
-    llm=chat_models.ChatOpenAI(),
-    tools=[tools.ReadFileTool(), tools.WriteFileTool(), tools.ListDirectoryTool()],
-    agent=agents.AgentType.OPENAI_FUNCTIONS,
-)
-with callbacks.collect_runs() as cb:
-    result = agent_executor.with_config({"run_name": "File Agent"}).invoke("What files are in the current directory?")
-    run = cb.traced_runs[0]
-    print(result['output'])
-```
-
 ---
 
-# LangSmith: Real-time LLM Algorithmic Automated Feedback Pipeline
+# Advanced and Niche Use Cases:
 
 ## Creating an Automated Feedback Pipeline
 
@@ -400,171 +617,3 @@ for query in queries:
 
 ---
 
-# Tracing Agents using LangSmith
-
-```python
-"""Example implementation of a LangChain Agent."""
-import logging
-from datetime import datetime
-from functools import partial
-import streamlit as st
-from langchain.agents import AgentExecutor
-from langchain.agents.format_scratchpad import format_to_openai_functions
-from langchain.agents.output_parsers.openai_functions import (
-    OpenAIFunctionsAgentOutputParser,
-)
-from langchain.callbacks.manager import tracing_v2_enabled
-from langchain.chat_models import ChatOpenAI
-from langchain.callbacks.streamlit import StreamlitCallbackHandler
-from langchain.memory import ConversationBufferMemory, StreamlitChatMessageHistory
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.pydantic_v1 import BaseModel, Field
-from langchain.tools.ddg_search.tool import DuckDuckGoSearchResults
-from langchain.tools.render import format_tool_to_openai_function
-from langsmith import Client
-from streamlit_feedback import streamlit_feedback
-
-st.set_page_config(
-    page_title="Streamlit Agent with LangSmith",
-    page_icon="🦜️️🛠️",
-)
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-client = Client()
-st.subheader("🦜🛠️ Ask the bot some questions")
-
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-
-class DDGInput(BaseModel):
-    query: str = Field(description="search query to look up")
-
-tools = [
-    DuckDuckGoSearchResults(
-        name="duck_duck_go", args_schema=DDGInput
-    ),  # General internet search using DuckDuckGo
-]
-
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are a helpful assistant. Current date: {time}"),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("user", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ]
-).partial(time=lambda: datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"))
-
-MEMORY = ConversationBufferMemory(
-    chat_memory=StreamlitChatMessageHistory(key="langchain_messages"),
-    return_messages=True,
-    memory_key="chat_history",
-)
-agent = (
-    {
-        "input": lambda x: x["input"],
-        "agent_scratchpad": lambda x: format_to_openai_functions(
-            x["intermediate_steps"]
-        ),
-        "chat_history": lambda x: x.get("chat_history") or [],
-    }
-    | prompt
-    | llm.bind_functions(functions=[format_tool_to_openai_function(t) for t in tools])
-    | OpenAIFunctionsAgentOutputParser()
-)
-
-agent_executor = AgentExecutor(agent=agent, tools=tools, handle_parsing_errors=True)
-
-def _submit_feedback(user_response: dict, emoji=None, run_id=None):
-    score = {"👍": 1, "👎": 0}.get(user_response.get("score"))
-    client.create_feedback(
-        run_id=run_id,
-        key=user_response["type"],
-        score=score,
-        comment=user_response.get("text"),
-        value=user_response.get("score"),
-    )
-    return user_response
-
-if st.sidebar.button("Clear message history"):
-    MEMORY.clear()
-
-feedback_kwargs = {
-    "feedback_type": "thumbs",
-    "optional_text_label": "Rate this response in LangSmith",
-}
-if "feedback_key" not in st.session_state:
-    st.session_state.feedback_key = 0
-
-messages = st.session_state.get("langchain_messages", [])
-for i, msg in enumerate(messages):
-    avatar = "🦜" if msg.type == "ai" else None
-    with st.chat_message(msg.type, avatar=avatar):
-        st.markdown(msg.content)
-    if msg.type == "ai":
-        feedback_key = f"feedback_{int(i/2)}"
-
-        if feedback_key not in st.session_state:
-            st.session_state[feedback_key] = None
-
-        disable_with_score = (
-            st.session_state[feedback_key].get("score")
-            if st.session_state[feedback_key]
-            else None
-        )
-        # This actually commits the feedback
-        streamlit_feedback(
-            **feedback_kwargs,
-            key=feedback_key,
-            disable_with_score=disable_with_score,
-            on_submit=partial(
-                _submit_feedback, run_id=st.session_state[f"run_{int(i/2)}"]
-            ),
-        )
-
-if st.session_state.get("run_url"):
-    st.markdown(
-        f"View trace in [🦜🛠️ LangSmith]({st.session_state.run_url})",
-        unsafe_allow_html=True,
-    )
-if prompt := st.chat_input(placeholder="Ask me a question!"):
-    st.chat_message("user").write(prompt)
-    with st.chat_message("assistant", avatar="🦜"):
-        message_placeholder = st.empty()
-        full_response = ""
-        # Define the basic input structure for the chains
-        input_dict = {
-            "input": prompt,
-        }
-        input_dict.update(MEMORY.load_memory_variables({"query": prompt}))
-        st_callback = StreamlitCallbackHandler(st.container())
-        with tracing_v2_enabled("langsmith-streamlit-agent") as cb:
-            for chunk in agent_executor.stream(
-                input_dict,
-                config={"tags": ["Streamlit Agent"], "callbacks": [st_callback]},
-            ):
-                full_response += chunk["output"]
-                message_placeholder.markdown(full_response + "▌")
-            message_placeholder.markdown(full_response)
-            feedback_kwargs = {
-                "feedback_type": "thumbs",
-                "optional_text_label": "Please provide extra information",
-                "on_submit": _submit_feedback,
-            }
-            run = cb.latest_run
-            MEMORY.save_context(input_dict, {"output": full_response})
-            feedback_index = int(
-                (len(st.session_state.get("langchain_messages", [])) - 1) / 2
-            )
-            st.session_state[f"run_{feedback_index}"] = run.id
-            # This displays the feedback widget and saves to session state
-            # It will be logged on next render
-            streamlit_feedback(**feedback_kwargs, key=f"feedback_{feedback_index}")
-            try:
-                url = cb.get_run_url()
-                st.session_state.run_url = url
-                st.markdown(
-                    f"View trace in [🦜🛠️ LangSmith]({url})",
-                    unsafe_allow_html=True,
-                )
-            except Exception:
-                logger.exception("Failed to get run URL.")
-```
