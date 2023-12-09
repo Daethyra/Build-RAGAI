@@ -1,6 +1,6 @@
 import unittest
 from dotenv import load_dotenv
-from query_local_docs import *
+from src.llm_utilikit.LangChain.Retrieval_Augmented_Generation.PyPDFLoader.query_local_docs import *
 from langchain.chains.question_answering import load_qa_chain
 
 class TestPDFProcessor(unittest.TestCase):
