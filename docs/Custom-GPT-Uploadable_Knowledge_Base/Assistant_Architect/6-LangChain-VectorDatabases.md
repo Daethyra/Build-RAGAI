@@ -93,18 +93,16 @@ Chroma has the ability to handle multiple `Collections` of documents, but the La
 
 Here is how to clone, build, and run the Docker Image: `git clone git@github.com:chroma-core/chroma.git`
 Edit the `docker-compose.yml` file and add `ALLOW_RESET=TRUE` under `environment`
-```
-    ...
+```compose
     command: uvicorn chromadb.app:app --reload --workers 1 --host 0.0.0.0 --port 8000 --log-config log_config.yml
     environment:
       - IS_PERSISTENT=TRUE
       - ALLOW_RESET=TRUE
     ports:
       - 8000:8000
-    ...
 ```
 Then run `docker-compose up -d --build`
-```
+```python
 # create the chroma client
 import uuid
 
@@ -138,7 +136,7 @@ Chroma has users provide `ids` to simplify the bookkeeping here. `ids` can be th
 Chroma supports all these operations - though some of them are still being integrated all the way through the LangChain interface. Additional workflow improvements will be added soon.
 
 Here is a basic example showing how to do various operations:
-```
+```python
 # create simple ids
 ids = [str(i) for i in range(1, len(docs) + 1)]
 
@@ -163,7 +161,7 @@ print("count after", example_db._collection.count())
 
 ## Integrate OpenAI Embeddings
 Many people like to use OpenAIEmbeddings, here is how to set that up.
-```
+```python
 from getpass import getpass
 
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -199,7 +197,7 @@ To use Pinecone, you must have an API key. Here are the installation instruction
 
 `pip install pinecone-client openai tiktoken langchain`
 
-```
+```python
 import getpass
 import os
 
@@ -210,7 +208,7 @@ os.environ["PINECONE_ENV"] = getpass.getpass("Pinecone Environment:")
 
 We want to use OpenAIEmbeddings so we have to get the OpenAI API Key.
 
-```
+```python
 os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API Key:")
 
 from langchain.document_loaders import TextLoader
@@ -228,7 +226,7 @@ docs = text_splitter.split_documents(documents)
 embeddings = OpenAIEmbeddings()
 ```
 
-```
+```python
 import pinecone
 
 # initialize pinecone
@@ -258,7 +256,7 @@ print(docs[0].page_content)
 
 More text can be embedded and upserted to an existing Pinecone index using the `add_texts` function:
 
-```
+```python
 index = pinecone.Index("langchain-demo")
 vectorstore = Pinecone(index, embeddings.embed_query, "text")
 
@@ -269,7 +267,7 @@ vectorstore.add_texts("More text!")
 
 In addition to using similarity search in the retriever object, you can also use mmr as retriever.
 
-```
+```python
 retriever = docsearch.as_retriever(search_type="mmr")
 matched_docs = retriever.get_relevant_documents(query)
 for i, d in enumerate(matched_docs):
@@ -279,7 +277,7 @@ for i, d in enumerate(matched_docs):
 
 Or use max_marginal_relevance_search directly:
 
-```
+```python
 found_docs = docsearch.max_marginal_relevance_search(query, k=2, fetch_k=10)
 for i, doc in enumerate(found_docs):
  print(f"{i + 1}.", doc.page_content, "\n")

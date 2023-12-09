@@ -126,6 +126,8 @@ response = chain.invoke({"query": "What is quantum mechanics?"})
 print(response)
 ```
 
+---
+
 #  Managing Prompt Size
 Agents dynamically call tools. The results of those tool calls are added back to the prompt, so that the agent can plan the next action. Depending on what tools are being used and how they’re being called, the agent prompt can easily grow larger than the model context window.
 
@@ -198,8 +200,9 @@ agent_executor.invoke(
 
 ---
 
-# Code Writing with LangChain
-- **Example Code**:
+# Code Writing using LangChain's `PythonREPL`
+- **How it works**: This code block demonstrates how LangChain can be used to automatically generate Python code in response to a given problem statement. The `ChatPromptTemplate` guides the AI to focus on code generation, and the output is sanitized and executed using `PythonREPL`. This illustrates LangChain's capability in automating and assisting with coding tasks.
+
 ```python
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
@@ -226,4 +229,3 @@ problem = "calculate the factorial of a number"
 code_result = chain.invoke({"problem": problem})
 print(code_result)
 ```
-- **Explanation**: This code block demonstrates how LangChain can be used to automatically generate Python code in response to a given problem statement. The `ChatPromptTemplate` guides the AI to focus on code generation, and the output is sanitized and executed using `PythonREPL`. This illustrates LangChain's capability in automating and assisting with coding tasks.

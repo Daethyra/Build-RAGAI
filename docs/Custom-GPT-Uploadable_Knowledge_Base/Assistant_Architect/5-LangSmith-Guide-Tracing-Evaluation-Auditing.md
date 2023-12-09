@@ -341,11 +341,11 @@ if prompt := st.chat_input(placeholder="Ask me a question!"):
 
 ---
 
-# Advanced and Niche Use Cases:
+# LangSmith Automated Feedback for tuning LLMsAdvanced and Niche Use Cases:
 
 ## Creating an Automated Feedback Pipeline
 
-Description: If the metrics reveal issues, you can isolate problematic runs for debugging or fine-tuning. This tutorial shows you how to set up an automated feedback pipeline for your language models.
+Description: If the user feedback metrics are substantially negative, you can isolate problematic runs for debugging or fine-tuning. This tutorial shows you how to set up an automated feedback pipeline for your language models.
 
 Steps:
 1. Filter Runs: First, identify the runs you want to evaluate. For details, refer to the Run Filtering Documentation.
