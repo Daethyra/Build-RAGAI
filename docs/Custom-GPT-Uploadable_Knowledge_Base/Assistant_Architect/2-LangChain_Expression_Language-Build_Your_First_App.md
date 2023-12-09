@@ -1,8 +1,12 @@
-# LangChain Expression Language (LCEL)
-## Critical-Comprehension: Fundamental Concepts
+# LangChain Expression Language (LCEL) | Critical-Comprehension: Fundamental Concepts
 
-### Interface
-To make it as easy as possible to create custom chains, we've implemented a "Runnable" protocol. The Runnable protocol is implemented for most components. This is a standard interface, which makes it easy to define custom chains as well as invoke them in a standard way. The standard interface includes:
+## Interface
+To make it as easy as possible to create custom chains, we've implemented a "Runnable" protocol. The Runnable protocol is implemented for most components. This is a standard interface, which makes it easy to define custom chains as well as invoke them in a standard way. 
+
+**What is a `Runnable`?**
+A unit of work that can be invoked, batched, streamed, transformed and composed.
+
+The standard interface includes:
 
 - `stream`: stream back chunks of the response
 ```python
@@ -221,7 +225,7 @@ This provides you with a lot of flexibility in how you construct your chat promp
 ### Attaching Function Call information
 - Create custom, re-useable functions
 
-```
+```python
 functions = [
     {
         "name": "joke",
@@ -243,6 +247,87 @@ chain = prompt | model.bind(function_call={"name": "joke"}, functions=functions)
 ```
 `chain.invoke({"foo": "bears"}, config={})`
 Response:  `AIMessage(content='', additional_kwargs={'function_call': {'name': 'joke', 'arguments': '{\n  "setup": "Why don\'t bears wear shoes?",\n  "punchline": "Because they have bear feet!"\n}'}}, example=False)`
+
+## `Runnable`s in-depth
+A unit of work that can be invoked, batched, streamed, transformed and composed.
+
+- invoke/ainvoke: Transforms a single input into an output.
+- batch/abatch: Efficiently transforms multiple inputs into outputs.
+- stream/astream: Streams output from a single input as it’s produced.
+- astream_log: Streams output and selected intermediate results from an input.
+
+**Built-in optimizations**:
+
+- **Batch: By default, batch runs invoke() in parallel using a thread pool executor.
+Override to optimize batching.**
+
+- **Async: Methods with “a” suffix are asynchronous. By default, they execute
+the sync counterpart using asyncio’s thread pool. Override for native async.**
+
+All methods accept an optional config argument, which can be used to configure execution, add tags and metadata for tracing and debugging etc.
+
+`Runnables` expose schematic information about their input, output and config via the `input_schema` property, the `output_schema` property and `config_schema` method.
+
+The LangChain Expression Language (LCEL) is a declarative way to compose `Runnables` into chains. Any chain constructed this way will automatically have `sync`, `async`, `batch`, and streaming support.
+
+The main composition primitives are `RunnableSequence` and `RunnableParallel`.
+
+`RunnableSequence` invokes a series of runnables sequentially, with one runnable’s output serving as the next’s input. Construct using the | operator or by passing a list of runnables to `RunnableSequence`.
+
+`RunnableParallel` invokes runnables concurrently, providing the same input to each. Construct it using a dict literal within a sequence or by passing a dict to `RunnableParallel`.
+
+**Example**:
+```python
+from langchain_core.runnables import RunnableLambda
+
+# A RunnableSequence constructed using the `|` operator
+sequence = RunnableLambda(lambda x: x + 1) | RunnableLambda(lambda x: x * 2)
+sequence.invoke(1) # 4
+sequence.batch([1, 2, 3]) # [4, 6, 8]
+
+
+# A sequence that contains a RunnableParallel constructed using a dict literal
+sequence = RunnableLambda(lambda x: x + 1) | {
+    'mul_2': RunnableLambda(lambda x: x * 2),
+    'mul_5': RunnableLambda(lambda x: x * 5)
+}
+sequence.invoke(1) # {'mul_2': 4, 'mul_5': 10}
+```
+
+All Runnables expose additional methods that can be used to modify their behavior (e.g., add a retry policy, add lifecycle listeners, make them configurable, etc.).
+
+These methods will work on any Runnable, including Runnable chains constructed by composing other Runnables. See the individual methods for details.
+
+For example,
+```python
+from langchain_core.runnables import RunnableLambda
+
+import random
+
+def add_one(x: int) -> int:
+    return x + 1
+
+
+def buggy_double(y: int) -> int:
+    '''Buggy code that will fail 70% of the time'''
+    if random.random() > 0.3:
+        print('This code failed, and will probably be retried!')
+        raise ValueError('Triggered buggy code')
+    return y * 2
+
+sequence = (
+    RunnableLambda(add_one) |
+    RunnableLambda(buggy_double).with_retry( # Retry on failure
+        stop_after_attempt=10,
+        wait_exponential_jitter=False
+    )
+)
+
+print(sequence.input_schema.schema()) # Show inferred input schema
+print(sequence.output_schema.schema()) # Show inferred output schema
+print(sequence.invoke(2)) # invoke the sequence (note the retry above!!)
+```
+
 
 ## PromptTemplate + LLM + OutputParser
 We can also add in an output parser to easily transform the raw LLM/ChatModel output into a more workable format.
