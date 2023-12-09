@@ -3,7 +3,7 @@
 ## Overview: Creating Server & Client Python modules with LangServe
 `LangServe` helps developers deploy `LangChain` [runnables and chains](https://python.langchain.com/docs/expression_language/) as a REST API.
 
-This library is integrated with [FastAPI](https://fastapi.tiangolo.com/) and uses [pydantic](https://docs.pydantic.dev/latest/) for data validation.
+This library is integrated with [FastAPI](https://fastapi.tiangolo.com/) and uses [pydantic](https://docs.pydantic.dev/latest/) for data validation. You do not need to install or import them.
 
 In addition, it provides a client that can be used to call into runnables deployed on a server. A javascript client is available in [LangChainJS](https://js.langchain.com/docs/api/runnables_remote/classes/RemoteRunnable).
 
@@ -30,15 +30,15 @@ To use the langchain CLI make sure that you have a recent version of `langchain-
 
 `langchain app new ../path/to/directory`
 
-#### Examples
+### Examples
 Get your LangServe instance started quickly with [LangChain Templates](https://github.com/langchain-ai/langchain/blob/master/templates/README.md "LangChain templates").
 
 For more examples, see the templates [index](https://github.com/langchain-ai/langchain/blob/master/templates/docs/INDEX.md) or the [examples](https://github.com/langchain-ai/langserve/tree/main/examples "Examples") directory.
 
-#### Server
+### Server
 Here's a server that deploys an OpenAI chat model, an Anthropic chat model, and a chain that uses the Anthropic model to tell a joke about a topic.
 
-```
+```python
 #!/usr/bin/env python
 from fastapi import FastAPI
 from langchain.prompts import ChatPromptTemplate
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
 ```
 
-#### Docs
+### Docs
 If you've deployed the server above, you can view the generated OpenAPI docs using:
 
 ⚠️ If using pydantic v2, docs will not be generated for invoke/batch/stream/stream_log. See Pydantic section below for more details.
@@ -89,10 +89,10 @@ make sure to add the /docs suffix.
 
 ⚠️ Index page / is not defined by design, so curl localhost:8000 or visiting the URL will return a 404. If you want content at / define an endpoint @app.get("/").
 
-#### Client
-Python SDK
+### Client-side interactions and code examples
+An asynchronous example chatbot client Python module which calls `RemoteRunnable`, a type of `Runnable`.
 
-```
+```python
 from langchain.schema import SystemMessage, HumanMessage
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema.runnable import RunnableMap
@@ -131,7 +131,7 @@ chain.batch([{ "topic": "parrots" }, { "topic": "cats" }])
 
 In TypeScript (requires LangChain.js version 0.0.166 or later):
 
-```
+```typescript
 import { RemoteRunnable } from "langchain/runnables/remote";
 
 const chain = new RemoteRunnable({
@@ -144,7 +144,7 @@ const result = await chain.invoke({
 
 Python using requests:
 
-```
+```python
 import requests
 response = requests.post(
     "http://localhost:8000/joke/invoke/",
@@ -155,7 +155,7 @@ response.json()
 
 You can also use curl:
 
-```
+```bash
 curl --location --request POST 'http://localhost:8000/joke/invoke/' \
     --header 'Content-Type: application/json' \
     --data-raw '{
@@ -165,11 +165,8 @@ curl --location --request POST 'http://localhost:8000/joke/invoke/' \
     }'
 ```
 
-#### Endpoints:
-The following code:
-
-```
-...
+### Endpoints: Configuring API Routes
+```python
 add_routes(
   app,
   runnable,
@@ -186,11 +183,10 @@ adds of these endpoints to the server:
 - `GET /my_runnable/input_schema` - json schema for input to the runnable
 - `GET /my_runnable/output_schema` - json schema for output of the runnable
 - `GET /my_runnable/config_schema` - json schema for config of the runnable
-These endpoints match the LangChain Expression Language interface -- please reference this documentation for more details.
 
-### Basic Deployment and Querying with GPT-3.5-Turbo
-- **Example**: Deploying and querying the GPT-3.5-Turbo model using LangServe.
-- **Objective**: To illustrate the use of LangServe within the LangChain ecosystem. LangServe is designed to facilitate server-side functionalities for managing and deploying language models, making it an essential tool for scalable and efficient AI applications.
+These endpoints match the LangChain Expression Language interface.
+
+## Basic End-to-end example: Deployment and Queries with GPT-3.5-Turbo-1106
 ```python
 from langserve import LangServeClient
 
@@ -211,8 +207,8 @@ response = langserve_client.query_model(model_name="gpt-3.5-turbo-1106", query=q
 print("Model Response:", response.content)
 ```
 
-#### Advanced Deployment and Custom Configuration
-- **Example**: Utilizing LangServe for deploying custom-configured models for specialized tasks.
+## Deploying Custom-configured models for specialized tasks: Snippet
+Utilizing LangServe for deploying custom-configured models for specialized tasks.
 ```python
 # Custom deployment with specific parameters
 advanced_model_config = {
@@ -231,7 +227,7 @@ custom_response = langserve_client.query_model(model_name="custom-gpt-model", qu
 print("Custom Model Response:", custom_response.content)
 ```
 
-#### Model Management and Analytics
+## Model Management and Analytics
 - **Example**: Managing deployed models and accessing detailed analytics.
 ```python
 # Fetching model analytics
@@ -250,8 +246,7 @@ updated_model_details = langserve_client.get_model_details(model_name="gpt-3.5-t
 print("Updated Model Details:", updated_model_details)
 ```
 
-#### Integration with LangChain Applications
-- **Example**: Demonstrating seamless integration of LangServe with LangChain.
+## Integration with LangChain Applications
 ```python
 from langchain.chains import SimpleChain
 

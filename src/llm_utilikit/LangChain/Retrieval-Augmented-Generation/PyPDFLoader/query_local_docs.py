@@ -191,6 +191,7 @@ if __name__ == "__main__":
         result = pdf_processor.perform_similarity_search(docsearch, query)
 
         # Run the QA chain on the result
-        for chain.run(input_documents=result, question=query)
+        for document in result:
+            chain.run(input_documents=result, question=query)
     except Exception as e:
         print(f"An error occurred: {e}")
