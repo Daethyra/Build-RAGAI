@@ -1,12 +1,91 @@
 # LangChain Advanced Features: Embedding Routers, Prompt Size Management, Code Writing
 
-## Introduction
+##  Embedding Router
+Routing allows you to create non-deterministic chains where the output of a previous step defines the next step. Routing helps provide structure and consistency around interactions with LLMs.
 
-Building on the core concepts, this guide covers advanced features like embeddings, prompt management, agents, and code writing. These empower sophisticated applications.
+As a very simple example, let’s suppose we have two templates optimized for different types of questions, and we want to choose the template based on the user input.
 
-#  Embedding Router
-- **Objective**: To answer "what are routers?" and demonstrate the use of embeddings to dynamically route queries to the most relevant prompt based on semantic similarity. This advanced feature allows LangChain applications to handle a variety of inputs more intelligently.
-- **Example Code**:
+```python
+from langchain.prompts import PromptTemplate
+
+physics_template = """You are a very smart physics professor. \
+You are great at answering questions about physics in a concise and easy to understand manner. \
+When you don't know the answer to a question you admit that you don't know.
+
+Here is a question:
+{input}"""
+physics_prompt = PromptTemplate.from_template(physics_template)
+
+math_template = """You are a very good mathematician. You are great at answering math questions. \
+You are so good because you are able to break down hard problems into their component parts, \
+answer the component parts, and then put them together to answer the broader question.
+
+Here is a question:
+{input}"""
+math_prompt = PromptTemplate.from_template(math_template)
+```
+
+### Using LangChain Expression Language (LCEL)
+We can easily do this using a RunnableBranch. A RunnableBranch is initialized with a list of (condition, runnable) pairs and a default runnable. It selects which branch by passing each condition the input it’s invoked with. It selects the first condition to evaluate to True, and runs the corresponding runnable to that condition with the input.
+
+If no provided conditions match, it runs the default runnable.
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnableBranch
+general_prompt = PromptTemplate.from_template(
+    "You are a helpful assistant. Answer the question as accurately as you can.\n\n{input}"
+)
+prompt_branch = RunnableBranch(
+    (lambda x: x["topic"] == "math", math_prompt),
+    (lambda x: x["topic"] == "physics", physics_prompt),
+    general_prompt,
+)
+
+from typing import Literal
+
+from langchain.output_parsers.openai_functions import PydanticAttrOutputFunctionsParser
+from langchain.pydantic_v1 import BaseModel
+from langchain.utils.openai_functions import convert_pydantic_to_openai_function
+
+
+class TopicClassifier(BaseModel):
+    "Classify the topic of the user question"
+
+    topic: Literal["math", "physics", "general"]
+    "The topic of the user question. One of 'math', 'physics' or 'general'."
+
+
+classifier_function = convert_pydantic_to_openai_function(TopicClassifier)
+llm = ChatOpenAI().bind(
+    functions=[classifier_function], function_call={"name": "TopicClassifier"}
+)
+parser = PydanticAttrOutputFunctionsParser(
+    pydantic_schema=TopicClassifier, attr_name="topic"
+)
+classifier_chain = llm | parser
+
+from operator import itemgetter
+
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough
+
+final_chain = (
+    RunnablePassthrough.assign(topic=itemgetter("input") | classifier_chain)
+    | prompt_branch
+    | ChatOpenAI()
+    | StrOutputParser()
+)
+
+final_chain.invoke(
+    {
+        "input": "What is the first prime number greater than 40 such that one plus the prime number is divisible by 3?"
+    }
+)
+```
+
+- **Embedding Routing: End-to-end example**:
 ```python
 from langchain.chat_models import ChatOpenAI   
 from langchain.embeddings import OpenAIEmbeddings   
@@ -46,23 +125,26 @@ chain = (
 response = chain.invoke({"query": "What is quantum mechanics?"})
 print(response)
 ```
-- **Explanation**: This code demonstrates how embeddings and cosine similarity are used to determine which prompt template is most relevant to the user's query. Based on the query's content, it chooses between a physics and a math expert prompt. The response is then generated accordingly by the chat model.
 
 #  Managing Prompt Size
-- **Objective**: To illustrate strategies for managing the size of prompts within LangChain applications, ensuring they remain efficient and within the model's context window. This is crucial for maintaining performance, especially in complex chains or agents.
-- **Example Code**:
+Agents dynamically call tools. The results of those tool calls are added back to the prompt, so that the agent can plan the next action. Depending on what tools are being used and how they’re being called, the agent prompt can easily grow larger than the model context window.
+
+With LCEL, it’s easy to add custom functionality for managing the size of prompts within your chain or agent. Let’s look at simple agent example that can search Wikipedia for information.
+
+- **Manage Prompt Size: End-to-end Example**:
 ```python
+# Installing necessary package for Wikipedia queries
+# !pip install langchain wikipedia
+
 from langchain.agents import AgentExecutor, load_tools
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
 from langchain.agents.output_parsers import OpenAIFunctionsAgentOutputParser
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.prompts.chat import ChatPromptValue
 from langchain.tools import WikipediaQueryRun
 from langchain.tools.render import format_tool_to_openai_function
 from langchain.utilities import WikipediaAPIWrapper
-
-# Installing necessary package for Wikipedia queries
-# !pip install langchain wikipedia
 
 # Initializing Wikipedia query tool with content character limit
 wiki = WikipediaQueryRun(
@@ -76,31 +158,45 @@ prompt = ChatPromptTemplate.from_messages([
     ("user", "{input}"),
     MessagesPlaceholder(variable_name="agent_scratchpad"),
 ])
-llm = ChatOpenAI(model="gpt-3.5-turbo")
+llm = ChatOpenAI(model="gpt-3.5-turbo-1106")
 
-# Building an agent with a focus on managing prompt size
+Let’s try a many-step question without any prompt size handling:
+
+# Create a function to condense the prompt for the sake of our context window
+def condense_prompt(prompt: ChatPromptValue) -> ChatPromptValue:
+    messages = prompt.to_messages()
+    num_tokens = llm.get_num_tokens_from_messages(messages)
+    ai_function_messages = messages[2:]
+    while num_tokens > 4_000:
+        ai_function_messages = ai_function_messages[2:]
+        num_tokens = llm.get_num_tokens_from_messages(
+            messages[:2] + ai_function_messages
+        )
+    messages = messages[:2] + ai_function_messages
+    return ChatPromptValue(messages=messages)
+
 agent = (
     {
-        "input": lambda x: x["input"],
+        "input": itemgetter("input"),
         "agent_scratchpad": lambda x: format_to_openai_function_messages(
             x["intermediate_steps"]
         ),
     }
     | prompt
+    | condense_prompt
     | llm.bind(functions=[format_tool_to_openai_function(t) for t in tools])
     | OpenAIFunctionsAgentOutputParser()
 )
 
-# Executing the agent
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-response = agent_executor.invoke({
-    "input": "What is the tallest mountain?"
-})
-print(response)
+agent_executor.invoke(
+    {
+        "input": "Who is the current US president? What's their home state? What's their home state's bird? What's that bird's scientific name?"
+    }
+)
 ```
-- **Explanation**: This code showcases an agent setup that includes a Wikipedia query tool and a prompt template. The agent's construction focuses on managing the prompt size by limiting the content from intermediate steps. The response to a query is generated with consideration to the prompt's overall size, ensuring efficiency.
 
-
+---
 
 # Code Writing with LangChain
 - **Example Code**:
