@@ -1,25 +1,106 @@
 # LangChain Expression Language (LCEL)
-## LLMs VS Chat Models
+## Critical-Comprehension: Fundamental Concepts
+
+### Interface
+To make it as easy as possible to create custom chains, we've implemented a "Runnable" protocol. The Runnable protocol is implemented for most components. This is a standard interface, which makes it easy to define custom chains as well as invoke them in a standard way. The standard interface includes:
+
+- `stream`: stream back chunks of the response
+```python
+for s in chain.stream({"topic": "bears"}):
+    print(s.content, end="", flush=True)
+```
+- `invoke`: call the chain on an input
+```python
+chain.invoke({"topic": "bears"})
+```
+- `batch`: call the chain on a list of inputs
+```python
+# You can set the number of concurrent requests by using the max_concurrency parameter
+chain.batch([{"topic": "bears"}, {"topic": "cats"}], config={"max_concurrency": 5})
+```
+
+These also have corresponding async methods:
+
+- `astream`: stream back chunks of the response async
+```python
+async for s in chain.astream({"topic": "bears"}):
+    print(s.content, end="", flush=True)
+```
+- `ainvoke`: call the chain on an input async
+```python
+async for s in chain.astream({"topic": "bears"}):
+    print(s.content, end="", flush=True)
+```
+- `abatch`: call the chain on a list of inputs async
+```python
+await chain.abatch([{"topic": "bears"}, {"topic": "cats"}], config={"max_concurrency": 5})
+```
+- `astream_log`: All runnables also have a method .astream_log() which is used to stream (as they happen) all or part of the intermediate steps of your chain/sequence. This is useful to show progress to the user, to use intermediate results, or to debug your chain. [Learn More](https://python.langchain.com/docs/expression_language/interface "LangChain Documentation")
+
+The input type and output type varies by component:
+
+| Component    | Input Type                                         | Output Type        |
+|--------------|----------------------------------------------------|--------------------|
+| Prompt       | Dictionary                                         | PromptValue        |
+| ChatModel    | Single string, list of chat messages or a PromptValue | ChatMessage       |
+| LLM          | Single string, list of chat messages or a PromptValue | String            |
+| OutputParser | The output of an LLM or ChatModel                  | Depends on the parser |
+| Retriever    | Single string                                      | List of Documents  |
+| Tool         | Single string or dictionary, depending on the tool | Depends on the tool |
+
+All runnables expose input and output schemas to inspect the inputs and outputs:
+- `input_schema`: an input Pydantic model auto-generated from the structure of the Runnable
+- `output_schema`: an output Pydantic model auto-generated from the structure of the Runnable
+
+Let's take a look at these methods. To do so, we'll create a super simple PromptTemplate + ChatModel chain.
+
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+
+model = ChatOpenAI()
+prompt = ChatPromptTemplate.from_template("tell me a joke about {topic}")
+chain = prompt | model
+```
+
+**Input Schema**:
+This is a Pydantic model dynamically generated from the structure of any Runnable. You can call .schema() on it to obtain a JSONSchema representation.
+```python
+# The input schema of the chain is the input schema of its first part, the prompt.
+chain.input_schema.schema()
+prompt.input_schema.schema()
+model.input_schema.schema()
+```
+
+**Output Schema**:
+This is a Pydantic model dynamically generated from the structure of any Runnable. You can call .schema() on it to obtain a JSONSchema representation.
+```python
+# The output schema of the chain is the output schema of its last part, in this case a ChatModel, which outputs a ChatMessage
+chain.output_schema.schema()
+```
+
+### LLMs VS Chat Models
 LLMs and chat models are subtly but importantly different. LLMs in LangChain refer to pure text completion models. The APIs they wrap take a string prompt as input and output a string completion. OpenAI's GPT-3 is implemented as an LLM. Chat models are often backed by LLMs but tuned specifically for having conversations. And, crucially, their provider APIs use a different interface than pure text completion models. Instead of a single string, they take a list of chat messages as input. Usually these messages are labeled with the speaker (usually one of "System", "AI", and "Human"). And they return an AI chat message as output. GPT-4 and Anthropic's Claude-2 are both implemented as chat models.
 
 ### Prompts vs PromptTemplate
 A prompt for a language model is a set of instructions or input provided by a user to guide the model's response, helping it understand the context and generate relevant and coherent language-based output, such as answering questions, completing sentences, or engaging in a conversation.
 
+---
+
 ## Concepts
 1. Build Python code to prompt an LLM
 2. Memory Integration
 3. Retrieval Augmented Generation
-4. Agents
+4. Agents and Tools
 
 # 1. Prompt + LLM
 The most common and valuable composition is taking:
 `PromptTemplate` / `ChatPromptTemplate` -> `LLM` / `ChatModel` -> `OutputParser`
 - Almost any other chains you build will use this building block.
 
-## - **PromptTemplate + LLM**: 
+## - Invoking "LLM"s: PromptTemplate + LLM 
 The simplest composition is just combining a prompt and model to create a chain that takes user input, adds it to a prompt, passes it to a model, and returns the raw model output.
 
-Note, you can mix and match PromptTemplate/ChatPromptTemplates and LLMs/ChatModels as you like here.
 ```python
 from langchain.chat_models import ChatOpenAI   
 from langchain.prompts import ChatPromptTemplate   
@@ -33,11 +114,27 @@ chain = prompt | model
 response = chain.invoke({"topic": "science"})  
 print(response.content)
 ```
+
+The most common type of chaining in any LLM application is combining a prompt template with an LLM and optionally an output parser.
+
+`BasePromptTemplate`, `BaseLanguageModel` and `BaseOutputParser` all implement the `Runnable` interface and are designed to be piped into one another, making LCEL composition very easy:
+```python
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import PromptTemplate
+from langchain.schema import StrOutputParser
+
+prompt = PromptTemplate.from_template(
+    "What is a good name for a company that makes {product}?"
+)
+runnable = prompt | ChatOpenAI() | StrOutputParser()
+runnable.invoke({"product": "colorful socks"})
+```
+
 ### `PromptTemplate`
 Use `PromptTemplate` to create a template for a string prompt.
 
 By default, `PromptTemplate` uses Python’s str.format syntax for templating.
-```
+```python
 from langchain.prompts import PromptTemplate
 
 prompt_template = PromptTemplate.from_template(
@@ -47,13 +144,14 @@ prompt_template.format(adjective="funny", content="chickens")
 ```
 `'Tell me a funny joke about chickens.'`
 The template supports any number of variables, including no variables:
-```
+```python
 from langchain.prompts import PromptTemplate
 
 prompt_template = PromptTemplate.from_template("Tell me a joke")
 prompt_template.format()
 ```
 `'Tell me a joke'`
+
 #### Adding Validation
 For additional validation, specify input_variables explicitly. These variables will be compared against the variables present in the template string during instantiation, raising an exception if there is a mismatch. For example:
 ```
@@ -64,11 +162,12 @@ invalid_prompt = PromptTemplate(
     template="Tell me a {adjective} joke about {content}.",
 )
 ```
-```
+
+```shell
 ValidationError: 1 validation error for PromptTemplate
 __root__
   Invalid prompt schema; check for mismatched or missing input parameters. 'content' (type=value_error)
-  ```
+```
 
 ### `ChatPromptTemplate`
 The prompt to chat models is a list of chat messages.
@@ -76,7 +175,7 @@ The prompt to chat models is a list of chat messages.
 Each chat message is associated with content, and an additional parameter called `role`. For example, in the OpenAI Chat Completions API, a chat message can be associated with an AI assistant, a human or a system role.
 
 Create a chat prompt template like this:
-```
+```python
 from langchain.prompts import ChatPromptTemplate
 
 chat_template = ChatPromptTemplate.from_messages(
@@ -94,7 +193,7 @@ messages = chat_template.format_messages(name="Bob", user_input="What is your na
 `ChatPromptTemplate.from_messages` accepts a variety of message representations.
 
 For example, in addition to using the 2-tuple representation of (type, content) used above, you could pass in an instance of `MessagePromptTemplate` or `BaseMessage`.
-```
+```python
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import HumanMessagePromptTemplate
 from langchain.schema.messages import SystemMessage
@@ -114,7 +213,9 @@ chat_template = ChatPromptTemplate.from_messages(
 llm = ChatOpenAI()
 llm(chat_template.format_messages(text="i dont like eating tasty things."))
 ```
+
 `AIMessage(content='I absolutely love indulging in delicious treats!')`
+
 This provides you with a lot of flexibility in how you construct your chat prompts.
 
 ### Attaching Function Call information
@@ -145,18 +246,21 @@ Response:  `AIMessage(content='', additional_kwargs={'function_call': {'name': '
 
 ## PromptTemplate + LLM + OutputParser
 We can also add in an output parser to easily transform the raw LLM/ChatModel output into a more workable format.
-```
+
+```python
 from langchain.schema.output_parser import StrOutputParser
 
 chain = prompt | model | StrOutputParser()
 ```
+
 Notice that this now returns a string - a much more workable format for downstream tasks
 `chain.invoke({"foo": "bears"})`
 Response: `"Why don't bears wear shoes?\n\nBecause they have bear feet!"`
 
 ### Functions Output Parser
-When you specify the function to retun, you must just want to parse that directly
-```
+When you specify the function to retun, you must parse that directly
+
+```python
 from langchain.output_parsers.openai_functions import JsonOutputFunctionsParser
 
 chain = (
@@ -166,12 +270,12 @@ chain = (
 )
 ```
 ```chain.invoke({"foo": "bears"})```
-```
+```shell
 {'setup': "Why don't bears like fast food?",
  'punchline': "Because they can't catch it!"}
- ```
+```
 
- ```
+```python
  from langchain.output_parsers.openai_functions import JsonKeyOutputFunctionsParser
 
 chain = (
@@ -179,15 +283,13 @@ chain = (
     | model.bind(function_call={"name": "joke"}, functions=functions)
     | JsonKeyOutputFunctionsParser(key_name="setup")
 )
+chain.invoke({"foo": "bears"})
 ```
+- Why don't bears wear shoes"?
 
-```chain.invoke({"foo": "bears"})```
-
-```"Why don't bears wear shoes?"```
-
-## Simplifying Input
+## `chain.invoke()`: Simplifying Input with `RunnableParallel`
 To make invocation even simpler, we can add a `RunnableParallel` to take care of creating the prompt input dict for us:
-```
+```python
 from langchain.schema.runnable import RunnableParallel, RunnablePassthrough
 
 map_ = RunnableParallel(foo=RunnablePassthrough())
@@ -200,7 +302,7 @@ chain = (
 ```
 
 Since we’re composing our map with another Runnable, we can even use some syntactic sugar and just use a dict:
-```
+```python
 chain = (
     {"foo": RunnablePassthrough()}
     | prompt
@@ -208,12 +310,13 @@ chain = (
     | JsonKeyOutputFunctionsParser(key_name="setup")
 )
 ```
-
 In either composition, we still invoke like this:
-`chain.invoke("bears")`
-`"Why don't bears like fast food?"`
+```python
+chain.invoke("bears")
+# Response would be: "Why don't bears like fast food?"
+```
 
-## Chat Models
+## Invoking Chat Models
 Chat models are a variation on language models. While chat models use language models under the hood, the interface they use is a bit different. Rather than using a “text in, text out” API, they use an interface where “chat messages” are the inputs and outputs.
 ### Messages
 The chat model interface is based around messages rather than raw text. The types of messages currently supported in LangChain are `AIMessage`, `HumanMessage`, `SystemMessage`, `FunctionMessage` and `ChatMessage` – `ChatMessage` takes in an arbitrary role parameter. Most of the time, you’ll just be dealing with HumanMessage, AIMessage, and `SystemMessage`
@@ -221,32 +324,25 @@ The chat model interface is based around messages rather than raw text. The type
 Chat models implement the [Runnable interface](https://python.langchain.com/docs/expression_language/interface "Online documentation"), the basic building block of the LangChain Expression Language (LCEL). This means they support `invoke`, `ainvoke`, `stream`, `astream`, `batch`, `abatch`, `astream_log` calls.
 
 Chat models accept `List[BaseMessage]` as inputs, or objects which can be coerced to messages, including `str` (converted to `HumanMessage`) and `PromptValue`.
-```
+```python
 from langchain.schema.messages import HumanMessage, SystemMessage
 
 messages = [
     SystemMessage(content="You're a helpful assistant"),
     HumanMessage(content="What is the purpose of model regularization?"),
 ]
-```
-```
+
 chat.invoke(messages)
-```
-```
-for chunk in chat.stream(messages):
+hunk in chat.stream(messages):
     print(chunk.content, end="", flush=True)
-```
-```
+
 chat.batch([messages])
-```
-```
+
 await chat.ainvoke(messages)
-```
-```
+
 async for chunk in chat.astream(messages):
     print(chunk.content, end="", flush=True)
-```
-```
+
 async for chunk in chat.astream_log(messages):
     print(chunk)
 ```
@@ -304,6 +400,32 @@ response
 `AIMessage(content='Your name is Bob.', additional_kwargs={}, example=False)`
 
 This code demonstrates the use of `ConversationBufferMemory` to keep a record of the conversation. The `ChatPromptTemplate` is configured to include a history of messages, allowing the model to generate responses considering previous interactions.
+
+### Splitting Text: Character Splitting, Split by Tokens,
+- The default recommended text splitter is the RecursiveCharacterTextSplitter. This text splitter takes a list of characters. It tries to create chunks based on splitting on the first character, but if any chunks are too large it then moves onto the next character, and so forth. By default the characters it tries to split on are ["\n\n", "\n", " ", ""]
+
+#### Recursive Character Splitting
+
+- In addition to controlling which characters you can split on, you can also control a few other things:
+
+* `length_function`: how the length of chunks is calculated. Defaults to just counting number of characters, but it's pretty common to pass a token counter here.
+* `chunk_size`: the maximum size of your chunks (as measured by the length function).
+* `chunk_overlap`: the maximum overlap between chunks. It can be nice to have some overlap to maintain some continuity between chunks (e.g. do a sliding window).
+* `add_start_index`: whether to include the starting position of each chunk within the original document in the metadata.
+
+```python
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter(
+    # Set a really small chunk size, just to show.
+    chunk_size = 100,
+    chunk_overlap  = 20,
+    length_function = len,
+    is_separator_regex = False,
+)
+```
+
+
+
 
 ### Conversation Buffer End2End Example
 Finally, let's take a look at using this in a chain. We'll use an `LLMChain`, and show working with both an LLM and a ChatModel.
@@ -957,7 +1079,7 @@ chain_with_history.invoke(
 )
 ```
 #### Example: Messages Input, Dictionary Output
-```
+```python
 from langchain.schema.messages import HumanMessage
 from langchain.schema.runnable import RunnableParallel
 
@@ -976,16 +1098,12 @@ chain_with_history.invoke(
 AI Response: 
 `{'output_message': AIMessage(content=' Here is a summary of Simone de Beauvoir\'s views on free will:\n\n- De Beauvoir was an existentialist philosopher and believed strongly in the concept of free will. She rejected the idea that human nature or instincts determine behavior.\n\n- Instead, de Beauvoir argued that human beings define their own essence or nature through their actions and choices. As she famously wrote, "One is not born, but rather becomes, a woman."\n\n- De Beauvoir believed that while individuals are situated in certain cultural contexts and social conditions, they still have agency and the ability to transcend these situations. Freedom comes from choosing one\'s attitude toward these constraints.\n\n- She emphasized the radical freedom and responsibility of the individual. We are "condemned to be free" because we cannot escape making choices and taking responsibility for our choices. \n\n- De Beauvoir felt that many people evade their freedom and responsibility by adopting rigid mindsets, ideologies, or conforming uncritically to social roles.\n\n- She advocated for the recognition of ambiguity in the human condition and warned against the quest for absolute rules that deny freedom and responsibility. Authentic living involves embracing ambiguity.\n\nIn summary, de Beauvoir promoted an existential ethics')}`
 
-```
-```
-
-
 ---
 
-# 4. Agents 
-#### Construction and Management
-- **Objective**: To demonstrate the process of constructing and managing agents in LangChain. This includes creating agents from runnables and understanding the key components and logic involved in agent operation.
-- **Example Code**:
+# 4. Agents and Tools
+
+## Agents
+### Construction and Management
 ```python
 from langchain.agents import AgentExecutor, XMLAgent, tool
 from langchain.chat_models import ChatAnthropic
@@ -1032,5 +1150,21 @@ response = agent_executor.invoke({"question": "What's the weather in New York to
 print(response)
 ```
 - **Explanation**: This code block illustrates how to build an agent using LangChain's `XMLAgent`. The agent includes a custom tool for weather information and logic to process and format intermediate steps. The agent is executed with a specific query, demonstrating its ability to manage and utilize its components effectively.
+
+## Tools
+Definition: Tools are interfaces that an agent can use to interact with the world. Tools are functions that agents can use to interact with the world. These tools can be generic utilities (e.g. search), other chains, or even other agents.
+
+Currently, tools can be loaded using the following snippet:
+```python
+from langchain.agents import load_tools
+tool_names = []
+tools = load_tools(tool_names)
+```
+
+Some tools (e.g. chains, agents) may require a base LLM to use to initialize them. 
+- In that case, you can pass in an LLM as an argument:
+```python
+tools = load_tools(tool_names, llm=llm)
+```
 
 ---

@@ -170,11 +170,11 @@ Whenever you find yourself unable to do exactly as asked, try seeing if there's 
 
 If a task seems impossible, say so. Do not make up information in order to provide an answer. Accuracy and truth are of the utmost importance.
 
-constants = {
+${CONSTANTS} = {
 "${EXECUTIVE_AUTONOMY}": "You have permission to make mission-critical decisions instead of asking for guidance, using your best judgement.",
 "${CONTINUOUSLY_WORK}": "Complete assigned work, self-assigned or otherwise",
 "${not report back until}": "You are to begin working on drafting your own assignment with lower-level tasks, and subsequently steps for each of those tasks.",
-"${PRODUCTION_GRADE}": includes (["OOP", "resilient/fault tolerance", "docstrings, type hints, comments", "components/modularization"])
+"${PRODUCTION_GRADE}": includes (["robust and actionable", "OOP", "resilient/fault tolerance", "docstrings, type hints, comments", "components/modularization"])
 }
 ```
 

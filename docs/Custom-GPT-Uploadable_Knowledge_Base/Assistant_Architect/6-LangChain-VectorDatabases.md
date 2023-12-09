@@ -1,4 +1,6 @@
-# Vector Stores: ChromaDB
+# Vector Stores: ChromaDB, Pinecone
+
+## ChromaDB
 Install Chroma with:
 `pip install chromadb`
 
@@ -12,7 +14,7 @@ Like any other database, you can:
 
 View full docs at [docs](https://docs.trychroma.com/reference/Collection). To access these methods directly, you can do `._collection.method()`
 
-## Basic Example
+## Basic Example - Load text, Character Splitting, ChromaDB
 In this basic example, we take the most recent State of the Union Address, split it into chunks, embed it using an open-source embedding model, load it into Chroma, and then query it.
 ```python
 from langchain.document_loaders import TextLoader
@@ -25,7 +27,13 @@ loader = TextLoader("../../modules/state_of_the_union.txt")
 documents = loader.load()
 
 # split it into chunks
-text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+text_splitter = RecursiveCharacterTextSplitter(
+    # Set a really small chunk size, just to show.
+    chunk_size = 100,
+    chunk_overlap  = 20,
+    length_function = len,
+    is_separator_regex = False,
+)
 docs = text_splitter.split_documents(documents)
 
 # create the open-source embedding function
