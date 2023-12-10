@@ -1,3 +1,4 @@
+import os
 from langchain.document_loaders.pdf import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -9,6 +10,8 @@ from langchain.chains import RunnableParallel
 from langchain.utils.text_splitter import RecursiveCharacterTextSplitter
 from langchain.hub import Hub
 
+# Set API Key
+os.environ["OPENAI_API_KEY"] = "sk-yadayadayada"
 # Initialize the hub
 hub = Hub()
 
