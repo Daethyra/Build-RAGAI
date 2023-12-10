@@ -33,9 +33,4 @@ def multi_vector_query_retriever(question):
 
     return relevant_documents
 
-"""
-# Example usage
-question = "What are the approaches to Task Decomposition?"
 relevant_documents = multi_vector_query_retriever(question)
-print(len(relevant_documents))
-"""

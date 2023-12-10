@@ -1,6 +1,6 @@
 [project]
 name = "LLM-Utilikit"
-version = "1.0.222"
+version = "1.0.223"
 description = "Prebuilt AI-powered Python components for leveraging Large Language Models."
 authors = [
     {name = "Daethyra", email = "109057945+Daethyra@users.noreply.github.com"},
