@@ -1,55 +1,80 @@
 import logging
 from gpt4all import GPT4All
+from pathlib import Path
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
+
+def is_model_downloaded(model_name):
+    """
+    Check if the GPT4All model is already downloaded.
+
+    :param model_name: The name of the model file.
+    :return: True if the model is downloaded, False otherwise.
+    """
+    model_path = Path.home() / ".cache/gpt4all" / model_name
+    return model_path.exists()
+
+
 def get_multiline_input(prompt):
-    print(prompt)  # Display the initial prompt to the user
-    lines = []     # Initialize an empty list to store input lines
-    
-    # Loop to collect user input
+    """
+    Collect multiline input from the user.
+
+    :param prompt: The prompt to display to the user.
+    :return: User input as a single string.
+    """
+    print(prompt)
+    lines = []
     while True:
         line = input()
-        if line.lower() == 'end':  # Check if the user typed 'end'
-            break                 # Exit the loop if 'end' is encountered
-        lines.append(line)        # Append the line to the list of lines
-
-    return "\n".join(lines)       # Join all lines into a single string, separated by newlines
+        if line.lower() == "end":
+            break
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def main():
-    try:
-        # Initialize the GPT4All model with GPU
-        model = GPT4All(
-            model_name="rift-coder-v0-7b-q4_0.gguf",
-            allow_download=True,
-            n_threads=10,
-            device='gpu',
-            verbose=True
-            )
+    """
+    Main function to initialize and interact with the GPT4All model.
+    """
+    model_name = "rift-coder-v0-7b-q4_0.gguf"
 
-        # Optional: Download the model if not present
+    # Download the model if not present
+    if not is_model_downloaded(model_name):
         try:
-            GPT4All.retrieve_model("rift-coder-v0-7b-q4_0.gguf")
+            GPT4All.retrieve_model(model_name)
         except Exception as e:
             logging.error(f"Error downloading model: {e}")
             return
 
-        # Capture multi-line input from the user
-        user_query = get_multiline_input("Please type your query (type 'end' on a new line to finish):\n")
+    try:
+        # Initialize the GPT4All model with specified parameters
+        model = GPT4All(
+            model_name=model_name,
+            allow_download=True,
+            n_threads=10,
+            device="gpu",
+            verbose=True,
+        )
 
-        # Generate response
+        # Capture and process user input
+        user_query = get_multiline_input(
+            "Please type your query (type 'end' on a new line to finish):\n"
+        )
         try:
-            response = model.generate(prompt=user_query,
-                                      max_tokens=200,
-                                      temp=0.7,
-                                      top_k=40,
-                                      top_p=0.4,
-                                      repeat_penalty=1.18,
-                                      repeat_last_n=64,
-                                      n_batch=8,
-                                      streaming=False)
+            # Generate a response based on the user's query
+            response = model.generate(
+                prompt=user_query,
+                max_tokens=200,
+                temp=0.7,
+                top_k=40,
+                top_p=0.4,
+                repeat_penalty=1.18,
+                repeat_last_n=64,
+                n_batch=8,
+                streaming=False,
+            )
             print("Response:", response)
         except Exception as e:
             logging.error(f"Error during code generation: {e}")
@@ -58,6 +83,7 @@ def main():
         print("\nOperation cancelled by user.")
     except Exception as e:
         logging.error(f"Error initializing model or during code generation: {e}")
+
 
 if __name__ == "__main__":
     main()
