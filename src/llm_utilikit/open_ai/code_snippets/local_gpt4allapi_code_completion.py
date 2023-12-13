@@ -10,18 +10,31 @@ def get_multiline_input(prompt):
     
     # Loop to collect user input
     while True:
-        line = input()           # Read a line from the user
-        if line.lower() == 'end': # Check if the user typed 'end'
-            break                # Exit the loop if 'end' is encountered
-        lines.append(line)       # Append the line to the list of lines
+        line = input()
+        if line.lower() == 'end':  # Check if the user typed 'end'
+            break                 # Exit the loop if 'end' is encountered
+        lines.append(line)        # Append the line to the list of lines
 
-    return "\n".join(lines)      # Join all lines into a single string, separated by newlines
+    return "\n".join(lines)       # Join all lines into a single string, separated by newlines
 
 
 def main():
     try:
-        # Initialize the GPT4All model
-        model = GPT4All("rift-coder-v0-7b-q4_0.gguf")
+        # Initialize the GPT4All model with GPU
+        model = GPT4All(
+            model_name="rift-coder-v0-7b-q4_0.gguf",
+            allow_download=True,
+            n_threads=10,
+            device='gpu',
+            verbose=True
+            )
+
+        # Optional: Download the model if not present
+        try:
+            GPT4All.retrieve_model("rift-coder-v0-7b-q4_0.gguf")
+        except Exception as e:
+            logging.error(f"Error downloading model: {e}")
+            return
 
         # Capture multi-line input from the user
         user_query = get_multiline_input("Please type your query (type 'end' on a new line to finish):\n")
@@ -29,15 +42,15 @@ def main():
         # Generate response
         try:
             response = model.generate(prompt=user_query,
-                                      max_tokens=1024,
-                                      #temperature=0.4,
-                                      top_p=0.95,
-                                      streaming=True)
-            # Ensure the response is longer than the prompt
-            if len(response) > len(user_query):
-                print("Code completion:", response)
-            else:
-                print("No adequate completion found.")
+                                      max_tokens=200,
+                                      temp=0.7,
+                                      top_k=40,
+                                      top_p=0.4,
+                                      repeat_penalty=1.18,
+                                      repeat_last_n=64,
+                                      n_batch=8,
+                                      streaming=False)
+            print("Response:", response)
         except Exception as e:
             logging.error(f"Error during code generation: {e}")
 
