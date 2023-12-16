@@ -9,11 +9,14 @@ from langchain.filters import EmbeddingsRedundantFilter
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.chains import RetrievalQA
-import chromadb
 from langchain.vectorstores import Chroma
 
 logging.basicConfig(level=logging.ERROR)
 
+# this module 1. fails to use  vectorstore as retriever
+# 2. fails to make clear, the settings by which `ChatOpenAI` generates. \
+    # specifically, im worried about `max_history_len` not being obvious as the `top_k` results that it truly is
+# 3. has a bunch of unnecessary imports.
 
 class ChromaMemory:
     def __init__(
