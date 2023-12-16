@@ -1,23 +1,20 @@
 import logging
 import os
-from dotenv import load_dotenv
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.schema.runnable import RunnableLambda, RunnableBranch
 from langchain.schema.output_parser import StrOutputParser
-from langchain.chat_models import ChatOpenAI
 
 # Load environment variables from .env file
 load_dotenv()
 
 # Access the variables
-LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2")
-LANGCHAIN_ENDPOINT = os.getenv("LANGCHAIN_ENDPOINT")
-LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
-LANGCHAIN_PROJECT = os.getenv(
-    "LANGCHAIN_PROJECT", "Adversarial-Prompt"
-)  # Default to "Adversarial-Prompt" if not set
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# Set environment variables  
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+os.environ["LANGCHAIN_API_KEY"] = "#"
+os.environ["LANGCHAIN_PROJECT"] = "Adversarial-Prompt"   
+os.environ["OPENAI_API_KEY"] = "#"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 
 class AdversarialPromptChain:
     def __init__(self):
-        self.llm = OpenAI()
+        self.llm = ChatOpenAI(model_name="gpt-3.5-turbo-1106", temperature=0, organization_id=None)
         logging.info("AdversarialPromptChain initialized with OpenAI model.")
 
     def initial_prompt_step(self, query):

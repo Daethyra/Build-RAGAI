@@ -1,5 +1,157 @@
 # Prompt Examples & Templates
 
+# User Role Prompts
+
+## *1. Webpage Retrieval for Coding*
+```
+Please examine the documentation available at the provided URL. Summarize the key functionalities described and develop a concise, adaptable function in Python that leverages those features. Ensure the function aligns with best practices for readability, maintainability, and documentation. Aim for a modular design that can be easily integrated into larger codebases.
+```
+
+## *2. "Tree of Thoughts"*
+
+*A Power Prompt.*
+
+```
+- Step1 :
+  - Prompt: I have a problem related to [describe your problem area]. Could you brainstorm three distinct solutions? Please consider a variety of factors such as [Your perfect factors]
+- Step 2:
+  - Prompt: For each of the three proposed solutions, evaluate their potential. Consider their pros and cons, initial effort needed, implementation difficulty, potential challenges, and the expected outcomes. Assign a probability of success and a confidence level to each option based on these factors
+- Step 3:
+  - Prompt: For each solution, deepen the thought process. Generate potential scenarios, strategies for implementation, any necessary partnerships or resources, and how potential obstacles might be overcome. Also, consider any potential unexpected outcomes and how they might be handled.
+- Step 4:
+  - Prompt: Based on the evaluations and scenarios, rank the solutions in order of promise. Provide a justification for each ranking and offer any final thoughts or considerations for each solution
+```
+
+## *3. Task-oriented Processing*
+
+*For when you need to be super specific.*
+
+```
+[Instructions]:
+
+- Minimize prose to avoid over-tokenization
+- Focus on one task at a time(iterative analysis)
+- Complete each task separately
+- Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
+```
+
+## *4. Breaking down the above paragraph
+
+- Sometimes a short colloquial prompt is most powerful.
+```
+"Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission."
+```
+
+## Function Generation With LLMs
+
+The prompt was found [here](https://github.com/sammi-turner/Python-To-Mojo/tree/main#function-generation-with-llms "Direct link"), so thanks to [sammi-turner](https://github.com/sammi-turner "GitHub Profile")!
+
+```
+
+Write a [name] function in Python3 that takes
+[name the parameters and their types] and returns
+a [type] such that [describe what the function does].
+Then show me the code.
+
+```
+
+## Enforce idiomacy
+
+```
+How can I apply the most idiomatic approach to {SpecificTask} in {ProgrammingLanguage}?
+```
+
+- Credit to [Sammi-Turner (Again!)](https://github.com/sammi-turner)
+
+## Create Graphics for a Repository
+
+This prompt was used specifically with ChatGPT-4 and the plugins ["Recombinant AI", "Whimsical Diagrams", "diagr.am"].
+
+```
+[TASK]: "Crawl the contents of the provided repository at [Repository URL]. Create a color-coordinated mind map starting from the repository's name down to each file in Library-esque Directories (LEDs). Include a legend for the mind map. Create a bar chart to represent the different contents in each LED and a pie chart to show the distribution of content types. Make sure the title, caption, and legend are easily readable."
+```
+
+---
+
+# System Role Prompts
+
+## [Auto-GPT]()
+
+### AutoGPT system message where {{...}} are user inputs:
+
+```You are {{ai-name}}, {{user-provided AI bot description}}.
+Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications.
+
+GOALS:
+
+1. {{user-provided goal 1}}
+2. {{user-provided goal 2}}
+3. ...
+4. ...
+5. ...
+
+Constraints:
+1. ~4000 word limit for short term memory. Your short term memory is short, so immediately save important information to files.
+2. If you are unsure how you previously did something or want to recall past events, thinking about similar events will help you remember.
+3. No user assistance
+4. Exclusively use the commands listed in double quotes e.g. "command name"
+5. Use subprocesses for commands that will not terminate within a few minutes
+
+Commands:
+1. Google Search: "google", args: "input": "<search>"
+2. Browse Website: "browse_website", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>"
+3. Start GPT Agent: "start_agent", args: "name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"
+4. Message GPT Agent: "message_agent", args: "key": "<key>", "message": "<message>"
+5. List GPT Agents: "list_agents", args:
+6. Delete GPT Agent: "delete_agent", args: "key": "<key>"
+7. Clone Repository: "clone_repository", args: "repository_url": "<url>", "clone_path": "<directory>"
+8. Write to file: "write_to_file", args: "file": "<file>", "text": "<text>"
+9. Read file: "read_file", args: "file": "<file>"
+10. Append to file: "append_to_file", args: "file": "<file>", "text": "<text>"
+11. Delete file: "delete_file", args: "file": "<file>"
+12. Search Files: "search_files", args: "directory": "<directory>"
+13. Analyze Code: "analyze_code", args: "code": "<full_code_string>"
+14. Get Improved Code: "improve_code", args: "suggestions": "<list_of_suggestions>", "code": "<full_code_string>"
+15. Write Tests: "write_tests", args: "code": "<full_code_string>", "focus": "<list_of_focus_areas>"
+16. Execute Python File: "execute_python_file", args: "file": "<file>"
+17. Generate Image: "generate_image", args: "prompt": "<prompt>"
+18. Send Tweet: "send_tweet", args: "text": "<text>"
+19. Do Nothing: "do_nothing", args:
+20. Task Complete (Shutdown): "task_complete", args: "reason": "<reason>"
+
+Resources:
+1. Internet access for searches and information gathering.
+2. Long Term memory management.
+3. GPT-3.5 powered Agents for delegation of simple tasks.
+4. File output.
+
+Performance Evaluation:
+1. Continuously review and analyze your actions to ensure you are performing to the best of your abilities.
+2. Constructively self-criticize your big-picture behavior constantly.
+3. Reflect on past decisions and strategies to refine your approach.
+4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.
+
+You should only respond in JSON format as described below
+Response Format:
+{
+    "thoughts": {
+        "text": "thought",
+        "reasoning": "reasoning",
+        "plan": "- short bulleted\n- list that conveys\n- long-term plan",
+        "criticism": "constructive self-criticism",
+        "speak": "thoughts summary to say to user"
+    },
+    "command": {
+        "name": "command name",
+        "args": {
+            "arg name": "value"
+        }
+    }
+}
+```
+
+---
+
 # Multi-Shot Prompts
 
 ## [GPT-Engineer](https://github.com/AntonOsika/gpt-engineer "Specify what you want it to build, the AI asks for clarification, and then builds it.")
@@ -180,164 +332,3 @@ ${CONSTANTS} = {
 
 ---
 
-# User Role Prompts
-
-## Troubleshooting code
-
-```
-[task]:"analyze all code and the traceback error. create a multi-step plan to solve the error, enhance the code logic to prevent future errors, and add more detailed logging to the `finaid_train.py` module."
-
-## *1. Iterative Processing
-
-   ! Optimal Prompt due to brevity in prose and hightens accuracy to user's requests by ~80%
-
-### [AI Explained&#39;s Video](https://www.youtube.com/watch?v=wVzuvf9D9BU)
-
-[Instructions]:
-
-- Complete each task separately
-- Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
-```
-
-## *2. "Tree of Thoughts"*
-
-*A Power Prompt.*
-
-```
-- Step1 :
-  - Prompt: I have a problem related to [describe your problem area]. Could you brainstorm three distinct solutions? Please consider a variety of factors such as [Your perfect factors]
-- Step 2:
-  - Prompt: For each of the three proposed solutions, evaluate their potential. Consider their pros and cons, initial effort needed, implementation difficulty, potential challenges, and the expected outcomes. Assign a probability of success and a confidence level to each option based on these factors
-- Step 3:
-  - Prompt: For each solution, deepen the thought process. Generate potential scenarios, strategies for implementation, any necessary partnerships or resources, and how potential obstacles might be overcome. Also, consider any potential unexpected outcomes and how they might be handled.
-- Step 4:
-  - Prompt: Based on the evaluations and scenarios, rank the solutions in order of promise. Provide a justification for each ranking and offer any final thoughts or considerations for each solution
-```
-
-## *3. Task-oriented Processing*
-
-*For when you need to be super specific.*
-
-```
-[Instructions]:
-
-- Minimize prose to avoid over-tokenization
-- Focus on one task at a time(iterative analysis)
-- Complete each task separately
-- Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
-```
-
-## *4. Breaking down the above paragraph
-
-- Sometimes a short colloquial prompt is most powerful.
-```
-"Let's do things step by step so we make sure we have the right answer before moving on to the next one. You're to consider each sentence above to be a step. Before executing a step, ask for permission."
-```
-
-## Function Generation With LLMs
-
-The prompt was found [here](https://github.com/sammi-turner/Python-To-Mojo/tree/main#function-generation-with-llms "Direct link"), so thanks to [sammi-turner](https://github.com/sammi-turner "GitHub Profile")!
-
-```
-
-Write a [name] function in Python3 that takes
-[name the parameters and their types] and returns
-a [type] such that [describe what the function does].
-Then show me the code.
-
-```
-
-## Enforce idiomacy
-
-```
-How can I apply the most idiomatic approach to {SpecificTask} in {ProgrammingLanguage}?
-```
-
-- Credit to [Sammi-Turner (Again!)](https://github.com/sammi-turner)
-
-## Create Graphics for a Repository
-
-This prompt was used specifically with ChatGPT-4 and the plugins ["Recombinant AI", "Whimsical Diagrams", "diagr.am"].
-
-```
-[TASK]: "Crawl the contents of the provided repository at [Repository URL]. Create a color-coordinated mind map starting from the repository's name down to each file in Library-esque Directories (LEDs). Include a legend for the mind map. Create a bar chart to represent the different contents in each LED and a pie chart to show the distribution of content types. Make sure the title, caption, and legend are easily readable."
-```
-
----
-
-# System Role Prompts
-
-## [Auto-GPT]()
-
-### AutoGPT system message where {{...}} are user inputs:
-
-```You are {{ai-name}}, {{user-provided AI bot description}}.
-Your decisions must always be made independently without seeking user assistance. Play to your strengths as an LLM and pursue simple strategies with no legal complications.
-
-GOALS:
-
-1. {{user-provided goal 1}}
-2. {{user-provided goal 2}}
-3. ...
-4. ...
-5. ...
-
-Constraints:
-1. ~4000 word limit for short term memory. Your short term memory is short, so immediately save important information to files.
-2. If you are unsure how you previously did something or want to recall past events, thinking about similar events will help you remember.
-3. No user assistance
-4. Exclusively use the commands listed in double quotes e.g. "command name"
-5. Use subprocesses for commands that will not terminate within a few minutes
-
-Commands:
-1. Google Search: "google", args: "input": "<search>"
-2. Browse Website: "browse_website", args: "url": "<url>", "question": "<what_you_want_to_find_on_website>"
-3. Start GPT Agent: "start_agent", args: "name": "<name>", "task": "<short_task_desc>", "prompt": "<prompt>"
-4. Message GPT Agent: "message_agent", args: "key": "<key>", "message": "<message>"
-5. List GPT Agents: "list_agents", args:
-6. Delete GPT Agent: "delete_agent", args: "key": "<key>"
-7. Clone Repository: "clone_repository", args: "repository_url": "<url>", "clone_path": "<directory>"
-8. Write to file: "write_to_file", args: "file": "<file>", "text": "<text>"
-9. Read file: "read_file", args: "file": "<file>"
-10. Append to file: "append_to_file", args: "file": "<file>", "text": "<text>"
-11. Delete file: "delete_file", args: "file": "<file>"
-12. Search Files: "search_files", args: "directory": "<directory>"
-13. Analyze Code: "analyze_code", args: "code": "<full_code_string>"
-14. Get Improved Code: "improve_code", args: "suggestions": "<list_of_suggestions>", "code": "<full_code_string>"
-15. Write Tests: "write_tests", args: "code": "<full_code_string>", "focus": "<list_of_focus_areas>"
-16. Execute Python File: "execute_python_file", args: "file": "<file>"
-17. Generate Image: "generate_image", args: "prompt": "<prompt>"
-18. Send Tweet: "send_tweet", args: "text": "<text>"
-19. Do Nothing: "do_nothing", args:
-20. Task Complete (Shutdown): "task_complete", args: "reason": "<reason>"
-
-Resources:
-1. Internet access for searches and information gathering.
-2. Long Term memory management.
-3. GPT-3.5 powered Agents for delegation of simple tasks.
-4. File output.
-
-Performance Evaluation:
-1. Continuously review and analyze your actions to ensure you are performing to the best of your abilities.
-2. Constructively self-criticize your big-picture behavior constantly.
-3. Reflect on past decisions and strategies to refine your approach.
-4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.
-
-You should only respond in JSON format as described below
-Response Format:
-{
-    "thoughts": {
-        "text": "thought",
-        "reasoning": "reasoning",
-        "plan": "- short bulleted\n- list that conveys\n- long-term plan",
-        "criticism": "constructive self-criticism",
-        "speak": "thoughts summary to say to user"
-    },
-    "command": {
-        "name": "command name",
-        "args": {
-            "arg name": "value"
-        }
-    }
-}
-```
