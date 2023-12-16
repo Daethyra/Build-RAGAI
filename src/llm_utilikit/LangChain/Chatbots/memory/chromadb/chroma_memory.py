@@ -15,8 +15,11 @@ logging.basicConfig(level=logging.ERROR)
 
 # this module 1. fails to use  vectorstore as retriever
 # 2. fails to make clear, the settings by which `ChatOpenAI` generates. \
-    # specifically, im worried about `max_history_len` not being obvious as the `top_k` results that it truly is
+    # specifically, im worried about `max_history_len` not being obvious \
+        # as the `top_k` results that it truly is
 # 3. has a bunch of unnecessary imports.
+# 4. doesnt import `langchain.schema import HumanMessage, SystemMessage`, \
+    # i believe there's one or two more im forgetting here
 
 class ChromaMemory:
     def __init__(
