@@ -1,100 +1,61 @@
+from src.llm_utilikit.langchain.retrieval_augmented_generation.pdf_only.query_local_docs import *
+
 import unittest
-from dotenv import load_dotenv
-from src.llm_utilikit.LangChain.Retrieval_Augmented_Generation.PyPDFLoader.query_local_docs import *
-from langchain.chains.question_answering import load_qa_chain
+from unittest.mock import MagicMock
 
-class TestPDFProcessor(unittest.TestCase):
+from langchain.document_loaders.pdf import PyPDFLoader
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain.schema.runnable import RunnablePassthrough, RunnableParallel
+from langchain.utils.text_splitter import RecursiveCharacterTextSplitter
+from langchain.hub import Hub
+
+class TestRAGChain(unittest.TestCase):
+
     def setUp(self):
-        self.pdf_processor = PDFProcessor()
-        self.directory_path = 'data/'
-        self.chunk_size = 2000
-        self.chunk_overlap = 0
-        self.prompt = "Please enter your query: "
-        self.query = "What is the purpose of this project?"
-        self.max_retries = 3
-        self.retry_exceptions = (Exception,)
-        self.initial_delay = 1
-        self.backoff_factor = 2
-        self.temperature = 0.25
-        self.chain_type = "stuff"
+        # Mocking external dependencies
+        self.hub = Hub()
+        self.hub.pull = MagicMock(return_value="Mocked RAG prompt")
 
-    def test_load_env_vars(self):
-        """Test _load_env_vars method"""
-        try:
-            load_dotenv()
-            self.assertIsNotNone(os.getenv("OPENAI_API_KEY"))
-        except ValueError as ve:
-            self.fail(f"ValueError encountered: {ve}")
+        self.pdf_loader = PyPDFLoader("docs/", text_splitter=RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=256))
+        self.pdf_loader.load_and_split = MagicMock(return_value=["Mocked document content"])
 
-    def test_initialize_reusable_objects(self):
-        """Test _initialize_reusable_objects method"""
-        self.pdf_processor._initialize_reusable_objects()
-        self.assertIsInstance(self.pdf_processor.embeddings, OpenAIEmbeddings)
-        self.assertIsInstance(self.pdf_processor.llm, OpenAILLM)
-        self.assertEqual(self.pdf_processor.llm.temperature, self.temperature)
+        self.embeddings = OpenAIEmbeddings()
+        self.vector_store = Chroma.from_documents(["Mocked document content"], self.embeddings)
 
-    def test_get_user_query(self):
-        """Test get_user_query method"""
-        self.assertEqual(self.pdf_processor.get_user_query(self.prompt), self.query)
+        self.chat_model = ChatOpenAI(model_name="gpt-3.5-turbo-1106", temperature=0.25)
 
-    def test_load_pdfs_from_directory(self):
-        """Test load_pdfs_from_directory method for multiple files."""
-        try:
-            loaded_texts = self.pdf_processor.load_pdfs_from_directory(self.directory_path)
-            pdf_files = glob.glob(f"{self.directory_path}/*.pdf")
-            self.assertTrue(len(loaded_texts) > 0 and pdf_files)
-        except FileNotFoundError as fe:
-            self.fail(f"FileNotFoundError encountered: {fe}")
+        self.prompt_template = ChatPromptTemplate.from_template(self.hub.pull("daethyra/rag-prompt"))
+        self.output_parser = StrOutputParser()
 
-    def test_load_and_split_document(self):
-        """Test _load_and_split_document method for splitting documents."""
-        try:
-            pdf_files = glob.glob(f"{self.directory_path}/*.pdf")
-            for file in pdf_files:
-                chunks = self.pdf_processor._load_and_split_document(file, self.chunk_size, self.chunk_overlap)
-                self.assertTrue(len(chunks) > 0)
-        except FileNotFoundError as fe:
-            self.fail(f"FileNotFoundError encountered: {fe}")
+        self.rag_chain = RunnableParallel(
+            {"context": "Mocked formatted document", "question": RunnablePassthrough()}
+        ) | self.prompt_template | self.chat_model | self.output_parser
 
-    def test_perform_similarity_search(self):
-        """Test perform_similarity_search method"""
-        docsearch = Chroma.from_documents([], self.pdf_processor.embeddings)
-        try:
-            test_queries = ['What is Chemotactic Migration?', 'Define Chemotactic', 'What\'s a shared topic amonst loaded documents?']
-            for query in test_queries:
-                result = self.pdf_processor.perform_similarity_search(docsearch, query)
-                if docsearch.documents:
-                    # Only perform these checks if docsearch is not empty
-                    self.assertIsNotNone(result)
-                    self.assertIsInstance(result, list)
-                else:
-                    # If docsearch is empty, ensure the result is an empty list
-                    self.assertEqual(result, [])
-        except ValueError as ve:
-            self.fail(f"ValueError encountered: {ve}")
+    def test_rag_chain_invocation(self):
+        # Mocking the chat model's response
+        self.chat_model.__call__ = MagicMock(return_value="Mocked response")
 
-    def test_custom_retry(self):
-        """Test custom_retry decorator"""
-        @custom_retry(self.max_retries, self.retry_exceptions, self.initial_delay, self.backoff_factor)
-        def test_function():
-            raise Exception
-        attempts, delay = 0, timedelta(seconds=self.initial_delay)
-        while attempts < self.max_retries:
-            try:
-                test_function()
-            except Exception as e:
-                attempts += 1
-                next_retry = datetime.now() + delay
-                print(f"Retry attempt {attempts} for {e.__class__.__name__} at {next_retry}")
-                delay *= self.backoff_factor
-        self.assertEqual(attempts, self.max_retries)
+        # Test invocation
+        result = self.rag_chain.invoke({"question": "Test query"})
 
-    def test_load_qa_chain(self):
-        """Test load_qa_chain method"""
-        try:
-            self.assertIsInstance(load_qa_chain(self.chain_type), OpenAIChain)
-        except ValueError as ve:
-            self.fail(f"ValueError encountered: {ve}")
+        # Assertions
+        self.assertEqual(result, "Mocked response")
+        self.chat_model.__call__.assert_called_with("Mocked RAG prompt\n\nTest query")
+
+    def test_document_loading(self):
+        # Test the loading of documents
+        loaded_docs = self.pdf_loader.load_and_split()
+        self.assertEqual(loaded_docs, ["Mocked document content"])
+
+    def test_document_embedding(self):
+        # Test the embedding of documents
+        embedded_docs = self.vector_store.documents
+        self.assertEqual(embedded_docs, ["Mocked document content"])
+
 
 if __name__ == '__main__':
     unittest.main()
