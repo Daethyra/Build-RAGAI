@@ -4,7 +4,7 @@
 The Utilikit is a Python library designed to enhance large-language-model projects. It offers a variety of components, prompts, and templates, and is open for contributions from users. The library aims to provide a quick start for new projects and modular, reusable components for existing ones. 
 
 ---
-
+<s>
 ## Getting Started
 
 This repository has a split purpose but a sole focus.
@@ -28,7 +28,7 @@ This repository has a split purpose but a sole focus.
 [<ins>Here</ins>](./Custom-GPT-Uploadable_Knowledge_Base/) you'll find reference documents for building Python applications, specifically those using large-language-models as their base. 
 
 - The Custom GPT, [Assistant Architect](https://chat.openai.com/g/g-gOeFNMJ8Z-assistant-architect-aa4llm), is built on these markdown [files](./Custom-GPT-Uploadable_Knowledge_Base/Assistant_Architect/).
-
+</s>
 ---
 
 ## Usage Guide
