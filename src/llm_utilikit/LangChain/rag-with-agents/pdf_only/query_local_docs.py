@@ -17,7 +17,12 @@ hub = Hub()
 
 try:
     # Load PDF documents using PyPDFLoader with text splitting
-    pdf_loader = PyPDFLoader("docs/", text_splitter=RecursiveCharacterTextSplitter(chunk_size=2048, chunk_overlap=256))
+    pdf_loader = PyPDFLoader(
+        "docs/",
+        text_splitter=RecursiveCharacterTextSplitter(
+            chunk_size=2048, chunk_overlap=256
+        ),
+    )
     pdf_documents = pdf_loader.load_and_split()
 
     # Initialize OpenAIEmbeddings
@@ -35,17 +40,24 @@ try:
 
     formatted_docs = format_documents(pdf_documents)
 
-    retriever = vector_store.as_retriever(search_type="similarity", top_k=4, search_kwargs={'param': {'boost': {'title': 1.05}}})
-    
+    retriever = vector_store.as_retriever(
+        search_type="similarity",
+        top_k=4,
+        search_kwargs={"param": {"boost": {"title": 1.05}}},
+    )
+
     # Pull the RAG prompt from the hub
     prompt = hub.pull("daethyra/rag-prompt")
     prompt_template = ChatPromptTemplate.from_template(prompt)
     output_parser = StrOutputParser()
 
     # Create a custom RAG chain
-    rag_chain = RunnableParallel(
-        {"context": formatted_docs, "question": RunnablePassthrough()}
-    ) | prompt_template | chat_model | output_parser
+    rag_chain = (
+        RunnableParallel({"context": formatted_docs, "question": RunnablePassthrough()})
+        | prompt_template
+        | chat_model
+        | output_parser
+    )
 
     # Get user query and invoke the RAG chain
     user_query = input("Please enter your query: ")
