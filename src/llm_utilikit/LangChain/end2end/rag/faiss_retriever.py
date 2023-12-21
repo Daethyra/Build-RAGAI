@@ -1,3 +1,11 @@
+"""
+This module provides an executable script to use an Agent to decide when to search local documents.
+It uses UnstructuredFileLoader to load documents, CharacterTextSplitter to split documents into texts,
+OpenAIEmbeddings to create embeddings, FAISS to store the embeddings, ChatOpenAI for language model,
+AgentTokenBufferMemory for agent memory, OpenAIFunctionsAgent for constructing the agent, and
+AgentExecutor for executing
+"""
+
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter

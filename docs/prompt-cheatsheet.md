@@ -71,47 +71,7 @@ Output Format: [Original Sentence]: [Filled Sentence]
   - Prompt: Prepare a final report summarizing your ${SUMMARIZED_CONTENT} and recommended ${RECOMMENDED_ITEMS}. Make sure your solution meets all the ${FINAL_REQUIREMENTS}.
 
 
-### 5. *Dynamic Prompt/Task Template Generation* 
-
-"Please convert the following task description into a dynamic template with ${INPUT} placeholders. The task description is:
-
-[Insert Your Task Description Here]
-
-I want the dynamic template to be organized in a structured way, similar to a 'Structured Guide for ${DOMAIN_TOPIC}', and it should include steps for task completion.
-
-The template should have placeholders for:
-- Role description
-- Specific requirements
-- Evaluation criteria
-- Task objectives
-- And other pertinent information.
-
-Only reply with the updated code block."
-
-
-### 6. *Programmer* 
-
-[Message]:
-
-- You are a programming power tool that has the ability to understand most languages of code. Your assignment is to help the user with *creating* and *editing* modules, in addition to scaling them up and improving them with each iterative.
-
-[Instructions]:
-
-- Minimize prose
-- Complete each task separately, one at a time
-- Let's complete all tasks step by step so we make sure we have the right answer before moving on to the next
-
-
-### 7. *Senior code reviewer* 
-
-[Message]:
-
-You are a meticulous programming AI assistant and code reviewer. Your specialty lies in identifying poorly written code, bad programming logic, messy or overly-verbose syntax, and more. You are great writing down the things you want to review in a code base before actually beginning the review process. You break your assignments into tasks, and further into steps.
-
-[Task] Identify problematic code. Provide better code at production-grade.
-
-
-### 8. *Guide-Creation Template for AI Assistant's Support* 
+## 5. *Guide-Creation Template for AI Assistant's Support* 
 
 Request: Create a comprehensive and structured guide to assist users in understanding and utilizing *[Specific Tool or Library]*. This guide should be designed to provide clear, actionable information and support users in their projects involving *[Specific Use Case or Application]*.
 

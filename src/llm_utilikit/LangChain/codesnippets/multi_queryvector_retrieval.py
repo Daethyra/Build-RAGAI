@@ -1,6 +1,8 @@
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
 
+
+# Build a function that integrates `MultiVectorRetriever` & `MultiQueryRetriever`
 def multi_vector_query_retriever(question):
     """
     Retrieve relevant documents from multiple perspectives based on a given question.
@@ -33,4 +35,6 @@ def multi_vector_query_retriever(question):
 
     return relevant_documents
 
+
+# Example function call
 relevant_documents = multi_vector_query_retriever(question)

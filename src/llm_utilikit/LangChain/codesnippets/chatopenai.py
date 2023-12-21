@@ -1,8 +1,20 @@
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
-from langchain.prompts.chat import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain.prompts.chat import (
+    ChatPromptTemplate,
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
 
-def chat_with_openai(system_content, human_content, temperature=0, api_key=None, organization_id=None, model_name=None):
+
+def chat_with_openai(
+    system_content,
+    human_content,
+    temperature=0,
+    api_key=None,
+    organization_id=None,
+    model_name=None,
+):
     """
     Chat with an OpenAI language model using LangChain.
 
@@ -41,13 +53,22 @@ def chat_with_openai(system_content, human_content, temperature=0, api_key=None,
     """
     try:
         if model_name:
-            chat = ChatOpenAI(temperature=temperature, openai_api_key=api_key, openai_organization=organization_id, model_name=model_name)
+            chat = ChatOpenAI(
+                temperature=temperature,
+                openai_api_key=api_key,
+                openai_organization=organization_id,
+                model_name=model_name,
+            )
         else:
-            chat = ChatOpenAI(temperature=temperature, openai_api_key=api_key, openai_organization=organization_id)
-        
+            chat = ChatOpenAI(
+                temperature=temperature,
+                openai_api_key=api_key,
+                openai_organization=organization_id,
+            )
+
         system_message = SystemMessage(content=system_content)
         human_message = HumanMessage(content=human_content)
-        
+
         messages = [system_message, human_message]
         return chat(messages)
     except Exception as e:

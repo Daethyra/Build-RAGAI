@@ -11,7 +11,7 @@ msgs = StreamlitChatMessageHistory(key="Test_App_Message_History")
 memory = ConversationBufferMemory(memory_key="history", chat_memory=msgs)
 if len(msgs.messages) == 0:
     msgs.add_ai_message("How can I help you?")
-    
+
 template = """You are an AI chatbot having a conversation with a human.
 
 {history}
@@ -20,7 +20,11 @@ AI: """
 prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
 # Add the memory to an LLMChain as usual
-llm_chain = LLMChain(llm=OpenAI(), prompt=prompt, memory=memory)
+llm_chain = LLMChain(
+    llm=OpenAI(model_name="gpt-3.5-turbo-1106", temperature=0.24),
+    prompt=prompt,
+    memory=memory,
+)
 
 for msg in msgs.messages:
     st.chat_message(msg.type).write(msg.content)
@@ -28,6 +32,7 @@ for msg in msgs.messages:
 if prompt := st.chat_input():
     st.chat_message("human").write(prompt)
 
-    # As usual, new messages are added to StreamlitChatMessageHistory when the Chain is called.
+    # As usual, new messages are added to
+    # `StreamlitChatMessageHistory` when the Chain is called.
     response = llm_chain.run(prompt)
     st.chat_message("ai").write(response)

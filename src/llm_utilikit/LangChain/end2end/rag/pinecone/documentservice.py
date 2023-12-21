@@ -1,5 +1,6 @@
 from langchain_community.document_loaders import UnstructuredFileLoader
 
+
 class DocumentService:
     def __init__(self, data_directory):
         self.loader = UnstructuredFileLoader(data_directory)
