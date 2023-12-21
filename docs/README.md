@@ -17,10 +17,3 @@ A directory to hold file-base files.
 Currently only contains the [Assistant Architect](https://chat.openai.com/g/g-gOeFNMJ8Z-assistant-architect-aa4llm "Daethyra's Custom LangChain Programming Asisstant")'s files which may be useful for inspiration or insight.
 
 The files available may be turned into helpful templates, or if you're unsatisfied with how AA4LLM works, you might learn what *not* to do for your own Custom GPT.
-
-## Jupyter Notebooks
-
-A collection of notebooks with tested Python logic. Build retrieval augmented generation (RAG) AI. RAG helps solve a data-freshness problem that all LLMs inherently have.
-
-There's a lot of overlap in code logic and functionality accomplished within the notebooks, but they're still all worth a read if you're trying to learn. 
-- All of them were originally official colab notebooks for whatever topic they teach. Is it teaching Pinecone? Yeah, guess where I got it.
