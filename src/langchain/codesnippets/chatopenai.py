@@ -1,3 +1,5 @@
+"""A function for conversing with an OpenAI language model. It takes human and system messages as input, and uses LangChain to retrieve the model's response."""
+
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.prompts.chat import (
@@ -11,7 +13,7 @@ def chat_with_openai(
     system_content,
     human_content,
     temperature=0,
-    api_key=None,
+    openai_api_key=openai_api_key,
     organization_id=None,
     model_name=None,
 ):
@@ -55,15 +57,16 @@ def chat_with_openai(
         if model_name:
             chat = ChatOpenAI(
                 temperature=temperature,
-                openai_api_key=api_key,
+                openai_api_key=openai_api_key,
                 openai_organization=organization_id,
                 model_name=model_name,
             )
         else:
             chat = ChatOpenAI(
                 temperature=temperature,
-                openai_api_key=api_key,
+                openai_api_key=openai_api_key,
                 openai_organization=organization_id,
+                model_name="gpt-3.5-turbo-1106",
             )
 
         system_message = SystemMessage(content=system_content)
