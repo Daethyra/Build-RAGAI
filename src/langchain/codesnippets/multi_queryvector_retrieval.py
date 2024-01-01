@@ -1,3 +1,5 @@
+"""Retrieve and sort relevant documents."""
+
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
 

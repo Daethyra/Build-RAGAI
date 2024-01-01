@@ -25,4 +25,12 @@ def window_memory(
         return_messages=return_messages,
     )
 
+    """
+    use the `save_context` method of the `memory` object to save the context,
+    passing an empty dictionary as the first argument and the messages parameter as the second argument
+    """
+    # only save memory, don't return it
     memory.save_context({}, messages)
+    
+    # Optional: uncomment to return the memory object for further use
+    # return memory

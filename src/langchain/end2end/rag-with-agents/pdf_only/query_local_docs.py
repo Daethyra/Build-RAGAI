@@ -1,5 +1,5 @@
 import os
-from langchain.document_loaders.pdf import PyPDFLoader
+from langchain.document_loaders.pdf import PyPDFDirectoryLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.chat_models import ChatOpenAI
@@ -17,12 +17,13 @@ hub = Hub()
 
 try:
     # Load PDF documents using PyPDFLoader with text splitting
-    pdf_loader = PyPDFLoader(
-        "docs/",
+    pdf_loader = PyPDFDirectoryLoader(
+        "docs",
         text_splitter=RecursiveCharacterTextSplitter(
             chunk_size=2048, chunk_overlap=256
         ),
     )
+    # load documents and split into chunks
     pdf_documents = pdf_loader.load_and_split()
 
     # Initialize OpenAIEmbeddings
