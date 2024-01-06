@@ -12,6 +12,27 @@ import sys
 import os
 
 
+def create_new_log_file(log_file):
+    """
+    Creates a new log file with a unique name if the original log file is too large.
+
+    Args:
+        log_file (str): Path to the original log file.
+
+    Returns:
+        str: Path to the new log file.
+    """
+    log_dir = os.path.dirname(log_file)
+    log_name, log_ext = os.path.splitext(os.path.basename(log_file))
+    i = 1
+    while True:
+        new_log_name = f"{log_name}_{i}{log_ext}"
+        new_log_file = os.path.join(log_dir, new_log_name)
+        if not os.path.isfile(new_log_file):
+            return new_log_file
+        i += 1
+
+
 class RealTimeASR:
     """
     A class to handle real-time Automatic Speech Recognition (ASR) using the Transformers library.
@@ -77,14 +98,13 @@ class RealTimeASR:
                 audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
                 self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
-                if len(self.sliding_window) >= self.sample_rate * 30:  # 30 seconds
+                if len(self.sliding_window) >= self.sample_rate * 30: # 30 seconds
                     transcription = self.transcribe_audio(
                         self.sliding_window[: self.sample_rate * 30]
                     )
                     self.handle_transcription(transcription, log_file)
-                    self.sliding_window = self.sliding_window[
-                        self.sample_rate * 5 :
-                    ]  # Shift by 5 seconds
+                    shift_size = min(self.sample_rate * 5, len(self.sliding_window) // 2) # Ensure shift size is not too large
+                    self.sliding_window = self.sliding_window[shift_size:] # Shift by 5 seconds or less
 
                 self.write_transcription_cache_to_log(log_file)
             except Exception as e:
@@ -110,7 +130,7 @@ class RealTimeASR:
             return {}
 
     def handle_transcription(self, transcription, log_file):
-        if "text" in transcription:
+        if "text" in transcription and len(self.transcription_cache) < self.transcription_cache.maxlen:
             self.transcription_cache.append(transcription["text"])
             print(transcription["text"], file=sys.stdout, flush=True)
             if log_file:
@@ -133,8 +153,11 @@ class RealTimeASR:
             return False
 
     def write_to_log(self, log_file, text):
-        if os.path.getsize(log_file) > 1000000:  # If log file is larger than 1MB
+        if os.path.getsize(log_file) > 1000000: # If log file is larger than 1MB
             log_file = create_new_log_file(log_file)
+            if not self.is_log_file_writable(log_file):
+                print(f"Error: New log file {log_file} is not writable", file=sys.stderr, flush=True)
+                return
         try:
             with open(log_file, "a") as f:
                 f.write(text + "\n")
@@ -147,30 +170,10 @@ class RealTimeASR:
             self.write_to_log(log_file, transcription)
 
     def close_stream(self, log_file):
-        self.stream.stop_stream()
-        self.stream.close()
-        self.p.terminate()
+        if self.stream.is_active():
+            self.stream.stop_stream()
+            self.stream.close()
+            self.p.terminate()
         if log_file:
             while self.transcription_cache:
                 self.write_transcription_cache_to_log(log_file)
-
-
-def create_new_log_file(log_file):
-    """
-    Creates a new log file with a unique name if the original log file is too large.
-
-    Args:
-        log_file (str): Path to the original log file.
-
-    Returns:
-        str: Path to the new log file.
-    """
-    log_dir = os.path.dirname(log_file)
-    log_name, log_ext = os.path.splitext(os.path.basename(log_file))
-    i = 1
-    while True:
-        new_log_name = f"{log_name}_{i}{log_ext}"
-        new_log_file = os.path.join(log_dir, new_log_name)
-        if not os.path.isfile(new_log_file):
-            return new_log_file
-        i += 1

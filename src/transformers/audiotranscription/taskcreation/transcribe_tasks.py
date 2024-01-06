@@ -58,15 +58,42 @@ class SpeechProcessor:
             raise
 
     def transcribe(self, speech_file):
+        """
+        Transcribes the given speech file.
+
+        Args:
+            speech_file (str): The path to the speech file.
+
+        Returns:
+            str: The transcribed text of the speech file, or None if an error occurred during transcription.
+
+        Raises:
+            Exception: If an error occurred during transcription.
+
+        Notes:
+            This function utilizes the `asr_pipe` method to perform the transcription.
+            If the system has a GPU available, it cleans up the GPU memory after transcription.
+        """
         try:
             return self.asr_pipe(speech_file)["text"]
         except Exception as e:
             logging.error(f"Error during transcription: {e}")
             return None
+        # Clean up GPU memory
         finally:
-            torch.cuda.empty_cache()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
     def extract_tasks(self, transcribed_text):
+        """
+        Extracts tasks from transcribed text.
+
+        Parameters:
+            transcribed_text (str): The transcribed text to extract tasks from.
+
+        Returns:
+            str: The extracted tasks.
+        """
         try:
             prompt = self.format_prompt(transcribed_text)
             return self.llm(prompt, max_tokens=150)
@@ -76,6 +103,15 @@ class SpeechProcessor:
 
     @staticmethod
     def format_prompt(transcribed_text):
+        """
+        Format the prompt based on the provided transcribed text and return the organized tasks template.
+
+        Parameters:
+        - transcribed_text (str): The text to be used for organizing the tasks.
+
+        Returns:
+        - str: The template for organizing the tasks based on the provided text.
+        """
         # Enhanced prompt formatting logic
         return f"""
         Please use the following template to organize the user's tasks based on the provided text. Feel free to add sections, use numbering, and structure the content as needed.
@@ -121,6 +157,18 @@ class DataStore:
     """
 
     def __init__(self, data_file="data_output.json"):
+        """
+        Initializes an instance of the class.
+
+        Parameters:
+            data_file (str): The path to the data file. Defaults to "data_output.json".
+
+        Raises:
+            Exception: If there is an error loading the data.
+
+        Returns:
+            None
+        """
         self.data_file = data_file
         try:
             self.data = self.load_data()
@@ -129,6 +177,12 @@ class DataStore:
             raise
 
     def load_data(self):
+        """
+        Loads data from a file.
+
+        Returns:
+            dict: The loaded data as a dictionary.
+        """
         try:
             with open(self.data_file, "r") as infile:
                 return json.load(infile)
@@ -136,15 +190,53 @@ class DataStore:
             return {"transcriptions": {}, "tasks": {}}
 
     def get_next_key(self):
+        """
+        Returns the next key for the speech transcription.
+
+        :param self: The instance of the class.
+        :return: A string representing the next key for the speech transcription.
+        """
         return f"speech_{len(self.data['transcriptions']) + 1}"
 
     def add_transcription(self, key, transcription):
+        """
+        Adds a transcription to the data dictionary using the given key and transcription.
+
+        Parameters:
+            key (str): The key to associate with the transcription.
+            transcription (str): The transcription to add.
+
+        Returns:
+            None
+        """
         self.data["transcriptions"][key] = transcription
 
     def add_tasks(self, key, tasks):
+        """
+        Set the tasks for a given key.
+
+        Args:
+            key (str): The key to identify the tasks.
+            tasks (list): The list of tasks to be assigned to the key.
+
+        Returns:
+            None
+        """
         self.data["tasks"][key] = tasks
 
     def save_to_file(self, overwrite=False):
+        """
+        Save data to a file.
+
+        Parameters:
+            overwrite (bool): Whether to overwrite the file if it already exists. Defaults to False.
+
+        Raises:
+            Exception: If there is an error saving the data.
+
+        Returns:
+            None
+        """
         try:
             filename = (
                 self.data_file
@@ -159,6 +251,12 @@ class DataStore:
 
 
 def get_args():
+    """
+    A function that parses command line arguments and returns the parsed arguments.
+
+    Returns:
+        argparse.Namespace: The parsed command line arguments.
+    """
     parser = argparse.ArgumentParser(
         description="Speech Processing and Task Extraction"
     )
