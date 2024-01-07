@@ -41,6 +41,7 @@ def main(args):
     try:
         if asr_app.stream.is_active():
             asr_app.capture_and_transcribe(log_file=args.log_file)
+            logging.info("Starting audio capture and transcription.")
         else:
             logging.error("PyAudio stream is not active.")
             print("Error: PyAudio stream is not active.", file=sys.stderr, flush=True)
