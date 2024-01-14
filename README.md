@@ -1,53 +1,46 @@
-# LLM Utilikit
+# Build-RAGAI
 
-A repository about Retrieval Augmented Generation... for Retrieval Augmented Generation...
-
-<s>
 ## Description
-The Utilikit is a Python library designed to enhance large-language-model projects. It offers a variety of components, prompts, and templates, and is open for contributions from users. The library aims to provide a quick start for new projects and modular, reusable components for existing ones. 
+This project seeks to teach you how to build Python applications with generative AI functionality by using the LangChain and Transformers libraries.
+
+While there is a section for [OpenAI](./src/opai/), most of the code that previously existed there has been repurposed and integrated with either the [LangChain](./src/langchain/) or [Transformers](./src/transformers/) libraries. This project includes code snippets, end2end examples, and jupyter notebooks that you can augment, copy, or learn from respectively.
+
+If you're new to building AI-powered applications, I suggest you start by playing with and executing the code in the [LangChain notebooks](./src/langchain/notebooks/). Seeing the code in action, editing it yourself, and creatively brainstorming new ideas is the best way to learn.
 
 ## Getting Started
 
-This repository has a split purpose but a sole focus.
+### Installation
 
-### Purpose 1: *Support users of all levels with power prompts.*
+#### Local Code Execution and Testing
+This project is developed using [PDM](https://pdm.fming.dev/). I recommend you install and use PDM to ensure you're taking steps that have already been tested and verified as working correctly. You can install PDM using `pip`:
 
-* The Utilikit features two main types of prompts:
-  * [Multi-shot](./prompts_MASTER.md#Multi-Shot-Prompts) and [user-role](./prompts_MASTER.md#User-Role-Prompts), detailed in the [prompts_MASTER.md](./prompts_MASTER.md) file.
-    * The prompt examples are meant to be a starting point, and most, if not all, prompts require tweaking or filling in blanks in order to prove useful. 
-* If you're confident in prompting large language models and are looking for templates you'll likely gain the most value from the [prompt-cheatsheet.](./prompt-cheatsheet.md)
+Start by navigating to the root directory of this project.
 
-### Purpose 2: *Provide prebuilt Python componenets to help developers of all levels quickly get started with support libraries or augment LLM related projects.*
-
-* [Supported Libraries](./src/llm_utilikit/):
-  * [OpenAI](./src/llm_utilikit/OpenAI/)
-  * [LangChain](./src/llm_utilikit/LangChain/)
-  * [HuggingFace](./src/llm_utilikit/HuggingFace/)
-
-### Purpose 3: *Distribute Reference Documents for Developers and AI Programming Assistants.*
-
-[<ins>Here</ins>](./Custom-GPT-Uploadable_Knowledge_Base/) you'll find reference documents for building Python applications, specifically those using large-language-models as their base. 
-
-- The Custom GPT, [Assistant Architect](https://chat.openai.com/g/g-gOeFNMJ8Z-assistant-architect-aa4llm), is built on these markdown [files](./Custom-GPT-Uploadable_Knowledge_Base/Assistant_Architect/).
-
-## Usage Guide
-
-1. Decide which libraries you'd like to build your project with.
-2. Try to find prebuilt Python modules for your own project.
-3. Modify code logic as necessary.
-
-You may wish to use PDM, as I do, to install the project via:
-```
-cd llm-utilikit
+```bash
 pip install -U pdm
+```
+
+Then you'll need to install the dependencies using PDM:
+
+```bash
 pdm install
 ```
 
-Otherwise, install all libraries with the following command:
-```
-pip install .
-```
-</s>
+This command will create a virtual environment in `.venv` and install the dependencies in that environment. If you're on macOS or Linux, you can run `source .venv/bin/activate` to activate the environment. Otherwise, you can run the command `.venv/Scripts/activate` or `.venv/Scripts/activate.ps1` to activate the environment.
+
+By using a virtual environment we avoid cross contaminating our global Python environment.
+
+Once our virtual environment is set up we need to select it as our kernel for the Jupyter Notebook. If you're in VSCode, you can do this at the top right of the notebook. If you're using a different IDE, you'll need to look for setup help online.
+
+When selecting the kernel, ensure you choose the one that's located inside of the `.venv` directory, and not the global Python environment.
+
+#### Google Colab Execution and Testing
+
+To get started in Google Colab, you can upload any of the notebooks from this repository, OR click the badge below to open the [starter LangChain RAG notebook](./src/langchain/notebooks/learn_rag.ipynb "Starter RAG Notebook for learning") in Colab.
+
+<a target="_blank" href="https://colab.research.google.com/github/Daethyra/Build-RAGAI/blob/master/src/langchain/notebooks/learn_rag.ipynb">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open 'learn_rag.ipynb' In Colab"/>
+</a>
 
 ---
 
