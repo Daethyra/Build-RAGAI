@@ -11,7 +11,7 @@ from langchain.utils.text_splitter import RecursiveCharacterTextSplitter
 from langchain.hub import Hub
 
 # Set API Key
-os.environ["OPENAI_API_KEY"] = "sk-yadayadayada"
+os.environ["OPENAI_API_KEY"] = ""
 # Initialize the hub
 hub = Hub()
 
