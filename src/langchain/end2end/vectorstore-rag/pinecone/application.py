@@ -3,16 +3,42 @@ from vectorstoreservice import VectorStoreService
 
 
 class Application:
-    """This class is responsible for running the application"""
 
     def __init__(self, data_directory, index_name):
-        """Initialize the application with the given data directory and index name"""
+        """
+        Initializes a new instance of the class.
+
+        Args:
+            data_directory (str): The directory where the data is stored.
+            index_name (str): The name of the index.
+
+        Returns:
+            None
+        """
+
         self.document_service = DocumentService(data_directory)
         self.vector_store_service = VectorStoreService(index_name)
 
     def run(self):
-        """Run the application"""
-        self.document_service.load_documents()  # Load documents from the data directory
+        """
+        Run the program.
+
+        This function executes the main logic of the program. It performs the following steps:
+        1. Load documents from the data directory.
+        2. Upsert documents into the vector store.
+        3. Prompt the user for a query.
+        4. Retrieve documents from the vector store based on the query.
+        5. Print the page content of each retrieved document.
+
+        Parameters:
+        - None
+
+        Returns:
+        - None
+        """
+        # Load documents from the data directory
+        self.document_service.load_documents()
+        
         # Upsert documents into the vector store
         self.vector_store_service.upsert_documents(
             self.document_service.get_documents()
