@@ -3,13 +3,13 @@ Long-Form Transcription
 The Whisper model is intrinsically designed to work on audio samples of up to 30s in duration. However, by using a chunking algorithm, it can be used to transcribe audio samples of up to arbitrary length. This is possible through Transformers pipeline method. Chunking is enabled by setting chunk_length_s=30 when instantiating the pipeline. With chunking enabled, the pipeline can be run with batched inference. It can also be extended to predict sequence level timestamps by passing return_timestamps=True:
 """
 
+import sys
+import os
 import pyaudio
 import numpy as np
 import torch
 from transformers import pipeline
 from collections import deque
-import sys
-import os
 
 
 def create_new_log_file(log_file):
@@ -98,13 +98,17 @@ class RealTimeASR:
                 audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
                 self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
-                if len(self.sliding_window) >= self.sample_rate * 30: # 30 seconds
+                if len(self.sliding_window) >= self.sample_rate * 30:  # 30 seconds
                     transcription = self.transcribe_audio(
                         self.sliding_window[: self.sample_rate * 30]
                     )
                     self.handle_transcription(transcription, log_file)
-                    shift_size = min(self.sample_rate * 5, len(self.sliding_window) // 2) # Ensure shift size is not too large
-                    self.sliding_window = self.sliding_window[shift_size:] # Shift by 5 seconds or less
+                    shift_size = min(
+                        self.sample_rate * 5, len(self.sliding_window) // 2
+                    )  # Ensure shift size is not too large
+                    self.sliding_window = self.sliding_window[
+                        shift_size:
+                    ]  # Shift by 5 seconds or less
 
                 self.write_transcription_cache_to_log(log_file)
             except Exception as e:
@@ -130,7 +134,10 @@ class RealTimeASR:
             return {}
 
     def handle_transcription(self, transcription, log_file):
-        if "text" in transcription and len(self.transcription_cache) < self.transcription_cache.maxlen:
+        if (
+            "text" in transcription
+            and len(self.transcription_cache) < self.transcription_cache.maxlen
+        ):
             self.transcription_cache.append(transcription["text"])
             print(transcription["text"], file=sys.stdout, flush=True)
             if log_file:
@@ -153,10 +160,14 @@ class RealTimeASR:
             return False
 
     def write_to_log(self, log_file, text):
-        if os.path.getsize(log_file) > 1000000: # If log file is larger than 1MB
+        if os.path.getsize(log_file) > 1000000:  # If log file is larger than 1MB
             log_file = create_new_log_file(log_file)
             if not self.is_log_file_writable(log_file):
-                print(f"Error: New log file {log_file} is not writable", file=sys.stderr, flush=True)
+                print(
+                    f"Error: New log file {log_file} is not writable",
+                    file=sys.stderr,
+                    flush=True,
+                )
                 return
         try:
             with open(log_file, "a") as f:
