@@ -1,3 +1,5 @@
+""" This module is the main entry point of the application. """
+
 from application import Application
 
 if __name__ == "__main__":

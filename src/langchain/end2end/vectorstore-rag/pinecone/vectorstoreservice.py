@@ -1,3 +1,5 @@
+""" This module defines the `VectorStoreService` class responsible for managing documents in the vector store and retrieving relevant documents based on a user query. """
+
 from langchain_community.vectorstores.pinecone import Pinecone
 from langchain_community.embeddings.openai import OpenAIEmbeddings
 from langchain_community.retrievers import MultiVectorRetrieval

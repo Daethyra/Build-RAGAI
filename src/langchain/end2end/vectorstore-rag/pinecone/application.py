@@ -1,3 +1,6 @@
+""" This module defines the Application class responsible for running the entire application.
+"""
+
 from documentservice import DocumentService
 from vectorstoreservice import VectorStoreService
 
