@@ -1,4 +1,4 @@
-"""Retrieve and sort relevant documents."""
+"""Module for retrieving documents with integrated multi-vector and multi-query capabilities."""
 
 from langchain.retrievers.multi_vector import MultiVectorRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -39,4 +39,4 @@ def multi_vector_query_retriever(question):
 
 
 # Example function call
-relevant_documents = multi_vector_query_retriever(question)
+# relevant_documents = multi_vector_query_retriever(question)

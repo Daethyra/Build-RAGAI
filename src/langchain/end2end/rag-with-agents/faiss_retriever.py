@@ -21,13 +21,21 @@ from langchain.prompts import MessagesPlaceholder
 from langchain_core.messages import SystemMessage
 from langchain.agents import AgentExecutor
 
-loader = UnstructuredFileLoader()
+# Load documents
+loader = UnstructuredFileLoader() # pass in your path as a parameter, here
 documents = loader.load()
+
+# Split documents
 text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
 texts = text_splitter.split_documents(documents)
-embeddings = OpenAIEmbeddings()
+
+# Initialize the embeddings module
+embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key) # Ensure your api key is set
+
+# Initialize the vectorstore as `db`
 db = FAISS.from_documents(texts, embeddings)
 
+# Initialize our vectorstore as the retriever
 retriever = db.as_retriever()
 
 # Initialize Agent Memory
@@ -35,13 +43,16 @@ memory = AgentTokenBufferMemory(memory_key=memory_key, llm=llm)
 llm = ChatOpenAI(temperature=0)
 
 # Create tools
-tool = create_retriever_tool(
+retriever_tool = create_retriever_tool(
     retriever,
     "Search Local Documents",
     "Searches and returns user-supplied documents for contextual generation.",
 )
-tools = [tool]
+tools = [
+    retriever_tool,
+    ]
 
+# Here we set a single system message, however it is possible to set multiple role messages in a list
 system_message = SystemMessage(
     content=(
         "Do your best to answer the questions. "
@@ -53,6 +64,7 @@ system_message = SystemMessage(
 # This is needed for both the memory and the prompt
 memory_key = "history"
 
+# Create the prompt
 prompt = OpenAIFunctionsAgent.create_prompt(
     system_message=system_message,
     extra_prompt_messages=[MessagesPlaceholder(variable_name=memory_key)],
@@ -61,6 +73,7 @@ prompt = OpenAIFunctionsAgent.create_prompt(
 # Construct the Agent
 agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
 
+# Construct the Agent Executor
 agent_executor = AgentExecutor(
     agent=agent,
     tools=tools,
@@ -69,7 +82,7 @@ agent_executor = AgentExecutor(
     return_intermediate_steps=True,
 )
 
-
+# Execute the Agent
 user_query = input("Please enter your query: ")
 result = agent_executor({"input": user_query})
 result["output"]
