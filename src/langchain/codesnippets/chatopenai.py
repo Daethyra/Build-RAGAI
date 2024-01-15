@@ -1,4 +1,4 @@
-"""A function for conversing with an OpenAI language model. It takes human and system messages as input, and uses LangChain to retrieve the model's response."""
+"""A single function for calling ChatOpenAI and returning the chat messages. The function's true power comes from its usage of ChatPromptTemplate, HumanMessagePromptTemplate, and SystemMessagePromptTemplate."""
 
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
