@@ -1,6 +1,6 @@
 """
 Long-Form Transcription
-The Whisper model is intrinsically designed to work on audio samples of up to 30s in duration. However, by using a chunking algorithm, it can be used to transcribe audio samples of up to arbitrary length. This is possible through Transformers pipeline method. Chunking is enabled by setting chunk_length_s=30 when instantiating the pipeline. With chunking enabled, the pipeline can be run with batched inference. It can also be extended to predict sequence level timestamps by passing return_timestamps=True:
+The Whisper model is intrinsically designed to work on audio samples of up to 30s in duration. However, by using a chunking algorithm, it can be used to transcribe audio samples of up to arbitrary length. This is possible through Transformers pipeline method. Chunking is enabled by setting chunk_length_s=30 when instantiating the pipeline. With chunking enabled, the pipeline can be run with batched inference. It can also be extended to predict sequence level timestamps by passing return_timestamps=True
 """
 
 import sys
@@ -45,18 +45,19 @@ class RealTimeASR:
         sample_rate (int): The sample rate for audio data (in Hz).
     """
 
-    def __init__(self, maxlen=300):
+    def __init__(self, maxlen=300, chunk_length_s=30):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.asr_pipeline = pipeline(
             "automatic-speech-recognition",
-            model="openai/whisper-large-v2",
-            chunk_length_s=30,
+            model="openai/whisper-large-v3",
+            chunk_length_s=chunk_length_s,
             device=self.device,
-            return_timestamps=True,
+            return_timestamps=False,
         )
         self.transcription_cache = deque(maxlen=maxlen)
         self.sliding_window = np.array([])
         self.sample_rate = 16000  # Sample rate for the audio stream
+        self.chunk_length_s = chunk_length_s
 
     def initialize_audio(self):
         """
@@ -93,19 +94,25 @@ class RealTimeASR:
             print(f"Error opening log file: {log_file}", file=sys.stderr, flush=True)
             log_file = None
 
+        # Continuously read audio data from the microphone
         while self.stream.is_active():
             try:
                 audio_data = np.frombuffer(self.stream.read(1024), dtype=np.int16)
                 self.sliding_window = np.concatenate((self.sliding_window, audio_data))
 
-                if len(self.sliding_window) >= self.sample_rate * 30:  # 30 seconds
+                # Perform transcription when the window reaches a certain length
+                if len(self.sliding_window) >= self.sample_rate * self.chunk_length_s:
                     transcription = self.transcribe_audio(
                         self.sliding_window[: self.sample_rate * 30]
                     )
+                    
+                    # Add the transcription to the cache
                     self.handle_transcription(transcription, log_file)
                     shift_size = min(
                         self.sample_rate * 5, len(self.sliding_window) // 2
                     )  # Ensure shift size is not too large
+                    
+                    # Shift the sliding window
                     self.sliding_window = self.sliding_window[
                         shift_size:
                     ]  # Shift by 5 seconds or less
@@ -134,6 +141,14 @@ class RealTimeASR:
             return {}
 
     def handle_transcription(self, transcription, log_file):
+        """
+        Handle the transcription by appending the text to the transcription cache and printing it to the standard output.
+
+        :param transcription: A dictionary containing the transcription data.
+        :type transcription: dict
+        :param log_file: A file to write the transcription text to, if provided.
+        :type log_file: str
+        """
         if (
             "text" in transcription
             and len(self.transcription_cache) < self.transcription_cache.maxlen
@@ -160,6 +175,16 @@ class RealTimeASR:
             return False
 
     def write_to_log(self, log_file, text):
+        """
+        Write text to a log file.
+
+        Parameters:
+            log_file (str): The path to the log file.
+            text (str): The text to write to the log file.
+
+        Returns:
+            None
+        """
         if os.path.getsize(log_file) > 1000000:  # If log file is larger than 1MB
             log_file = create_new_log_file(log_file)
             if not self.is_log_file_writable(log_file):
@@ -176,11 +201,29 @@ class RealTimeASR:
             print(f"Error writing to log file: {log_file}", file=sys.stderr, flush=True)
 
     def write_transcription_cache_to_log(self, log_file):
+        """
+        Write the transcription cache to a log file.
+
+        Parameters:
+            log_file (str): The path to the log file.
+
+        Returns:
+            None
+        """
         if log_file and self.transcription_cache:
             transcription = self.transcription_cache.popleft()
             self.write_to_log(log_file, transcription)
 
     def close_stream(self, log_file):
+        """
+        Closes the audio stream and stops the recording.
+
+        Parameters:
+            log_file (str): The path to the log file to which the transcription cache will be written.
+
+        Returns:
+            None
+        """
         if self.stream.is_active():
             self.stream.stop_stream()
             self.stream.close()
