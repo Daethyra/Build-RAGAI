@@ -10,6 +10,7 @@ dependencies = [
     "openai>=0.28.1",
     "transformers>=4.34.1",
     "torch>=2.1.1",
+    "ipykernel>=6.29.3",
 ]
 requires-python = ">=3.9, <3.13"
 readme = "README.md"

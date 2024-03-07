@@ -47,9 +47,9 @@ LangChain:
 ### Installation
 
 #### Local Code Execution and Testing
-This project is developed using [PDM](https://pdm.fming.dev/). I recommend you install and use PDM to ensure you're taking steps that have already been tested and verified as working correctly. You can install PDM using `pip`:
+This project is developed using [PDM](https://pdm.fming.dev/). You can install PDM using `pip`:
 
-Start by navigating to the root directory of this project.
+Start by navigating to the root directory of this project, then run:
 
 ```bash
 pip install -U pdm
