@@ -25,9 +25,11 @@ LangChain:
   - [Custom Tools](./src/langchain/notebooks/agentexecutor_custom_tools.ipynb "Notebook"): Learn how to create and use custom tools in LangChain agents.
   - [Image Generation and Captioning + Video Generation](./src/langchain/notebooks/image_generation_and_captioning.ipynb "Notebook"): Learn to create an agent that chooses which generative tool to use based on your prompt. This example begins with the agent generating an image after refining the user's prompt.
   - [LangSmith Walkthrough](./src/langchain/notebooks/langsmith_walkthrough.ipynb "Notebook"): Learn how to use LangSmith tracing and pull prompts fromt he LangSmith Hub.
-  - [Retrieval Augmented Generation](./src/langchain/notebooks/learn_rag_basics.ipynb "Notebook"): Get started with Retrieval Augmented Generation to enhance the performance of your LLM.
-  - [MongoDB RAG](./src/langchain/notebooks/learn_rag_mongoDB.ipynb "Notebook"): Perform similarity searching, metadata filtering, and question-answering with MongoDB.
-  - [learn]
+  - [Retrieval Augmented Generation](./src/langchain/notebooks/rag_basics.ipynb "Notebook"): Get started with Retrieval Augmented Generation to enhance the performance of your LLM.
+  - [MongoDB RAG](./src/langchain/notebooks/rag_mongoDB.ipynb "Notebook"): Perform similarity searching, metadata filtering, and question-answering with MongoDB.
+  - [Pinecone and ChromaDB](./src/langchain/notebooks/rag_pinecone_chromadb.ipynb "Notebook"): A more basic but thorough walkthrough of performing retrieval augmented generation with two different vectorstores.
+  - [FAISS and the HuggingFaceHub](./src/langchain/notebooks/rag_privacy_faiss_huggingfacehub.ipynb "Notebook"): Learn how to use FAISS indexes for similarity search with HuggingFaceHub embeddings. This example is a privacy friendly option, as everything runs locally. No GPU required!
+  - [Runnables and Chains (LangChain Expression Language)](./src/langchain/notebooks/runnables_and_chains.ipynb "Notebook"): Learn the difference of and how to use Runnables and Chains in LangChain. Here you'll dive deep into their specifics.
 
 - [End to End Examples](./src/langchain/packages/ "Directory"): Here you'll find scripts made to work out of the box.
   - [RAG with Agents](./src/langchain/packages/rag-with-agents/ "Directory"): Learn to use Agents for RAG.
