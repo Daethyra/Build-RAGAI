@@ -12,7 +12,7 @@ dependencies = [
     "torch>=2.1.1",
     "ipykernel>=6.29.3",
 ]
-requires-python = ">=3.9, <3.13"
+requires-python = ">=3.10, <3.13"
 readme = "README.md"
 license = {text = "GNU Affero General Public License"}
 [tool.pdm]
