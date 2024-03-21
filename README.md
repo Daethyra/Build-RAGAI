@@ -22,6 +22,7 @@ LangChain:
   - [multi_queryvector_retrieval.py](./src/langchain/codesnippets/multi_queryvector_retrieval.py "Code Snippet"): An advanced retriever component that combines the power of multi-querying and multi-vector retrieval.
 
 - [Notebooks](./src/langchain/notebooks/ "Directory"): Here you'll find Jupyter notebooks that guide you through the use of many different LangChain classes.
+  - [MergedDataLoader](./src/langchain/notebooks/rag_MergedDataLoader.ipynb "Notebook"): Learn how to embed and query multiple data sources via `MergedDataLoader`. In this notebook, we learn how to clone GitHub repositories and scrape web documentation before embedding them into a vectorstore which we then use as a retriever. By the end of it, you should be comfortable using whatever sources as context in your own RAG projects.
   - [Custom Tools](./src/langchain/notebooks/agentexecutor_custom_tools.ipynb "Notebook"): Learn how to create and use custom tools in LangChain agents.
   - [Image Generation and Captioning + Video Generation](./src/langchain/notebooks/image_generation_and_captioning.ipynb "Notebook"): Learn to create an agent that chooses which generative tool to use based on your prompt. This example begins with the agent generating an image after refining the user's prompt.
   - [LangSmith Walkthrough](./src/langchain/notebooks/langsmith_walkthrough.ipynb "Notebook"): Learn how to use LangSmith tracing and pull prompts fromt he LangSmith Hub.
