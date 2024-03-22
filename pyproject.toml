@@ -1,6 +1,6 @@
 [project]
 name = "Build-RAGAI"
-version = "1.1.4"
+version = "2.0.0"
 description = "Retrieval Augmented Generation code for AI. Prebuilt Python components for leveraging generative AI via Large Language Models."
 authors = [
     {name = "Daethyra", email = "109057945+Daethyra@users.noreply.github.com"},
@@ -10,8 +10,9 @@ dependencies = [
     "openai>=0.28.1",
     "transformers>=4.34.1",
     "torch>=2.1.1",
+    "ipykernel>=6.29.3",
 ]
-requires-python = ">=3.9, <=3.10.12"
+requires-python = ">=3.10, <3.13"
 readme = "README.md"
 license = {text = "GNU Affero General Public License"}
 [tool.pdm]
