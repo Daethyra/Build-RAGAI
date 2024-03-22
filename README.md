@@ -15,7 +15,7 @@ This README:
 - [Installation](#installation)
 - [License](#license)
 
-LangChain:
+[LangChain](./src/langchain/):
 - [Code Snippets](./src/langchain/codesnippets/ "Directory"): Here you'll find pluggable Python components.
   - [bufferwindow_memory.py](./src/langchain/codesnippets/bufferwindow_memory.py "Code Snippet"): A simple memory component that can be used in a LangChain conversation.
   - [chatopenai.py](./src/langchain/codesnippets/chatopenai.py "Code Snippet"): A simple LLM component that can be used to return chat messages.
@@ -40,6 +40,26 @@ LangChain:
     - [Facebook AI Similarity Search](./src/langchain/packages/rag-with-agents/faiss_retriever.py "Directory"): Use the `FacebookAISimilaritySearch` class to load files for querying.
     - [Vectorstore RAG](./src/langchain/packages/vectorstore-rag/ "Directory"): Learn how to use vectorstores in LangChain.
     - [Pinecone](./src/langchain/packages/vectorstore-rag/pinecone/README.md "Directory"): Use a `Pinecone` vector database "Index" as a retriever and chat with your documents. 
+
+[OpenAI](./src/opai/):
+- [Code Snippets](./src/opai/codesnippets/ "Directory"): Here you'll find code snippets using the OpenAI Python library.
+  - [Text to Speech](./src/opai/codesnippets/tts.py "Code Snippet"): Use the Whisper API to generate speech from text.
+
+- [Notebooks](./src/opai/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the OpenAI Python library.
+  - [Retrieval Augmented Generation](./src/opai/notebooks/gen-qa-openai.ipynb "Notebook"): Get started with Retrieval Augmented Generation and Pinecone to enhance the performance of your LLM.
+
+[Transformers](./src/transformers/):
+- [Code Snippets](./src/transformers/codesnippets/ "Directory"): Here you'll find code snippets using the Transformers Python library.
+  - [Dolphin Mixtral](./src/transformers/codesnippets/dolphin_mixtral.py "Code Snippet"): A simple function to generate text using `pipeline`.
+
+- [Notebooks](./src/transformers/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the Transformers Python library.
+  - [Automatic Speech Recognition](./src/transformers/notebooks/asr_pipelines.ipynb "Notebook"): Transcribe speech using Whisper-v3 in a Gradio demo.
+
+- [Packages](./src/transformers/packages/ "Directory"): Here you'll find CLI applications.
+  - [Audio Transcription](./src/transformers/packages/audiotranscription/ "Directory"): 
+    - [MicTranscription](./src/transformers/packages/audiotranscription/mictranscription/ "CLI App"): Transcribe audio using a microphone.
+    - [Task Creation](./src/transformers/packages/audiotranscription/taskcreation/ "CLI App"): Generates tasks based on transcribed audio.
+  - [Train with Accelerate](./src/transformers/packages/trainwithaccelerate/ "Directory"): Fine tune a sequence classification model using Accelerate to make things go extra fast.
 
 ---
 
