@@ -90,11 +90,16 @@ Once our virtual environment is set up we need to select it as our kernel for th
 
 When selecting the kernel, ensure you choose the one that's located inside of the `.venv` directory, and not the global Python environment.
 
-#### Google Colab Execution and Testing
+---
 
-To get started in Google Colab, you can upload any of the notebooks from this repository, OR click the badge below to open the [starter LangChain RAG notebook](./src/langchain/notebooks/learn_rag.ipynb "Starter RAG Notebook for learning") in Colab.
+### Test Your First Notebook
+If you're totally new to building AI powered applications with access to external data, specifically retrieval augmented generation, check out the [RAG Basics](./src/langchain/notebooks/rag_basics.ipynb "Starter RAG Notebook for learning") notebook. It's the most straightforward notebook, and its concepts are built upon in every other 'RAG' notebook.
 
-<a target="_blank" href="https://colab.research.google.com/github/Daethyra/Build-RAGAI/blob/master/src/langchain/notebooks/learn_rag.ipynb">
+#### Google Colab
+
+Click the badge below to open the RAG Basics notebook in Colab.
+
+<a target="_blank" href="https://colab.research.google.com/github/Daethyra/Build-RAGAI/blob/master/src/langchain/notebooks/rag_basics.ipynb">
   <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open 'learn_rag.ipynb' In Colab"/>
 </a>
 
