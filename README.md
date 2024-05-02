@@ -100,7 +100,7 @@ If you're totally new to building AI powered applications with access to externa
 Click the badge below to open the RAG Basics notebook in Colab.
 
 <a target="_blank" href="https://colab.research.google.com/github/Daethyra/Build-RAGAI/blob/master/src/langchain/notebooks/rag_basics.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open 'learn_rag.ipynb' In Colab"/>
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open 'rag_basics.ipynb' In Colab"/>
 </a>
 
 ---
