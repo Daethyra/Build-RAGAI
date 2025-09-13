@@ -1,11 +1,15 @@
 # Build-RAGAI
 
 ## Description
-This project seeks to teach you how to build Python applications with generative AI functionality by using the LangChain and Transformers libraries.
+This project is meant to teach one how to build custom AI Agents using LangChain's Python library.
 
-While there is a section for [OpenAI](./src/opai/), most of the code that previously existed there has been repurposed and integrated with either the [LangChain](./src/langchain/) or [Transformers](./src/transformers/) libraries. This project includes code snippets, packages examples, and jupyter notebooks that you can augment, copy, or learn from respectively.
+Code created since 9/12/25 will be built on LangChain's v1.0. The code in [OpenAI](./src/opai/) and [Transformers](./src/transformers/) use an old LangChain API version and are not planned to be updated to the new API. Old code snippets and notebooks will be preserved in place.
 
-If you're new to building AI-powered applications, I suggest you start by playing with and executing the code in the [LangChain notebooks](./src/langchain/notebooks/). Seeing the code in action, editing it yourself, and creatively brainstorming new ideas is the best way to learn.
+Moving forward, only DeepSeek will be supported, however, the DeepSeek API is just like the OpenAI SDK, and for the most part, you can replace "DeepSeek" with "OpenAI" and the model parameter in the code and it'll still work.
+
+This project includes code snippets and jupyter notebooks that you can augment or outright copy.
+
+If you're new to building AI-powered applications, I suggest you start by playing with and executing the code in the [the DeepSeek notebook](./src/langchain/notebooks/). Go through the cells and play with the code.
 
 ## Table of Contents
 Below you'll find links to, and descriptions of, sections of this project for easy navigation.
@@ -17,11 +21,14 @@ This README:
 
 [LangChain](./src/langchain/):
 - [Code Snippets](./src/langchain/codesnippets/ "Directory"): Here you'll find pluggable Python components.
+  - - ---------- OLD API ----------
   - [bufferwindow_memory.py](./src/langchain/codesnippets/bufferwindow_memory.py "Code Snippet"): A simple memory component that can be used in a LangChain conversation.
   - [chatopenai.py](./src/langchain/codesnippets/chatopenai.py "Code Snippet"): A simple LLM component that can be used to return chat messages.
   - [multi_queryvector_retrieval.py](./src/langchain/codesnippets/multi_queryvector_retrieval.py "Code Snippet"): An advanced retriever component that combines the power of multi-querying and multi-vector retrieval.
 
 - [Notebooks](./src/langchain/notebooks/ "Directory"): Here you'll find Jupyter notebooks that guide you through the use of many different LangChain classes.
+  - [DeepSeek](./src/langchain/notebooks/DeepSeek.ipynb "Notebook"): Create your first LangChain v1.0 Agent that has access to memory and tools, including weather & web searching, and a calculator.
+  - ---------- OLD API ----------
   - [MergedDataLoader](./src/langchain/notebooks/rag_MergedDataLoader.ipynb "Notebook"): Learn how to embed and query multiple data sources via `MergedDataLoader`. In this notebook, we learn how to clone GitHub repositories and scrape web documentation before embedding them into a vectorstore which we then use as a retriever. By the end of it, you should be comfortable using whatever sources as context in your own RAG projects.
   - [Custom Tools](./src/langchain/notebooks/agentexecutor_custom_tools.ipynb "Notebook"): Learn how to create and use custom tools in LangChain agents.
   - [Image Generation and Captioning + Video Generation](./src/langchain/notebooks/image_generation_and_captioning.ipynb "Notebook"): Learn to create an agent that chooses which generative tool to use based on your prompt. This example begins with the agent generating an image after refining the user's prompt.
@@ -33,6 +40,7 @@ This README:
   - [Runnables and Chains (LangChain Expression Language)](./src/langchain/notebooks/runnables_and_chains.ipynb "Notebook"): Learn the difference of and how to use Runnables and Chains in LangChain. Here you'll dive deep into their specifics.
 
 - [End to End Examples](./src/langchain/packages/ "Directory"): Here you'll find scripts made to work out of the box.
+  - - ---------- OLD API ----------
   - [RAG with Agents](./src/langchain/packages/rag-with-agents/ "Directory"): Learn to use Agents for RAG.
     - [Streamlit Chatbot](./src/langchain/packages/chatbots/streamlit/ "Directory"): A simple Streamlit chatbot using OpenAI.
     - [Directory Loader](./src/langchain/packages/rag-with-agents/directoryloader/README.md "Directory"): Use the `DirectoryLoader` class to load files for querying.
@@ -44,22 +52,19 @@ This README:
 [OpenAI](./src/opai/):
 - [Code Snippets](./src/opai/codesnippets/ "Directory"): Here you'll find code snippets using the OpenAI Python library.
   - [Text to Speech](./src/opai/codesnippets/tts.py "Code Snippet"): Use the Whisper API to generate speech from text.
-
-- [Notebooks](./src/opai/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the OpenAI Python library.
-  - [Retrieval Augmented Generation](./src/opai/notebooks/gen-qa-openai.ipynb "Notebook"): Get started with Retrieval Augmented Generation and Pinecone to enhance the performance of your LLM.
+  - [Notebooks](./src/opai/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the OpenAI Python library.
+    - [Retrieval Augmented Generation](./src/opai/notebooks/gen-qa-openai.ipynb "Notebook"): Get started with Retrieval Augmented Generation and Pinecone to enhance the performance of your LLM.
 
 [Transformers](./src/transformers/):
 - [Code Snippets](./src/transformers/codesnippets/ "Directory"): Here you'll find code snippets using the Transformers Python library.
   - [Dolphin Mixtral](./src/transformers/codesnippets/dolphin_mixtral.py "Code Snippet"): A simple function to generate text using `pipeline`.
-
-- [Notebooks](./src/transformers/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the Transformers Python library.
-  - [Automatic Speech Recognition](./src/transformers/notebooks/asr_pipelines.ipynb "Notebook"): Transcribe speech using Whisper-v3 in a Gradio demo.
-
-- [Packages](./src/transformers/packages/ "Directory"): Here you'll find CLI applications.
-  - [Audio Transcription](./src/transformers/packages/audiotranscription/ "Directory"): 
-    - [MicTranscription](./src/transformers/packages/audiotranscription/mictranscription/ "CLI App"): Transcribe audio using a microphone.
-    - [Task Creation](./src/transformers/packages/audiotranscription/taskcreation/ "CLI App"): Generates tasks based on transcribed audio.
-  - [Train with Accelerate](./src/transformers/packages/trainwithaccelerate/ "Directory"): Fine tune a sequence classification model using Accelerate to make things go extra fast.
+  - [Notebooks](./src/transformers/notebooks/ "Directory"): Here you'll find Jupyter notebooks that show you how to use the Transformers Python library.
+    - [Automatic Speech Recognition](./src/transformers/notebooks/asr_pipelines.ipynb "Notebook"): Transcribe speech using Whisper-v3 in a Gradio demo.
+  - [Packages](./src/transformers/packages/ "Directory"): Here you'll find CLI applications.
+    - [Audio Transcription](./src/transformers/packages/audiotranscription/ "Directory"): 
+      - [MicTranscription](./src/transformers/packages/audiotranscription/mictranscription/ "CLI App"): Transcribe audio using a microphone.
+      - [Task Creation](./src/transformers/packages/audiotranscription/taskcreation/ "CLI App"): Generates tasks based on transcribed audio.
+    - [Train with Accelerate](./src/transformers/packages/trainwithaccelerate/ "Directory"): Fine tune a sequence classification model using Accelerate to make things go extra fast.
 
 ---
 
@@ -68,19 +73,22 @@ This README:
 ### Installation
 
 #### Local Code Execution and Testing
-This project is developed using [PDM](https://pdm.fming.dev/). You can install PDM using `pip`:
+Start by navigating to the root directory of this project.
 
-Start by navigating to the root directory of this project, then run:
+For Unix, run `pip install virtualenv && virtualenv .venv && source .venv/bin/activate`
 
-```bash
-pip install -U pdm
-```
+Or for Windows, run `pip install virtualenv ; virtualenv .venv ; .venv/Scripts/activate`
 
-Then you'll need to install the dependencies using PDM:
+This project is developed using [PDM](https://pdm.fming.dev/). It is not recommended to install dependencies this way, especially for the new notebooks built on LangChain v1.0 because PDM will install the latest *stable* release. I recommend creating virtual environments within the notebooks themselves.
 
-```bash
-pdm install
-```
+
+If you still wish to use PDM, you can install it using `pip`:
+
+`pip install -U pdm`
+
+Then, install the dependencies using PDM:
+
+`pdm install`
 
 This command will create a virtual environment in `.venv` and install the dependencies in that environment. If you're on macOS or Linux, you can run `source .venv/bin/activate` to activate the environment. Otherwise, you can run the command `.venv/Scripts/activate` or `.venv/Scripts/activate.ps1` to activate the environment.
 
@@ -90,19 +98,4 @@ Once our virtual environment is set up we need to select it as our kernel for th
 
 When selecting the kernel, ensure you choose the one that's located inside of the `.venv` directory, and not the global Python environment.
 
----
-
-### Test Your First Notebook
-If you're totally new to building AI powered applications with access to external data, specifically retrieval augmented generation, check out the [RAG Basics](./src/langchain/notebooks/rag_basics.ipynb "Starter RAG Notebook for learning") notebook. It's the most straightforward notebook, and its concepts are built upon in every other 'RAG' notebook.
-
-#### Google Colab
-
-Click the badge below to open the RAG Basics notebook in Colab.
-
-<a target="_blank" href="https://colab.research.google.com/github/Daethyra/Build-RAGAI/blob/master/src/langchain/notebooks/rag_basics.ipynb">
-  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open 'rag_basics.ipynb' In Colab"/>
-</a>
-
----
-
-## [LICENSE](./LICENSE "GNU Affero GPL")
+## [MIT LICENSE](./LICENSE "MIT")
